@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:mobile/store/index.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,7 +14,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: _buildScrollView(),
+      body: _buildBody(),
     );
   }
 
@@ -22,14 +24,31 @@ class _HomeScreenState extends State<HomeScreen> {
         elevation: 5,
       );
 
-  Widget _buildScrollView() => SingleChildScrollView(
+  Widget _buildBody() => SingleChildScrollView(
         child: Wrap(
           direction: Axis.vertical,
-          children: _buildBody(),
+          children: _buildRows(),
         ),
       );
 
-  List<Widget> _buildBody() => [
+  List<Widget> _buildRows() => [
         // ... content
+        _buildReduxTest(),
       ];
+
+  Widget _buildReduxTest() => StoreConnector<AppState, DateTime>(
+        builder: (ctx, date) => Column(
+          children: [
+            Text(date.toString()),
+            ElevatedButton(
+              onPressed: () {
+                StoreProvider.of<AppState>(ctx)
+                    .dispatch(TestAction(newDate: DateTime.now()));
+              },
+              child: const Text('Update DateTime'),
+            )
+          ],
+        ),
+        converter: (store) => store.state.date,
+      );
 }
