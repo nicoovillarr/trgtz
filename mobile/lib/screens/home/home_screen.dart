@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:mobile/screens/home/widgets/progress_bar.dart';
 import 'package:mobile/store/index.dart';
+import 'package:mobile/utils.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   AppBar _buildAppBar() => AppBar(
         title: const Text('hi, Nico'),
         backgroundColor: Colors.white,
-        elevation: 5,
+        elevation: 1,
       );
 
   Widget _buildBody() => SingleChildScrollView(
@@ -32,23 +34,24 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
   List<Widget> _buildRows() => [
-        // ... content
-        _buildReduxTest(),
+        _buildProgressBar(),
       ];
 
-  Widget _buildReduxTest() => StoreConnector<AppState, DateTime>(
-        builder: (ctx, date) => Column(
-          children: [
-            Text(date.toString()),
-            ElevatedButton(
-              onPressed: () {
-                StoreProvider.of<AppState>(ctx)
-                    .dispatch(TestAction(newDate: DateTime.now()));
-              },
-              child: const Text('Update DateTime'),
-            )
-          ],
-        ),
+  Widget _buildProgressBar() => StoreConnector<AppState, DateTime>(
+        builder: (ctx, date) => Column(children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Text(
+              Utils.dateToFullString(date),
+              style: const TextStyle(
+                fontWeight: FontWeight.w300,
+                fontSize: 18,
+              ),
+            ),
+          ),
+          ProgressBar(date: date),
+          const SizedBox(height: 16.0),
+        ]),
         converter: (store) => store.state.date,
       );
 }
