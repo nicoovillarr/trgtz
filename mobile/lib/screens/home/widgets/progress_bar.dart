@@ -18,7 +18,7 @@ class ProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    double padding = 32.0;
+    double padding = 16.0;
     return SizedBox(
       height: height,
       width: size.width,
