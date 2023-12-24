@@ -3,6 +3,7 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:mobile/models/index.dart';
 import 'package:mobile/screens/home/widgets/index.dart';
 import 'package:mobile/store/index.dart';
+import 'package:mobile/store/local_storage.dart';
 import 'package:mobile/utils.dart';
 import 'package:redux/redux.dart';
 
@@ -28,14 +29,14 @@ class _HomeScreenState extends State<HomeScreen> {
           );
           modal.then((s) {
             if (s != null && s.isNotEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(s),
-                duration: const Duration(seconds: 2),
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text('New goal created!'),
+                duration: Duration(seconds: 2),
               ));
               Store<AppState> store = StoreProvider.of<AppState>(context);
-              int year = store.state.date.year;
-              store
-                  .dispatch(CreateGoalAction(goal: Goal(title: s, year: year)));
+              final newGoal = Goal(title: s, year: store.state.date.year);
+              store.dispatch(CreateGoalAction(goal: newGoal));
+              LocalStorage.SaveGoals([...store.state.goals, newGoal]);
             }
           });
         },
