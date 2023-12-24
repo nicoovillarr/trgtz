@@ -4,13 +4,15 @@ abstract class ReducerActionBase {
   execute(AppState currentState);
 }
 
-class TestAction implements ReducerActionBase {
-  final DateTime newDate;
+class AddDateYearAction implements ReducerActionBase {
+  final int years;
 
-  const TestAction({required this.newDate});
+  const AddDateYearAction({required this.years});
 
   @override
   execute(AppState currentState) {
+    final DateTime newDate = DateTime(currentState.date.year + years,
+        currentState.date.month, currentState.date.day);
     return currentState.copyWith(date: newDate);
   }
 }
