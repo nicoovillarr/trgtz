@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:mobile/screens/home/widgets/progress_bar.dart';
+import 'package:mobile/screens/home/widgets/index.dart';
 import 'package:mobile/store/index.dart';
 import 'package:mobile/utils.dart';
 
@@ -27,22 +27,18 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
   Widget _buildBody() => SingleChildScrollView(
-        child: Column(
-          children: _buildRows(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            children: _buildRows(),
+          ),
         ),
       );
 
   List<Widget> _buildRows() => [
         _buildProgressBar(DateTime.now()),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Row(
-            children: [
-              _buildPieCard(),
-              _buildYearSelectorCard(),
-            ],
-          ),
-        ),
+        _buildStatsAndSelector(),
+        _buildGoalsListView(),
       ];
 
   Widget _buildProgressBar(DateTime date) => Column(children: [
@@ -60,16 +56,31 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 16.0),
       ]);
 
-  Widget _buildPieCard() => const SizedBox(
+  Widget _buildStatsAndSelector() {
+    return Row(
+      children: [
+        _buildPieCard(),
+        _buildYearSelectorCard(),
+      ],
+    );
+  }
+
+  Widget _buildPieCard() => SizedBox(
         width: 120,
         height: 120,
-        child: Card(),
+        child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4.0),
+          ),
+        ),
       );
-
   Widget _buildYearSelectorCard() => Flexible(
         child: SizedBox(
           height: 120,
           child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4.0),
+            ),
             child: StoreConnector<AppState, DateTime>(
               builder: (ctx, date) => SizedBox(
                 width: double.infinity,
@@ -112,5 +123,32 @@ class _HomeScreenState extends State<HomeScreen> {
           size: 40,
           color: Colors.grey,
         ),
+      );
+
+  Widget _buildGoalsListView() => StoreConnector<AppState, AppState>(
+        builder: (ctx, state) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 8.0),
+            Text(
+              'Your goals for ${state.date.year}...',
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF808080),
+              ),
+            ),
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: GoalsListView(
+                  goals: state.goals
+                      .where((g) => g.year == state.date.year)
+                      .toList()),
+            ),
+          ],
+        ),
+        converter: (store) => store.state,
       );
 }
