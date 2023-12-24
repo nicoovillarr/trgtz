@@ -20,9 +20,10 @@ class _GoalsListViewState extends State<GoalsListView> {
       physics: const NeverScrollableScrollPhysics(),
       itemCount: widget.goals.length,
       itemBuilder: (ctx, idx) => ListTile(
-        onTap: () {},
+        onTap: () => Navigator.of(ctx)
+            .pushNamed('/goal', arguments: widget.goals[idx].goalID),
         title: Text(
-          widget.goals[idx].title ?? "",
+          widget.goals[idx].title,
           style: const TextStyle(
             fontSize: 14,
           ),

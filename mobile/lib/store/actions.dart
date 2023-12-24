@@ -31,3 +31,18 @@ class CreateGoalAction implements ReducerActionBase {
     ]);
   }
 }
+
+class UpdateGoalAction implements ReducerActionBase {
+  final Goal goal;
+
+  const UpdateGoalAction({required this.goal});
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(
+      goals: currentState.goals
+          .map((e) => e.goalID == goal.goalID ? goal : e)
+          .toList(),
+    );
+  }
+}

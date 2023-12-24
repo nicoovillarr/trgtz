@@ -39,7 +39,19 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
-        home: const HomeScreen(),
+        onGenerateRoute: (settings) {
+          switch (settings.name) {
+            case '/':
+              return MaterialPageRoute(
+                  builder: (context) => const HomeScreen());
+            case '/goal':
+              return MaterialPageRoute(
+                  builder: (context) => const GoalViewScreen(),
+                  settings: settings);
+            default:
+              throw Exception('Route ${settings.name} invalid.');
+          }
+        },
       ),
     );
   }
