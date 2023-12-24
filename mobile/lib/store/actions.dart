@@ -1,3 +1,4 @@
+import 'package:mobile/models/index.dart';
 import 'package:mobile/store/index.dart';
 
 abstract class ReducerActionBase {
@@ -14,5 +15,19 @@ class AddDateYearAction implements ReducerActionBase {
     final DateTime newDate = DateTime(currentState.date.year + years,
         currentState.date.month, currentState.date.day);
     return currentState.copyWith(date: newDate);
+  }
+}
+
+class CreateGoalAction implements ReducerActionBase {
+  final Goal goal;
+
+  const CreateGoalAction({required this.goal});
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(goals: [
+      ...currentState.goals,
+      goal,
+    ]);
   }
 }
