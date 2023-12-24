@@ -6,6 +6,7 @@ import 'package:mobile/store/index.dart';
 import 'package:mobile/store/local_storage.dart';
 import 'package:mobile/utils.dart';
 import 'package:redux/redux.dart';
+import 'package:uuid/uuid.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -34,9 +35,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 duration: Duration(seconds: 2),
               ));
               Store<AppState> store = StoreProvider.of<AppState>(context);
-              final newGoal = Goal(title: s, year: store.state.date.year);
+              final newGoal = Goal(
+                  goalID: const Uuid().v4(),
+                  title: s,
+                  year: store.state.date.year,
+                  createdOn: DateTime.now());
               store.dispatch(CreateGoalAction(goal: newGoal));
-              LocalStorage.SaveGoals([...store.state.goals, newGoal]);
+              LocalStorage.saveGoals(store.state.goals);
             }
           });
         },
