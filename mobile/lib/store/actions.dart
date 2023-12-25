@@ -46,3 +46,18 @@ class UpdateGoalAction implements ReducerActionBase {
     );
   }
 }
+
+class DeleteGoalAction implements ReducerActionBase {
+  final Goal goal;
+
+  const DeleteGoalAction({required this.goal});
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(
+      goals: currentState.goals
+          .where((element) => element.goalID != goal.goalID)
+          .toList(),
+    );
+  }
+}
