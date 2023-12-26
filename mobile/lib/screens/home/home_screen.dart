@@ -5,6 +5,7 @@ import 'package:mobile/screens/home/widgets/index.dart';
 import 'package:mobile/store/index.dart';
 import 'package:mobile/store/local_storage.dart';
 import 'package:mobile/utils.dart';
+import 'package:pie_chart/pie_chart.dart';
 import 'package:redux/redux.dart';
 import 'package:uuid/uuid.dart';
 
@@ -85,14 +86,12 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 16.0),
       ]);
 
-  Widget _buildStatsAndSelector() {
-    return Row(
-      children: [
-        _buildPieCard(),
-        _buildYearSelectorCard(),
-      ],
-    );
-  }
+  Widget _buildStatsAndSelector() => Row(
+        children: [
+          _buildPieCard(),
+          _buildYearSelectorCard(),
+        ],
+      );
 
   Widget _buildPieCard() => SizedBox(
         width: 120,
@@ -101,8 +100,46 @@ class _HomeScreenState extends State<HomeScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4.0),
           ),
+          child: StoreConnector<AppState, List<Goal>>(
+            converter: (store) => store.state.goals
+                .where((g) => g.year == store.state.date.year)
+                .toList(),
+            builder: (context, goals) => InkWell(
+              onLongPress: () => _showStatsDialog(context, goals),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: PieChart(
+                        dataMap: {
+                          "Completed":
+                              Utils.getCompletedGoals(goals).length.toDouble(),
+                          "InProgress":
+                              Utils.getInProgressGoals(goals).length.toDouble(),
+                          "ToDo": Utils.getToDoGoals(goals).length.toDouble(),
+                        },
+                        colorList: const [
+                          Color(0xFF98CE5A),
+                          Color(0xFF5DCCFF),
+                          Color(0xFFE0E0E0),
+                        ],
+                        legendOptions: const LegendOptions(showLegends: false),
+                        chartValuesOptions:
+                            const ChartValuesOptions(showChartValues: false),
+                      ),
+                    ),
+                    Text(
+                        "${Utils.getCompletedGoals(goals).length} / ${Utils.getInProgressGoals(goals).length} / ${Utils.getToDoGoals(goals).length}"),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       );
+
   Widget _buildYearSelectorCard() => Flexible(
         child: SizedBox(
           height: 120,
@@ -180,4 +217,24 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         converter: (store) => store.state,
       );
+
+  void _showStatsDialog(BuildContext context, List<Goal> goals) => showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+            title: const Text('Your goals:'),
+            content: Wrap(
+              direction: Axis.vertical,
+              children: [
+                Text("Completed: ${Utils.getCompletedGoals(goals).length}"),
+                Text("In Progress: ${Utils.getInProgressGoals(goals).length}"),
+                Text("To Do: ${Utils.getToDoGoals(goals).length}"),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Ok'),
+              ),
+            ],
+          ));
 }
