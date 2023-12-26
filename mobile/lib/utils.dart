@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:mobile/models/goal.dart';
 
 class Utils {
   static String dateToFullString(DateTime date) {
@@ -25,4 +26,15 @@ class Utils {
 
     return "${DateFormat("MMMM").format(date)} ${DateFormat("d").format(date)}$daySuffix, ${date.year}";
   }
+
+  static List<Goal> getCompletedGoals(List<Goal> source) =>
+      source.where((element) => element.completedOn != null).toList();
+
+  static List<Goal> getInProgressGoals(List<Goal> source) => source
+      .where((element) =>
+          element.inProgressOn != null && element.completedOn == null)
+      .toList();
+
+  static List<Goal> getToDoGoals(List<Goal> source) =>
+      source.where((element) => element.inProgressOn == null).toList();
 }
