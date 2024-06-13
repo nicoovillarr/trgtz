@@ -116,8 +116,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         dataMap: {
                           "Completed":
                               Utils.getCompletedGoals(goals).length.toDouble(),
-                          "InProgress":
-                              Utils.getInProgressGoals(goals).length.toDouble(),
                           "ToDo": Utils.getToDoGoals(goals).length.toDouble(),
                         },
                         colorList: const [
@@ -131,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     Text(
-                        "${Utils.getCompletedGoals(goals).length} / ${Utils.getInProgressGoals(goals).length} / ${Utils.getToDoGoals(goals).length}"),
+                        "${Utils.getCompletedGoals(goals).length} / ${Utils.getToDoGoals(goals).length}"),
                   ],
                 ),
               ),
@@ -226,7 +224,6 @@ class _HomeScreenState extends State<HomeScreen> {
               direction: Axis.vertical,
               children: [
                 Text("Completed: ${Utils.getCompletedGoals(goals).length}"),
-                Text("In Progress: ${Utils.getInProgressGoals(goals).length}"),
                 Text("To Do: ${Utils.getToDoGoals(goals).length}"),
               ],
             ),
