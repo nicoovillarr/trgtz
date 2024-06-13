@@ -5,7 +5,6 @@ class Goal extends ModelBase {
   String title;
   int year;
   DateTime createdOn;
-  DateTime? inProgressOn;
   DateTime? completedOn;
 
   Goal({
@@ -13,7 +12,6 @@ class Goal extends ModelBase {
     required this.title,
     required this.year,
     required this.createdOn,
-    this.inProgressOn,
     this.completedOn,
   });
 
@@ -23,7 +21,6 @@ class Goal extends ModelBase {
       title: json['title'],
       year: json['year'],
       createdOn: ModelBase.tryParseDateTime('createdOn', json)!,
-      inProgressOn: ModelBase.tryParseDateTime('inProgressOn', json),
       completedOn: ModelBase.tryParseDateTime('completedOn', json),
     );
   }
@@ -33,7 +30,6 @@ class Goal extends ModelBase {
         'title': title,
         'year': year,
         'createdOn': createdOn.toString(),
-        'inProgressOn': inProgressOn.toString(),
         'completedOn': completedOn.toString(),
       };
 }

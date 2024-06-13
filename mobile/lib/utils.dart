@@ -30,11 +30,6 @@ class Utils {
   static List<Goal> getCompletedGoals(List<Goal> source) =>
       source.where((element) => element.completedOn != null).toList();
 
-  static List<Goal> getInProgressGoals(List<Goal> source) => source
-      .where((element) =>
-          element.inProgressOn != null && element.completedOn == null)
-      .toList();
-
   static List<Goal> getToDoGoals(List<Goal> source) =>
-      source.where((element) => element.inProgressOn == null).toList();
+      source.where((element) => element.completedOn == null).toList();
 }

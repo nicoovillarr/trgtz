@@ -34,16 +34,13 @@ class _GoalViewScreenState extends State<GoalViewScreen> {
                 onPressed: () {
                   Store<AppState> store = StoreProvider.of<AppState>(context);
                   Goal editedGoal = goal;
-                  if (goal.inProgressOn == null) {
-                    editedGoal.inProgressOn = DateTime.now();
-                  } else if (goal.completedOn == null) {
+                  if (goal.completedOn == null) {
                     editedGoal.completedOn = DateTime.now();
                   }
                   store.dispatch(UpdateGoalAction(goal: editedGoal));
                   LocalStorage.saveGoals(store.state.goals);
                 },
-                label: Text(
-                    goal.inProgressOn == null ? 'Set In Progress' : 'Complete'),
+                label: const Text('Complete'),
               )
             : null,
         body: _buildBody(goal),
@@ -82,8 +79,6 @@ class _GoalViewScreenState extends State<GoalViewScreen> {
   String _getStatusText(Goal goal) {
     if (goal.completedOn != null) {
       return 'Completed on ${goal.completedOn!.toIso8601String()}';
-    } else if (goal.inProgressOn != null) {
-      return 'In progress since ${goal.inProgressOn!.toIso8601String()}';
     } else {
       return 'Created on ${goal.createdOn.toIso8601String()}';
     }
