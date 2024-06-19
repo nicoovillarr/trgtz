@@ -41,6 +41,8 @@ dependencies:
   shared_preferences: ^2.2.2
   uuid: ^4.2.2
   pie_chart: ^5.4.0
+  timeago: ^3.6.1
+  confetti: ^0.7.0
 
 dev_dependencies:
   flutter_test:

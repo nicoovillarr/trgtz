@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:mobile/screens/goal/goal_view_screen.dart';
+import 'package:mobile/constants.dart';
+import 'package:mobile/screens/goal/index.dart';
 import 'package:mobile/screens/index.dart';
 import 'package:mobile/store/index.dart';
 import 'package:mobile/store/local_storage.dart';
@@ -33,24 +34,16 @@ class MyApp extends StatelessWidget {
     return StoreProvider(
       store: _store,
       child: MaterialApp(
-        title: 'YGoal',
+        title: appName,
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
-        onGenerateRoute: (settings) {
-          switch (settings.name) {
-            case '/':
-              return MaterialPageRoute(
-                  builder: (context) => const HomeScreen());
-            case '/goal':
-              return MaterialPageRoute(
-                  builder: (context) => const GoalViewScreen(),
-                  settings: settings);
-            default:
-              throw Exception('Route ${settings.name} invalid.');
-          }
+        routes: {
+          '/': (context) => const HomeScreen(),
+          '/goal': (context) => const GoalViewScreen(),
+          '/goal/edit': (context) => const GoalEditScreen(),
         },
       ),
     );

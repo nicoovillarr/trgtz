@@ -18,20 +18,57 @@ class GoalsListView extends StatefulWidget {
 }
 
 class _GoalsListViewState extends State<GoalsListView> {
+  List<Goal> goals = [];
+
   @override
   Widget build(BuildContext context) {
+    goals = widget.goals.toList();
+    goals.sort((a, b) {
+      if (a.completedOn == null && b.completedOn == null) {
+        return 0;
+      } else if (a.completedOn == null) {
+        return 1;
+      } else if (b.completedOn == null) {
+        return -1;
+      } else {
+        int result = b.completedOn!.compareTo(a.completedOn!);
+        if (result == 0) {
+          return b.createdOn.compareTo(a.createdOn);
+        }
+        return result;
+      }
+    });
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: widget.goals.length,
+      itemCount: goals.length,
       itemBuilder: (ctx, idx) => ListTile(
-        onTap: () => Navigator.of(ctx)
-            .pushNamed('/goal', arguments: widget.goals[idx].goalID),
-        onLongPress: () => _showDeleteDialog(ctx, widget.goals[idx]),
-        title: Text(
-          widget.goals[idx].title,
-          style: const TextStyle(
-            fontSize: 14,
+        onTap: () =>
+            Navigator.of(ctx).pushNamed('/goal', arguments: goals[idx].goalID),
+        onLongPress: () => _showDeleteDialog(ctx, goals[idx]),
+        title: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                goals[idx].title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (goals[idx].description != null)
+                Text(
+                  goals[idx].description!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xff606060),
+                  ),
+                ),
+            ],
           ),
         ),
       ),

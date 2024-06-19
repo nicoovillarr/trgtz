@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:mobile/core/base/index.dart';
+import 'package:mobile/core/widgets/index.dart';
 import 'package:mobile/models/index.dart';
 import 'package:mobile/screens/home/widgets/index.dart';
 import 'package:mobile/store/index.dart';
@@ -16,49 +18,14 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends BaseScreen<HomeScreen> {
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(),
-      body: _buildBody(),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
-        onPressed: () {
-          Future<String?> modal = showModalBottomSheet(
-            context: context,
-            builder: (_) => NewGoalModal(),
-          );
-          modal.then((s) {
-            if (s != null && s.isNotEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text('New goal created!'),
-                duration: Duration(seconds: 2),
-              ));
-              Store<AppState> store = StoreProvider.of<AppState>(context);
-              final newGoal = Goal(
-                  goalID: const Uuid().v4(),
-                  title: s,
-                  year: store.state.date.year,
-                  createdOn: DateTime.now());
-              store.dispatch(CreateGoalAction(goal: newGoal));
-              LocalStorage.saveGoals(store.state.goals);
-            }
-          });
-        },
-      ),
-    );
-  }
-
-  AppBar _buildAppBar() => AppBar(
-        title: const Text('hi, Nico'),
-        backgroundColor: Colors.white,
-        elevation: 1,
-      );
+  Widget body(BuildContext context) =>
+      SingleChildScrollView(child: _buildBody());
 
   Widget _buildBody() => SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             children: _buildRows(),
           ),
@@ -102,7 +69,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           child: StoreConnector<AppState, List<Goal>>(
             converter: (store) => store.state.goals
-                .where((g) => g.year == store.state.date.year)
+                .where((g) =>
+                    g.year == store.state.date.year && g.deletedOn == null)
                 .toList(),
             builder: (context, goals) => InkWell(
               onLongPress: () => _showStatsDialog(context, goals),
@@ -120,7 +88,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                         colorList: const [
                           Color(0xFF98CE5A),
-                          Color(0xFF5DCCFF),
                           Color(0xFFE0E0E0),
                         ],
                         legendOptions: const LegendOptions(showLegends: false),
@@ -207,9 +174,11 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               clipBehavior: Clip.antiAlias,
               child: GoalsListView(
-                  goals: state.goals
-                      .where((g) => g.year == state.date.year)
-                      .toList()),
+                goals: state.goals
+                    .where(
+                        (g) => g.year == state.date.year && g.deletedOn == null)
+                    .toList(),
+              ),
             ),
           ],
         ),
@@ -234,4 +203,51 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ));
+
+  @override
+  FloatingActionButton get fab => FloatingActionButton(
+        child: const Icon(Icons.add),
+        onPressed: () {
+          simpleBottomSheet(
+            title: 'New goal',
+            child: TextEditModal(
+              placeholder: 'I wanna...',
+              maxLength: 50,
+              maxLines: 1,
+              validate: (title) => title != null && title.isNotEmpty
+                  ? null
+                  : 'Title cannot be empty',
+              onSave: (s) {
+                if (s != null && s.isNotEmpty) {
+                  Store<AppState> store = StoreProvider.of<AppState>(context);
+                  final newGoal = Goal(
+                    goalID: const Uuid().v4(),
+                    title: s,
+                    year: store.state.date.year,
+                    createdOn: DateTime.now(),
+                    deletedOn: null,
+                  );
+
+                  store.dispatch(CreateGoalAction(goal: newGoal));
+                  LocalStorage.saveGoals(store.state.goals);
+
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: const Text('New goal created!'),
+                    duration: const Duration(seconds: 2),
+                    action: SnackBarAction(
+                        label: 'View',
+                        onPressed: () {
+                          Navigator.of(context)
+                              .pushNamed('/goal', arguments: newGoal.goalID);
+                        }),
+                  ));
+                }
+              },
+            ),
+          );
+        },
+      );
+
+  @override
+  bool get addBackButton => false;
 }

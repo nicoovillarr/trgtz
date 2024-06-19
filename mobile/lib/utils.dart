@@ -32,4 +32,7 @@ class Utils {
 
   static List<Goal> getToDoGoals(List<Goal> source) =>
       source.where((element) => element.completedOn == null).toList();
+
+  static String sanitize(String input) =>
+      input.trim().replaceAll(RegExp(r'\s+'), ' ');
 }
