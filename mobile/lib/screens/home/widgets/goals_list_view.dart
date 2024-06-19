@@ -4,6 +4,7 @@ import 'package:mobile/models/index.dart';
 import 'package:mobile/store/actions.dart';
 import 'package:mobile/store/app_state.dart';
 import 'package:mobile/store/local_storage.dart';
+import 'package:mobile/utils.dart';
 import 'package:redux/redux.dart';
 
 class GoalsListView extends StatefulWidget {
@@ -22,22 +23,7 @@ class _GoalsListViewState extends State<GoalsListView> {
 
   @override
   Widget build(BuildContext context) {
-    goals = widget.goals.toList();
-    goals.sort((a, b) {
-      if (a.completedOn == null && b.completedOn == null) {
-        return 0;
-      } else if (a.completedOn == null) {
-        return 1;
-      } else if (b.completedOn == null) {
-        return -1;
-      } else {
-        int result = b.completedOn!.compareTo(a.completedOn!);
-        if (result == 0) {
-          return b.createdOn.compareTo(a.createdOn);
-        }
-        return result;
-      }
-    });
+    goals = Utils.sortGoals(widget.goals);
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
