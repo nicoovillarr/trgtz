@@ -30,7 +30,7 @@ const checkEmailInUse = async (email) =>
 
 const createJWT = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: 86400
+    expiresIn: '15m'
   })
 
 module.exports = {
