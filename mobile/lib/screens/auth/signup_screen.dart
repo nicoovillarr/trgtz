@@ -165,12 +165,12 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
         onPressed: () {
           if (!_formKey.currentState!.validate()) return;
 
+          dismissKeyboard();
           setIsLoading(true);
           final firstName = _firstNameKey.currentState!.value;
           final email = _emailKey.currentState!.value;
           final password = _passwordKey.currentState!.value;
           ModuleService().signup(firstName, email, password).then((result) {
-            dismissKeyboard();
             setIsLoading(false);
             String? token = result.content.containsKey('token')
                 ? result.content['token'].toString()

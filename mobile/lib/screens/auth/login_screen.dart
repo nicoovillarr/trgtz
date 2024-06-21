@@ -193,11 +193,11 @@ class _LoginScreenState extends BaseScreen<LoginScreen> {
         onPressed: () {
           if (!_formKey.currentState!.validate()) return;
 
+          dismissKeyboard();
           setIsLoading(true);
           final email = _emailKey.currentState!.value;
           final password = _passwordKey.currentState!.value;
           ModuleService().login(email, password).then((result) {
-            dismissKeyboard();
             setIsLoading(false);
             String? token = result.content.containsKey('token')
                 ? result.content['token'].toString()
