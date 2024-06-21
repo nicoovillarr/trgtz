@@ -6,6 +6,7 @@ class TextEdit extends StatefulWidget {
   final String? initialValue;
   final int? maxLines;
   final int? maxLength;
+  final bool isPassword;
 
   const TextEdit({
     super.key,
@@ -14,6 +15,7 @@ class TextEdit extends StatefulWidget {
     this.initialValue = '',
     this.maxLines,
     this.maxLength,
+    this.isPassword = false,
   });
 
   @override
@@ -38,14 +40,19 @@ class TextEditState extends State<TextEdit> {
         keyboardType: TextInputType.multiline,
         maxLines: widget.maxLines,
         maxLength: widget.maxLength,
+        obscureText: widget.isPassword,
         decoration: InputDecoration(
-          border: const UnderlineInputBorder(),
+          isDense: true,
           hintText: widget.placeholder,
+          hintStyle: const TextStyle(
+            color: Color(0xFF455457),
+            fontSize: 16.0,
+          ),
           filled: true,
-          fillColor: Colors.grey[150],
+          fillColor: const Color(0xFFC0C0C0),
           focusedBorder: _buildBorder(const Color(0xFF003E4B)),
           errorBorder: _buildBorder(Colors.red),
-          enabledBorder: _buildBorder(const Color.fromARGB(123, 158, 158, 158)),
+          enabledBorder: _buildBorder(Colors.transparent),
           focusedErrorBorder: _buildBorder(Colors.redAccent),
         ),
         validator: widget.validate,

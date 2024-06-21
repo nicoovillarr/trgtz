@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:mobile/constants.dart';
+import 'package:mobile/screens/auth/index.dart';
 import 'package:mobile/screens/goal/index.dart';
 import 'package:mobile/screens/index.dart';
 import 'package:mobile/store/index.dart';
@@ -40,8 +41,11 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
+        initialRoute: '/login',
         routes: {
-          '/': (context) => const HomeScreen(),
+          '/login': (context) => const LoginScreen(),
+          '/signup': (context) => const SignupScreen(),
+          '/home': (context) => const HomeScreen(),
           '/goal': (context) => const GoalViewScreen(),
           '/goal/edit': (context) => const GoalEditScreen(),
         },
