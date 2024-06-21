@@ -1,4 +1,4 @@
-Me propuse crear una aplicación móvil desde cero, y adivina qué... ¡ahora podrás proponerte metas y cumplirlas con facilidad! 📱🚀
+Me propuse crear una aplicación móvil desde cero, y adivina qué... ¡ahora podrás proponerte metas tú también! 📱🚀
 
 Trgtz es una app en la que puedes agregar tus metas del año, compartirlas con tus amigos y celebrar juntos cada logro. La idea surgió mientras reflexionaba sobre cómo hacer la gestión de objetivos más interactiva y social, permitiendo que las personas se motiven mutuamente. 🎯🤝
 
