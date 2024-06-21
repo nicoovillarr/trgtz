@@ -1,6 +1,5 @@
 const path = require('path')
 const ROOT_FOLDER = path.join(__dirname, '..')
-const SRC_FOLDER = path.join(ROOT_FOLDER, 'src')
 
 const connectDB = require('./config/database')
 connectDB()
@@ -38,7 +37,7 @@ app.get(
     customCssUrl: '/public/swagger-ui.css'
   })
 )
-app.use('/public', express.static(path.join(SRC_FOLDER, 'public')))
+app.use('/public', express.static(path.join(ROOT_FOLDER, 'public')))
 app.use('/', require('./routes'))
 
 module.exports = app
