@@ -3,14 +3,8 @@ const goalService = require('../services/goal.service')
 const createGoal = async (req, res) => {
   try {
     const { _id: user } = req.user
-    const { title, description, year, createdOn } = req.body
-    const goal = await goalService.createGoal(
-      user,
-      title,
-      description,
-      year,
-      createdOn
-    )
+    const { title, description, year } = req.body
+    const goal = await goalService.createGoal(user, title, description, year)
     res.status(201).json(goal)
   } catch (error) {
     res.status(500).json(error)
