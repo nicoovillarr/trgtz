@@ -27,7 +27,14 @@ const options = {
 
 const openapiSpecification = swaggerJsdoc(options)
 app.use('/', swaggerUi.serve)
-app.get('/', swaggerUi.setup(openapiSpecification))
+app.get(
+  '/',
+  swaggerUi.setup(openapiSpecification, {
+    explorer: true,
+    customCssUrl:
+      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css'
+  })
+)
 app.use('/', require('./routes'))
 
 module.exports = app
