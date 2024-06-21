@@ -7,6 +7,8 @@ import 'package:mobile/store/index.dart';
 import 'package:redux/redux.dart';
 
 abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
+  bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -17,6 +19,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
 
   @override
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: useAppBar
           ? AppBar(
@@ -32,7 +35,27 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
             )
           : null,
       floatingActionButton: fab,
-      body: body(context),
+      backgroundColor: backgroundColor,
+      body: Stack(
+        children: [
+          SizedBox(
+            height: size.height,
+            width: size.width,
+            child: body(context) ?? const SizedBox.shrink(),
+          ),
+          if (_isLoading)
+            Container(
+              height: size.height,
+              width: size.width,
+              color: Colors.black.withOpacity(0.6),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -113,6 +136,12 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
       ),
     );
   }
+
+  void setIsLoading(bool isLoading) => setState(() => _isLoading = isLoading);
+
+  void dismissKeyboard() => FocusScope.of(context).unfocus();
+
+  Color get backgroundColor => Colors.white;
 
   Store<AppState> get store => StoreProvider.of<AppState>(context);
 
