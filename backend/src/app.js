@@ -1,3 +1,7 @@
+const path = require('path')
+const ROOT_FOLDER = path.join(__dirname, '..')
+const SRC_FOLDER = path.join(ROOT_FOLDER, 'src')
+
 const connectDB = require('./config/database')
 connectDB()
 
@@ -31,11 +35,10 @@ app.get(
   '/',
   swaggerUi.setup(openapiSpecification, {
     explorer: true,
-    customCss: '',
-    customCssUrl:
-      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css'
+    customCssUrl: '/public/swagger-ui.css'
   })
 )
+app.use('/public', express.static(path.join(SRC_FOLDER, 'public')))
 app.use('/', require('./routes'))
 
 module.exports = app
