@@ -4,8 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/index.dart';
+import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/auth/services/index.dart';
 import 'package:trgtz/screens/auth/widgets/index.dart';
+import 'package:trgtz/store/index.dart';
 import 'package:trgtz/store/local_storage.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -207,6 +209,10 @@ class _LoginScreenState extends BaseScreen<LoginScreen> {
               LocalStorage.saveToken(token);
               LocalStorage.saveEmail(email);
               LocalStorage.savePass(password);
+
+              store
+                  .dispatch(SetUserAction(user: User.fromJson(result.content)));
+
               Navigator.of(context).popAndPushNamed('/home');
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
