@@ -61,3 +61,23 @@ class DeleteGoalAction implements ReducerActionBase {
     );
   }
 }
+
+class SetTokenAction implements ReducerActionBase {
+  final String token;
+
+  const SetTokenAction({required this.token});
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(token: token);
+  }
+}
+
+class RemoveTokenAction implements ReducerActionBase {
+  const RemoveTokenAction();
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(token: null);
+  }
+}
