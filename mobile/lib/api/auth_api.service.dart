@@ -18,4 +18,6 @@ class AuthApiService extends ApiBaseService {
         'email': email,
         'password': password,
       });
+
+  Future<ApiResponse> tick(String token) async => await get('tick');
 }

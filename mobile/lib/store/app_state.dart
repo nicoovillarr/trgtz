@@ -1,25 +1,27 @@
+import 'package:flutter/material.dart';
 import 'package:trgtz/models/index.dart';
 
+@immutable
 class AppState {
-  DateTime date;
-  List<Goal> goals;
-  String? token;
+  final DateTime date;
+  final List<Goal> goals;
+  final User? user;
 
-  AppState({
+  const AppState({
     required this.date,
     required this.goals,
-    required this.token,
+    this.user,
   });
 
   AppState copyWith({
     DateTime? date,
     List<Goal>? goals,
-    String? token,
+    User? user,
   }) {
     return AppState(
       date: date ?? this.date,
       goals: goals ?? this.goals,
-      token: token,
+      user: user ?? this.user,
     );
   }
 }
