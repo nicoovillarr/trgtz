@@ -250,4 +250,7 @@ class _HomeScreenState extends BaseScreen<HomeScreen> {
 
   @override
   bool get addBackButton => false;
+
+  @override
+  String get title => 'Hi, ${store.state.user!.firstName}';
 }
