@@ -61,3 +61,14 @@ class DeleteGoalAction implements ReducerActionBase {
     );
   }
 }
+
+class SetUserAction implements ReducerActionBase {
+  final User user;
+
+  const SetUserAction({required this.user});
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(user: user);
+  }
+}
