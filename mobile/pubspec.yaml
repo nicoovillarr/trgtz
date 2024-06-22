@@ -46,6 +46,8 @@ dependencies:
   flutter_svg: ^2.0.10+1
   http: ^1.2.1
   loading_indicator: ^3.1.1
+  flutter_native_splash: ^2.4.0
+  encrypt: ^5.0.3
 
 dev_dependencies:
   flutter_test:
@@ -98,3 +100,9 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+flutter_native_splash:
+  android: true
+  ios: true
+
+  color: "#00242C"
