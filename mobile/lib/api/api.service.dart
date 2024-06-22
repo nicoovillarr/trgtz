@@ -91,7 +91,7 @@ class ApiBaseService {
 
 class ApiResponse {
   final bool status;
-  final Map<String, dynamic> content;
+  final dynamic content;
 
   ApiResponse({required this.content, this.status = true});
 

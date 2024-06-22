@@ -18,6 +18,11 @@ void main() async {
     goals: await LocalStorage.getSavedGoals(),
   );
 
+  LocalStorage.saveToken(null);
+  LocalStorage.saveEmail(null);
+  LocalStorage.savePass(null);
+  // LocalStorage.saveGoals([]);
+
   User? user = await checkCredentials();
   if (user != null) {
     initialState = initialState.copyWith(user: user);
