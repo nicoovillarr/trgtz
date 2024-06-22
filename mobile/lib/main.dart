@@ -9,9 +9,11 @@ import 'package:trgtz/store/local_storage.dart';
 import 'package:redux/redux.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  AppState initialState =
-      AppState(date: DateTime.now(), goals: await LocalStorage.getSavedGoals());
+  AppState initialState = AppState(
+    date: DateTime.now(),
+    goals: await LocalStorage.getSavedGoals(),
+    token: null,
+  );
   runApp(MyApp(
     initialState: initialState,
   ));
