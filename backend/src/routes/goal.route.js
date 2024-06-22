@@ -4,7 +4,7 @@ const app = express()
 const goalController = require('../controllers/goal.controller')
 const protect = require('../middlewares/auth.middleware')
 
-app.post('/', protect, goalController.createGoal)
+app.post('/', protect, goalController.createMultipleGoals)
 app.get('/', protect, goalController.getGoals)
 app.get('/:id', protect, goalController.getSingleGoal)
 

@@ -1,20 +1,14 @@
 const goalService = require('../services/goal.service')
 
-const createGoal = async (req, res) => {
+const createMultipleGoals = async (req, res) => {
   try {
     const { _id: user } = req.user
-    const { title, description, year, createdOn } = req.body
-    const goal = await goalService.createGoal(
-      user,
-      title,
-      description,
-      year,
-      createdOn
-    )
-    res.status(201).json(goal)
+    const goals = req.body
+    const createdGoals = await goalService.createMultipleGoals(user, goals)
+    res.status(201).json(createdGoals)
   } catch (error) {
     res.status(500).json(error)
-    console.error('Error creating goal: ', error)
+    console.error('Error creating goals: ', error)
   }
 }
 
@@ -44,7 +38,7 @@ const getSingleGoal = async (req, res) => {
 }
 
 module.exports = {
-  createGoal,
+  createMultipleGoals,
   getGoals,
   getSingleGoal
 }

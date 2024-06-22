@@ -173,7 +173,9 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
           final firstName = _firstNameKey.currentState!.value;
           final email = _emailKey.currentState!.value;
           final password = _passwordKey.currentState!.value;
-          ModuleService().signup(firstName, email, password).then((result) {
+          ModuleService()
+              .signup(firstName, email, password)
+              .then((result) async {
             setIsLoading(false);
             String? token = result.content.containsKey('token')
                 ? result.content['token'].toString()
@@ -186,13 +188,54 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
               store
                   .dispatch(SetUserAction(user: User.fromJson(result.content)));
 
-              Navigator.of(context).popAndPushNamed('/home');
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Signed up'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
+              List<Goal> goals = await LocalStorage.getSavedGoals();
+              String? error;
+              if (goals.isNotEmpty) {
+                final saveGoalsResponse =
+                    await ModuleService().saveGoals(goals);
+                if (!saveGoalsResponse.status) {
+                  String? msg = result.content.containsKey('message')
+                      ? result.content['message'].toString()
+                      : null;
+                  error = 'Error saving goals: ${msg ?? 'Unknown error'}';
+                } else {
+                  LocalStorage.saveGoals([]);
+                }
+              }
+
+              if (mounted) {
+                if (error != null) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Error'),
+                      content: Text(error!),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).popAndPushNamed('/home');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Signed up'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  Navigator.of(context).popAndPushNamed('/home');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Signed up'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
+              }
             } else {
               String? msg = result.content.containsKey('message')
                   ? result.content['message'].toString()
