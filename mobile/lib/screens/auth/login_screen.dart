@@ -6,7 +6,7 @@ import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/index.dart';
 import 'package:trgtz/screens/auth/services/index.dart';
 import 'package:trgtz/screens/auth/widgets/index.dart';
-import 'package:trgtz/store/actions.dart';
+import 'package:trgtz/store/local_storage.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -204,7 +204,9 @@ class _LoginScreenState extends BaseScreen<LoginScreen> {
                 ? result.content['token'].toString()
                 : null;
             if (result.status && token != null) {
-              store.dispatch(SetTokenAction(token: token));
+              LocalStorage.saveToken(token);
+              LocalStorage.saveEmail(email);
+              LocalStorage.savePass(password);
               Navigator.of(context).popAndPushNamed('/home');
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(

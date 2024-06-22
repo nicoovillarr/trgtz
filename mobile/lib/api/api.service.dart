@@ -2,10 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:trgtz/constants.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:trgtz/store/local_storage.dart';
 
 typedef ApiCall = Future<http.Response> Function(Uri endpoint, dynamic params);
 
@@ -79,11 +80,12 @@ class ApiBaseService {
       );
 
   Future<Map<String, String>> _buildHeaders() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ${prefs.getString('token')}'
-    };
+    Map<String, String> headers = {'Content-Type': 'application/json'};
+    String? token = await LocalStorage.getToken();
+    if (token != null) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+    return headers;
   }
 }
 
