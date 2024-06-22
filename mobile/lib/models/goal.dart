@@ -1,4 +1,4 @@
-import 'package:mobile/models/index.dart';
+import 'package:trgtz/models/index.dart';
 
 class Goal extends ModelBase {
   String goalID;

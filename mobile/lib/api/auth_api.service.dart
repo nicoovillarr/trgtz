@@ -1,4 +1,4 @@
-import 'package:mobile/api/api.service.dart';
+import 'package:trgtz/api/api.service.dart';
 
 class AuthApiService extends ApiBaseService {
   AuthApiService() {

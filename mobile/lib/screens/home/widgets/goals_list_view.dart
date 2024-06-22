@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:mobile/models/index.dart';
-import 'package:mobile/store/actions.dart';
-import 'package:mobile/store/app_state.dart';
-import 'package:mobile/store/local_storage.dart';
-import 'package:mobile/utils.dart';
+import 'package:trgtz/models/index.dart';
+import 'package:trgtz/store/actions.dart';
+import 'package:trgtz/store/app_state.dart';
+import 'package:trgtz/store/local_storage.dart';
+import 'package:trgtz/utils.dart';
 import 'package:redux/redux.dart';
 
 class GoalsListView extends StatefulWidget {

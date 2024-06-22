@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/core/widgets/index.dart';
+import 'package:trgtz/core/widgets/index.dart';
 
 final _formKey = GlobalKey<FormState>();
 final _textEditKey = GlobalKey<TextEditState>();

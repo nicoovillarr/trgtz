@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:mobile/constants.dart';
-import 'package:mobile/screens/auth/index.dart';
-import 'package:mobile/screens/goal/index.dart';
-import 'package:mobile/screens/index.dart';
-import 'package:mobile/store/index.dart';
-import 'package:mobile/store/local_storage.dart';
+import 'package:trgtz/constants.dart';
+import 'package:trgtz/screens/auth/index.dart';
+import 'package:trgtz/screens/goal/index.dart';
+import 'package:trgtz/screens/index.dart';
+import 'package:trgtz/store/index.dart';
+import 'package:trgtz/store/local_storage.dart';
 import 'package:redux/redux.dart';
 
 void main() async {

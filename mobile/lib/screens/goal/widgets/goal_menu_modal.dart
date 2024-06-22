@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:mobile/models/goal.dart';
-import 'package:mobile/store/index.dart';
-import 'package:mobile/store/local_storage.dart';
+import 'package:trgtz/models/goal.dart';
+import 'package:trgtz/store/index.dart';
+import 'package:trgtz/store/local_storage.dart';
 import 'package:redux/redux.dart';
 
 class GoalMenuAction {
