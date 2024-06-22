@@ -9,7 +9,9 @@ const signup = async (firstName, email, password) => {
     password
   })
   await user.save()
-  return user
+  const json = user.toJSON()
+  delete json.goals
+  return json
 }
 
 const login = async (email, password) => {
@@ -17,7 +19,9 @@ const login = async (email, password) => {
   if (user == null) return null
   const validPassword = await bcrypt.compare(password, user.password)
   if (!validPassword) return null
-  return user
+  const json = user.toJSON()
+  delete json.goals
+  return json
 }
 
 const hashPassword = async (password) => {

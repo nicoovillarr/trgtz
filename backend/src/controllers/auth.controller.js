@@ -18,7 +18,7 @@ const signup = async (req, res) => {
     )
 
     res.status(201).json({
-      ...user.toJSON(),
+      ...user,
       token: authService.createJWT(user._id)
     })
   } catch (error) {
@@ -38,7 +38,7 @@ const login = async (req, res) => {
     if (user == null) res.status(400).json({ message: 'Invalid credentials' })
     else {
       res.status(200).json({
-        ...user.toJSON(),
+        ...user,
         token: authService.createJWT(user._id)
       })
     }
