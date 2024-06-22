@@ -3,7 +3,7 @@ const app = express()
 
 app.get('/', (req, res) => {
   res.json({
-    message: 'Welcome to Trgtz'
+    message: 'Welcome to Trgtz!'
   })
 })
 app.use('/goals', require('./goal.route'))
