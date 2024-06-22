@@ -11,8 +11,11 @@ const protect = async (req, res, next) => {
       token.substring(token.indexOf(' ') + 1),
       process.env.JWT_SECRET
     )
-    const user = await User.findById(decoded.id)
+    let user = await User.findById(decoded.id)
     if (!user) return res.status(401).json({ message: 'Unauthorized' })
+
+    user = user.toJSON()
+    delete user.goals
 
     req.user = user
     next()
