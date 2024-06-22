@@ -1,4 +1,4 @@
-import 'package:mobile/store/index.dart';
+import 'package:trgtz/store/index.dart';
 
 AppState reduce(AppState currentState, dynamic action) {
   if (action is ReducerActionBase) {

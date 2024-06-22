@@ -1,5 +1,5 @@
-import 'package:mobile/models/index.dart';
-import 'package:mobile/store/index.dart';
+import 'package:trgtz/models/index.dart';
+import 'package:trgtz/store/index.dart';
 
 abstract class ReducerActionBase {
   execute(AppState currentState);

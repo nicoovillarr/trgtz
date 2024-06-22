@@ -1,5 +1,5 @@
 import 'package:intl/intl.dart';
-import 'package:mobile/models/goal.dart';
+import 'package:trgtz/models/goal.dart';
 
 class Utils {
   static String dateToFullString(DateTime date) {

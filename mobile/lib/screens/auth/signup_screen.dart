@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile/constants.dart';
-import 'package:mobile/core/base/index.dart';
-import 'package:mobile/core/index.dart';
-import 'package:mobile/screens/auth/services/index.dart';
-import 'package:mobile/screens/auth/widgets/index.dart';
+import 'package:trgtz/constants.dart';
+import 'package:trgtz/core/base/index.dart';
+import 'package:trgtz/core/index.dart';
+import 'package:trgtz/screens/auth/services/index.dart';
+import 'package:trgtz/screens/auth/widgets/index.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});

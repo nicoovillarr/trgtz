@@ -2,8 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:mobile/constants.dart';
-import 'package:mobile/store/index.dart';
+import 'package:trgtz/constants.dart';
+import 'package:trgtz/store/index.dart';
 import 'package:redux/redux.dart';
 
 abstract class BaseScreen<T extends StatefulWidget> extends State<T> {

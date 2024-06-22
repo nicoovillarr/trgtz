@@ -2,7 +2,7 @@
 
 import 'dart:convert';
 
-import 'package:mobile/models/index.dart';
+import 'package:trgtz/models/index.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorage {

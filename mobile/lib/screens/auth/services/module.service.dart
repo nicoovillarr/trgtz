@@ -1,4 +1,4 @@
-import 'package:mobile/api/index.dart';
+import 'package:trgtz/api/index.dart';
 
 class ModuleService {
   final AuthApiService _authApiService = AuthApiService();
