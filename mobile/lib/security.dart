@@ -1,4 +1,5 @@
 import 'package:encrypt/encrypt.dart';
+import 'package:trgtz/api/index.dart';
 import 'package:trgtz/store/local_storage.dart';
 
 class Security {
@@ -26,5 +27,38 @@ class Security {
     await LocalStorage.saveEmail(null);
     await LocalStorage.savePass(null);
     await LocalStorage.saveToken(null);
+  }
+
+  static Future<bool> internalLogIn() async {
+    final authApiService = AuthApiService();
+    String? token = await LocalStorage.getToken();
+    if (token != null) {
+      final tickResponse = await authApiService.tick(token);
+      if (tickResponse.status) {
+        return true;
+      } else {
+        LocalStorage.saveToken(null);
+        String? email, pass;
+        try {
+          email = await LocalStorage.getEmail();
+          pass = await LocalStorage.getPass();
+        } catch (_) {}
+        if (email != null && pass != null) {
+          final loginResponse = await authApiService.login(email, pass);
+          String? token = loginResponse.content.containsKey('token')
+              ? loginResponse.content['token'].toString()
+              : null;
+          if (loginResponse.status && token != null) {
+            LocalStorage.saveToken(token);
+            return true;
+          } else {
+            LocalStorage.saveEmail(null);
+            LocalStorage.savePass(null);
+          }
+        }
+      }
+    }
+
+    return false;
   }
 }

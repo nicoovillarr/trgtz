@@ -7,19 +7,18 @@ import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/auth/index.dart';
 import 'package:trgtz/screens/goal/index.dart';
 import 'package:trgtz/screens/index.dart';
+import 'package:trgtz/security.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:redux/redux.dart';
-import 'package:trgtz/store/local_storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppState initialState = AppState(
     date: DateTime.now(),
-    goals: await LocalStorage.getSavedGoals(),
   );
 
   bool loggedIn = false;
-  if (await checkCredentials()) {
+  if (await Security.internalLogIn()) {
     Map<String, dynamic> user = await getUser();
     initialState = initialState.copyWith(
       user: user['user'],
@@ -34,39 +33,6 @@ void main() async {
     initialState: initialState,
     initialRoute: loggedIn ? '/home' : '/login',
   ));
-}
-
-Future<bool> checkCredentials() async {
-  final authApiService = AuthApiService();
-  String? token = await LocalStorage.getToken();
-  if (token != null) {
-    final tickResponse = await authApiService.tick(token);
-    if (tickResponse.status) {
-      return true;
-    } else {
-      LocalStorage.saveToken(null);
-      String? email, pass;
-      try {
-        email = await LocalStorage.getEmail();
-        pass = await LocalStorage.getPass();
-      } catch (_) {}
-      if (email != null && pass != null) {
-        final loginResponse = await authApiService.login(email, pass);
-        String? token = loginResponse.content.containsKey('token')
-            ? loginResponse.content['token'].toString()
-            : null;
-        if (loginResponse.status && token != null) {
-          LocalStorage.saveToken(token);
-          return true;
-        } else {
-          LocalStorage.saveEmail(null);
-          LocalStorage.savePass(null);
-        }
-      }
-    }
-  }
-
-  return false;
 }
 
 Future<Map<String, dynamic>> getUser() async {

@@ -9,7 +9,7 @@ class AppState {
 
   const AppState({
     required this.date,
-    required this.goals,
+    this.goals = const [],
     this.user,
   });
 
