@@ -1,7 +1,7 @@
 import 'package:trgtz/models/index.dart';
 
 class Goal extends ModelBase {
-  String goalID;
+  String id;
   String title;
   String? description;
   int year;
@@ -10,7 +10,7 @@ class Goal extends ModelBase {
   DateTime? deletedOn;
 
   Goal({
-    required this.goalID,
+    required this.id,
     required this.title,
     required this.year,
     required this.createdOn,
@@ -21,7 +21,7 @@ class Goal extends ModelBase {
 
   factory Goal.fromJson(Map<String, dynamic> json) {
     return Goal(
-      goalID: json['goalID'],
+      id: json['_id'],
       title: json['title'],
       description: json['description'],
       year: json['year'],
@@ -32,7 +32,7 @@ class Goal extends ModelBase {
   }
 
   Map<String, dynamic> toJson() => {
-        'goalID': goalID,
+        '_id': id,
         'title': title,
         'description': description,
         'year': year,

@@ -3,9 +3,9 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
+import 'package:trgtz/screens/home/services/index.dart';
 import 'package:trgtz/screens/home/widgets/index.dart';
 import 'package:trgtz/store/index.dart';
-import 'package:trgtz/store/local_storage.dart';
 import 'package:trgtz/utils.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'package:redux/redux.dart';
@@ -221,26 +221,27 @@ class _HomeScreenState extends BaseScreen<HomeScreen> {
                 if (s != null && s.isNotEmpty) {
                   Store<AppState> store = StoreProvider.of<AppState>(context);
                   final newGoal = Goal(
-                    goalID: const Uuid().v4(),
+                    id: const Uuid().v4(),
                     title: s,
                     year: store.state.date.year,
                     createdOn: DateTime.now(),
                     deletedOn: null,
                   );
 
-                  store.dispatch(CreateGoalAction(goal: newGoal));
-                  LocalStorage.saveGoals(store.state.goals);
+                  ModuleService.createGoal(newGoal).then((goal) {
+                    store.dispatch(CreateGoalAction(goal: goal));
 
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: const Text('New goal created!'),
-                    duration: const Duration(seconds: 2),
-                    action: SnackBarAction(
-                        label: 'View',
-                        onPressed: () {
-                          Navigator.of(context)
-                              .pushNamed('/goal', arguments: newGoal.goalID);
-                        }),
-                  ));
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: const Text('New goal created!'),
+                      duration: const Duration(seconds: 2),
+                      action: SnackBarAction(
+                          label: 'View',
+                          onPressed: () {
+                            Navigator.of(context)
+                                .pushNamed('/goal', arguments: newGoal.id);
+                          }),
+                    ));
+                  });
                 }
               },
             ),

@@ -22,8 +22,7 @@ class GoalMenuModal extends StatelessWidget {
           ..title = 'Edit'
           ..onTap = () {
             _pop(context);
-            Navigator.of(context)
-                .pushNamed('/goal/edit', arguments: goal.goalID);
+            Navigator.of(context).pushNamed('/goal/edit', arguments: goal.id);
           },
         GoalMenuAction()
           ..icon = Icons.delete

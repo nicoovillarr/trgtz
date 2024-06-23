@@ -6,6 +6,7 @@ import 'package:trgtz/core/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/auth/services/index.dart';
 import 'package:trgtz/screens/auth/widgets/index.dart';
+import 'package:trgtz/security.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:trgtz/store/local_storage.dart';
 
@@ -175,75 +176,44 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
           final password = _passwordKey.currentState!.value;
           ModuleService()
               .signup(firstName, email, password)
-              .then((result) async {
+              .then((token) async {
             setIsLoading(false);
-            String? token = result.content.containsKey('token')
-                ? result.content['token'].toString()
-                : null;
-            if (result.status && token != null) {
-              LocalStorage.saveToken(token);
-              LocalStorage.saveEmail(email);
-              LocalStorage.savePass(password);
+            await Security.saveCredentials(email, password, token);
 
-              store
-                  .dispatch(SetUserAction(user: User.fromJson(result.content)));
+            Map<String, dynamic> me = await ModuleService().getMe();
+            store.dispatch(SetUserAction(user: me['user']));
 
-              List<Goal> goals = await LocalStorage.getSavedGoals();
-              String? error;
-              if (goals.isNotEmpty) {
-                final saveGoalsResponse =
-                    await ModuleService().saveGoals(goals);
-                if (!saveGoalsResponse.status) {
-                  String? msg = result.content.containsKey('message')
-                      ? result.content['message'].toString()
-                      : null;
-                  error = 'Error saving goals: ${msg ?? 'Unknown error'}';
-                } else {
-                  LocalStorage.saveGoals([]);
-                }
-              }
+            List<Goal> goals = await LocalStorage.getSavedGoals();
+            goals = goals.where((g) => g.deletedOn == null).toList();
+            String? error;
+            if (goals.isNotEmpty) {
+              goals = await ModuleService().saveGoals(goals);
+              goals.addAll(me['goals'] as List<Goal>);
+              LocalStorage.saveGoals([]);
+            }
 
-              if (mounted) {
-                if (error != null) {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Error'),
-                      content: Text(error!),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).popAndPushNamed('/home');
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Signed up'),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          },
-                          child: const Text('OK'),
-                        ),
-                      ],
+            store.dispatch(SetGoalsAction(goals: goals));
+
+            if (mounted) {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Error'),
+                  content: Text(error!),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).popAndPushNamed('/home');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Signed up'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                      child: const Text('OK'),
                     ),
-                  );
-                } else {
-                  Navigator.of(context).popAndPushNamed('/home');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Signed up'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                }
-              }
-            } else {
-              String? msg = result.content.containsKey('message')
-                  ? result.content['message'].toString()
-                  : null;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(msg ?? 'Failed to sign up'),
-                  duration: const Duration(seconds: 2),
+                  ],
                 ),
               );
             }
