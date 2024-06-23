@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:trgtz/models/goal.dart';
+import 'package:trgtz/store/local_storage.dart';
 
 class Utils {
   static String dateToFullString(DateTime date) {
@@ -51,4 +52,6 @@ class Utils {
 
   static String sanitize(String input) =>
       input.trim().replaceAll(RegExp(r'\s+'), ' ');
+
+  static Future<bool> hasToken() async => await LocalStorage.getToken() != null;
 }
