@@ -8,4 +8,8 @@ class GoalsApiService extends ApiBaseService {
 
   Future<ApiResponse> createGoals(List<Goal> goals) async =>
       await post('/', goals.map((goal) => goal.toJson()).toList());
+
+  Future<ApiResponse> getGoals() async => await get('/');
+
+  Future<ApiResponse> getGoalById(String id) async => await get('/$id');
 }

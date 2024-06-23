@@ -2,7 +2,8 @@ const userService = require('../services/user.service')
 
 const getMe = async (req, res) => {
   try {
-    res.status(200).json(req.user)
+    const user = await userService.getUserInfo(req.user)
+    res.status(200).json(user)
   } catch (error) {
     res.status(500).json(error)
     console.error('Error getting users: ', error)

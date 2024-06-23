@@ -18,30 +18,31 @@ void main() async {
     goals: await LocalStorage.getSavedGoals(),
   );
 
-  LocalStorage.saveToken(null);
-  LocalStorage.saveEmail(null);
-  LocalStorage.savePass(null);
-  // LocalStorage.saveGoals([]);
-
-  User? user = await checkCredentials();
-  if (user != null) {
-    initialState = initialState.copyWith(user: user);
+  bool loggedIn = false;
+  if (await checkCredentials()) {
+    Map<String, dynamic> user = await getUser();
+    initialState = initialState.copyWith(
+      user: user['user'],
+      goals: user['goals'],
+    );
+    loggedIn = true;
   }
+
   FlutterNativeSplash.remove();
 
   runApp(MyApp(
     initialState: initialState,
-    initialRoute: user != null ? '/home' : '/login',
+    initialRoute: loggedIn ? '/home' : '/login',
   ));
 }
 
-Future<User?> checkCredentials() async {
+Future<bool> checkCredentials() async {
   final authApiService = AuthApiService();
   String? token = await LocalStorage.getToken();
   if (token != null) {
     final tickResponse = await authApiService.tick(token);
     if (tickResponse.status) {
-      return User.fromJson(tickResponse.content);
+      return true;
     } else {
       LocalStorage.saveToken(null);
       String? email, pass;
@@ -56,7 +57,7 @@ Future<User?> checkCredentials() async {
             : null;
         if (loginResponse.status && token != null) {
           LocalStorage.saveToken(token);
-          return User.fromJson(loginResponse.content);
+          return true;
         } else {
           LocalStorage.saveEmail(null);
           LocalStorage.savePass(null);
@@ -65,7 +66,17 @@ Future<User?> checkCredentials() async {
     }
   }
 
-  return null;
+  return false;
+}
+
+Future<Map<String, dynamic>> getUser() async {
+  Map<String, dynamic> result = {};
+  final meResponse = await UserApiService().getMe();
+  result['user'] = User.fromJson(meResponse.content);
+  result['goals'] = (meResponse.content['goals'] as List)
+      .map((e) => Goal.fromJson(e))
+      .toList();
+  return result;
 }
 
 class MyApp extends StatelessWidget {

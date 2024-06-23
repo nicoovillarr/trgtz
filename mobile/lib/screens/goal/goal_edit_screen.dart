@@ -30,7 +30,7 @@ class _GoalEditScreenState extends State<GoalEditScreen> {
       final store = StoreProvider.of<AppState>(context);
       String goalId = ModalRoute.of(context)!.settings.arguments as String;
       _originalGoal =
-          store.state.goals.firstWhere((element) => element.goalID == goalId);
+          store.state.goals.firstWhere((element) => element.id == goalId);
     });
   }
 
@@ -39,7 +39,7 @@ class _GoalEditScreenState extends State<GoalEditScreen> {
     String goalId = ModalRoute.of(context)!.settings.arguments as String;
     return StoreConnector<AppState, Goal>(
       converter: (store) =>
-          store.state.goals.firstWhere((element) => element.goalID == goalId),
+          store.state.goals.firstWhere((element) => element.id == goalId),
       builder: (ctx, goal) => Scaffold(
         appBar: AppBar(
           leading: IconButton(

@@ -30,7 +30,7 @@ class _GoalsListViewState extends State<GoalsListView> {
       itemCount: goals.length,
       itemBuilder: (ctx, idx) => ListTile(
         onTap: () =>
-            Navigator.of(ctx).pushNamed('/goal', arguments: goals[idx].goalID),
+            Navigator.of(ctx).pushNamed('/goal', arguments: goals[idx].id),
         onLongPress: () => _showDeleteDialog(ctx, goals[idx]),
         title: Padding(
           padding: const EdgeInsets.all(8.0),

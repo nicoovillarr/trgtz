@@ -36,7 +36,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
     Size size = MediaQuery.of(context).size;
     return StoreConnector<AppState, Goal?>(
       converter: (store) => store.state.goals
-          .where((element) => element.goalID == goalId)
+          .where((element) => element.id == goalId)
           .firstOrNull,
       builder: (ctx, goal) {
         if (goal == null) {
@@ -325,7 +325,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
 
   @override
   Goal? get entity => store.state.goals
-      .where((element) =>
-          element.goalID == ModalRoute.of(context)!.settings.arguments)
+      .where(
+          (element) => element.id == ModalRoute.of(context)!.settings.arguments)
       .firstOrNull;
 }
