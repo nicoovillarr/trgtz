@@ -2,7 +2,8 @@ const userService = require('../services/user.service')
 
 const getMe = async (req, res) => {
   try {
-    const user = await userService.getUserInfo(req.user)
+    const user = (await userService.getUserInfo(req.user)).toJSON()
+    delete user.sessions
     res.status(200).json(user)
   } catch (error) {
     res.status(500).json(error)

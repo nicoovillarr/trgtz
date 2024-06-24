@@ -2,9 +2,10 @@ const jwt = require('jsonwebtoken')
 const User = require('../models/user.model')
 
 const protect = async (req, res, next) => {
-  const token = req.header('Authorization')
-  if (!token || !token.startsWith('Bearer '))
+  const bearer = req.header('Authorization')
+  if (!bearer || !bearer.startsWith('Bearer '))
     return res.status(401).json({ message: 'Unauthorized' })
+  const token = bearer.substring(bearer.indexOf(' ') + 1)
 
   try {
     const decoded = jwt.verify(
