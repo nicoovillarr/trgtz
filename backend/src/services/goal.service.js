@@ -45,15 +45,11 @@ const updateGoal = async (id, user, data) => {
   return goal
 }
 
-const deleteGoal = async (id, user_id) => {
-  const goal = await Goal.findOne
+const deleteGoal = async (id, user) => {
+  const goal = await Goal.findOne({ _id: id, user })
   if (goal == null) return null
-  await goal.remove()
-
-  const user = await User.findOne({ _id: user_id })
-  user.goals = user.goals.filter((goal) => goal._id != id)
-  await user.save()
-
+  goal.deletedOn = new Date()
+  await goal.save()
   return goal
 }
 

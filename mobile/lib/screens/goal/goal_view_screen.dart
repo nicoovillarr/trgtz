@@ -270,7 +270,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
               ModuleService.deleteGoal(store, entity!).then(
                 (_) {
                   Navigator.of(context)
-                      .popUntil((route) => route.settings.name == '/');
+                      .popUntil((route) => route.settings.name == '/home');
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Goal deleted successfully!'),

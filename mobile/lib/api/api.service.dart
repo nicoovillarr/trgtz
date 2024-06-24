@@ -106,7 +106,6 @@ class ApiBaseService {
           Uri endpoint, dynamic params) async =>
       http.delete(
         endpoint,
-        body: jsonEncode(params),
         headers: await _buildHeaders(),
       );
 
