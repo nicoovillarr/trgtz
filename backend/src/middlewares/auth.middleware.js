@@ -11,7 +11,7 @@ const protect = async (req, res, next) => {
       token.substring(token.indexOf(' ') + 1),
       process.env.JWT_SECRET
     )
-    if (!(await User.exists({ _id: decoded.id })))
+    if (!(await User.exists({ _id: decoded.id, sessions: token })))
       return res.status(401).json({ message: 'Unauthorized' })
 
     req.user = decoded.id

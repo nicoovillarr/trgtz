@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:trgtz/api/index.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/auth/index.dart';
 import 'package:trgtz/screens/goal/index.dart';
 import 'package:trgtz/screens/index.dart';
 import 'package:trgtz/security.dart';
+import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:redux/redux.dart';
 
@@ -37,11 +37,10 @@ void main() async {
 
 Future<Map<String, dynamic>> getUser() async {
   Map<String, dynamic> result = {};
-  final meResponse = await UserApiService().getMe();
-  result['user'] = User.fromJson(meResponse.content);
-  result['goals'] = (meResponse.content['goals'] as List)
-      .map((e) => Goal.fromJson(e))
-      .toList();
+  final meResponse = await UserService().getMe();
+  result['user'] = User.fromJson(meResponse);
+  result['goals'] =
+      (meResponse['goals'] as List).map((e) => Goal.fromJson(e)).toList();
   return result;
 }
 

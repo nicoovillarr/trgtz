@@ -32,10 +32,13 @@ const hashPassword = async (password) => {
 const checkEmailInUse = async (email) =>
   (await User.findOne({ email })) !== null
 
-const createJWT = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '15m'
-  })
+const createJWT = async (id) => {
+  const token = jwt.sign({ id }, process.env.JWT_SECRET)
+  const user = await User.findById(id)
+  user.sessions.push(token)
+  await user.save()
+  return token
+}
 
 module.exports = {
   signup,
