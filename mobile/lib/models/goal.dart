@@ -37,7 +37,7 @@ class Goal extends ModelBase {
         'description': description,
         'year': year,
         'createdOn': createdOn.toString(),
-        'completedOn': completedOn.toString(),
-        'deletedOn': deletedOn.toString(),
+        'completedOn': completedOn?.toString(),
+        'deletedOn': deletedOn?.toString(),
       };
 }
