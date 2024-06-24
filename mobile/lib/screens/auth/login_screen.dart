@@ -7,8 +7,8 @@ import 'package:trgtz/core/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/auth/services/index.dart';
 import 'package:trgtz/screens/auth/widgets/index.dart';
+import 'package:trgtz/security.dart';
 import 'package:trgtz/store/index.dart';
-import 'package:trgtz/store/local_storage.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -200,34 +200,19 @@ class _LoginScreenState extends BaseScreen<LoginScreen> {
           setIsLoading(true);
           final email = _emailKey.currentState!.value;
           final password = _passwordKey.currentState!.value;
-          ModuleService().login(email, password).then((result) {
+          ModuleService().login(email, password).then((token) async {
             setIsLoading(false);
-            String? token = result.content.containsKey('token')
-                ? result.content['token'].toString()
-                : null;
-            if (result.status && token != null) {
-              LocalStorage.saveToken(token);
-              LocalStorage.saveEmail(email);
-              LocalStorage.savePass(password);
+            await Security.saveCredentials(email, password, token);
 
-              store
-                  .dispatch(SetUserAction(user: User.fromJson(result.content)));
-
+            final me = await ModuleService().getMe();
+            store.dispatch(SetUserAction(user: me['user'] as User));
+            if (mounted) {
+              store.dispatch(SetGoalsAction(goals: me['goals'] as List<Goal>));
               Navigator.of(context).popAndPushNamed('/home');
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Logged in'),
                   duration: Duration(seconds: 2),
-                ),
-              );
-            } else {
-              String? msg = result.content.containsKey('message')
-                  ? result.content['message'].toString()
-                  : null;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(msg ?? 'Failed to log in'),
-                  duration: const Duration(seconds: 2),
                 ),
               );
             }

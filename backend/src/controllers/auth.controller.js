@@ -18,7 +18,6 @@ const signup = async (req, res) => {
     )
 
     res.status(201).json({
-      ...user,
       token: authService.createJWT(user._id)
     })
   } catch (error) {
@@ -38,7 +37,6 @@ const login = async (req, res) => {
     if (user == null) res.status(400).json({ message: 'Invalid credentials' })
     else {
       res.status(200).json({
-        ...user,
         token: authService.createJWT(user._id)
       })
     }
@@ -50,7 +48,7 @@ const login = async (req, res) => {
 
 const tick = (req, res) => {
   try {
-    res.status(req.user === null ? 401 : 200).json(req.user)
+    res.status(req.user === null ? 401 : 201).end()
   } catch (error) {
     res.status(500).json(error)
     console.error('Error ticking goal: ', error)

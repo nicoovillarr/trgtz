@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trgtz/models/index.dart';
+import 'package:trgtz/screens/home/services/index.dart';
 import 'package:trgtz/store/actions.dart';
 import 'package:trgtz/store/app_state.dart';
-import 'package:trgtz/store/local_storage.dart';
 import 'package:trgtz/utils.dart';
 import 'package:redux/redux.dart';
 
@@ -30,7 +30,7 @@ class _GoalsListViewState extends State<GoalsListView> {
       itemCount: goals.length,
       itemBuilder: (ctx, idx) => ListTile(
         onTap: () =>
-            Navigator.of(ctx).pushNamed('/goal', arguments: goals[idx].goalID),
+            Navigator.of(ctx).pushNamed('/goal', arguments: goals[idx].id),
         onLongPress: () => _showDeleteDialog(ctx, goals[idx]),
         title: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -77,10 +77,16 @@ class _GoalsListViewState extends State<GoalsListView> {
           ),
           TextButton(
             onPressed: () {
-              Store<AppState> store = StoreProvider.of<AppState>(context);
-              store.dispatch(DeleteGoalAction(goal: goal));
-              LocalStorage.saveGoals(store.state.goals);
-              Navigator.of(context).pop();
+              ModuleService.deleteGoal(goal.id).then((_) {
+                Store<AppState> store = StoreProvider.of<AppState>(context);
+                store.dispatch(DeleteGoalAction(goal: goal));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Goal deleted successfully'),
+                  ),
+                );
+                Navigator.of(context).pop();
+              });
             },
             child: const Text(
               'Delete',

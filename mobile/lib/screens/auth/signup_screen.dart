@@ -3,11 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/index.dart';
-import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/auth/services/index.dart';
 import 'package:trgtz/screens/auth/widgets/index.dart';
+import 'package:trgtz/security.dart';
 import 'package:trgtz/store/index.dart';
-import 'package:trgtz/store/local_storage.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -173,34 +172,22 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
           final firstName = _firstNameKey.currentState!.value;
           final email = _emailKey.currentState!.value;
           final password = _passwordKey.currentState!.value;
-          ModuleService().signup(firstName, email, password).then((result) {
+          ModuleService()
+              .signup(firstName, email, password)
+              .then((token) async {
             setIsLoading(false);
-            String? token = result.content.containsKey('token')
-                ? result.content['token'].toString()
-                : null;
-            if (result.status && token != null) {
-              LocalStorage.saveToken(token);
-              LocalStorage.saveEmail(email);
-              LocalStorage.savePass(password);
+            await Security.saveCredentials(email, password, token);
 
-              store
-                  .dispatch(SetUserAction(user: User.fromJson(result.content)));
+            Map<String, dynamic> me = await ModuleService().getMe();
+            store.dispatch(SetUserAction(user: me['user']));
+            store.dispatch(SetGoalsAction(goals: me['goals']));
 
+            if (mounted) {
               Navigator.of(context).popAndPushNamed('/home');
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Signed up'),
                   duration: Duration(seconds: 2),
-                ),
-              );
-            } else {
-              String? msg = result.content.containsKey('message')
-                  ? result.content['message'].toString()
-                  : null;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(msg ?? 'Failed to sign up'),
-                  duration: const Duration(seconds: 2),
                 ),
               );
             }
