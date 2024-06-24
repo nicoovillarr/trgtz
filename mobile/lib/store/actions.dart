@@ -18,6 +18,17 @@ class AddDateYearAction implements ReducerActionBase {
   }
 }
 
+class SetGoalsAction implements ReducerActionBase {
+  final List<Goal> goals;
+
+  const SetGoalsAction({required this.goals});
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(goals: goals);
+  }
+}
+
 class CreateGoalAction implements ReducerActionBase {
   final Goal goal;
 
@@ -40,9 +51,7 @@ class UpdateGoalAction implements ReducerActionBase {
   @override
   execute(AppState currentState) {
     return currentState.copyWith(
-      goals: currentState.goals
-          .map((e) => e.goalID == goal.goalID ? goal : e)
-          .toList(),
+      goals: currentState.goals.map((e) => e.id == goal.id ? goal : e).toList(),
     );
   }
 }
@@ -55,9 +64,8 @@ class DeleteGoalAction implements ReducerActionBase {
   @override
   execute(AppState currentState) {
     return currentState.copyWith(
-      goals: currentState.goals
-          .where((element) => element.goalID != goal.goalID)
-          .toList(),
+      goals:
+          currentState.goals.where((element) => element.id != goal.id).toList(),
     );
   }
 }

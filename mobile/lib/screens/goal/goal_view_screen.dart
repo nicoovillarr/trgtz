@@ -3,11 +3,9 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/goal.dart';
-import 'package:trgtz/store/actions.dart';
+import 'package:trgtz/screens/goal/services/index.dart';
 import 'package:trgtz/store/app_state.dart';
-import 'package:trgtz/store/local_storage.dart';
 import 'package:trgtz/utils.dart';
-import 'package:redux/redux.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:confetti/confetti.dart';
 
@@ -36,7 +34,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
     Size size = MediaQuery.of(context).size;
     return StoreConnector<AppState, Goal?>(
       converter: (store) => store.state.goals
-          .where((element) => element.goalID == goalId)
+          .where((element) => element.id == goalId)
           .firstOrNull,
       builder: (ctx, goal) {
         if (goal == null) {
@@ -101,36 +99,28 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
   @override
   FloatingActionButton? get fab => entity != null && entity!.completedOn == null
       ? FloatingActionButton.extended(
-          onPressed: () {
-            Goal goal = entity!;
-            if (goal.completedOn == null) {
-              goal.completedOn = DateTime.now();
+          onPressed: () async {
+            ModuleService.completeGoal(store, entity!).then((_) {
+              setState(() {});
               _centerController.play();
-              Future.delayed(const Duration(milliseconds: 100), () {
+              Future.delayed(const Duration(milliseconds: 10), () {
                 _centerController.stop();
               });
-            }
-
-            store.dispatch(UpdateGoalAction(goal: goal));
-            LocalStorage.saveGoals(store.state.goals);
-
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('Goal completed!'),
-                duration: const Duration(seconds: 2),
-                action: SnackBarAction(
-                  label: 'Undo',
-                  onPressed: () {
-                    goal.completedOn = null;
-                    store.dispatch(UpdateGoalAction(goal: goal));
-                    LocalStorage.saveGoals(store.state.goals);
-                    setState(() {});
-                  },
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Goal completed!'),
+                  duration: const Duration(seconds: 2),
+                  action: SnackBarAction(
+                    label: 'Undo',
+                    onPressed: () {
+                      ModuleService.updateGoal(
+                              store, entity!..completedOn = null)
+                          .then((value) => setState(() {}));
+                    },
+                  ),
                 ),
-              ),
-            );
-
-            setState(() {});
+              );
+            });
           },
           label: const Text('Complete'),
         )
@@ -219,9 +209,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
     required String field,
     String? newValue = '',
   }) {
-    Store<AppState> store = StoreProvider.of<AppState>(context);
     Goal editedGoal = goal;
-    String? oldValue = goal.description;
     setter(String? v) {
       switch (field) {
         case 'title':
@@ -238,22 +226,13 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
 
     setter(newValue);
 
-    store.dispatch(UpdateGoalAction(goal: editedGoal));
-    LocalStorage.saveGoals(store.state.goals);
-
-    SnackBar snackBar = SnackBar(
-      content: Text('$field updated'),
-      duration: const Duration(seconds: 2),
-      action: SnackBarAction(
-        label: 'Undo',
-        onPressed: () {
-          setter(oldValue);
-          store.dispatch(UpdateGoalAction(goal: editedGoal));
-          LocalStorage.saveGoals(store.state.goals);
-        },
-      ),
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    ModuleService.updateGoal(store, goal).then((_) {
+      setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Goal updated successfully!'),
+        duration: Duration(seconds: 2),
+      ));
+    });
   }
 
   void _showDescriptionModal(Size size, Goal goal) => simpleBottomSheet(
@@ -288,26 +267,17 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(context)
-                  .popUntil((route) => route.settings.name == '/');
-              Store<AppState> store = StoreProvider.of<AppState>(context);
-              entity!.deletedOn = DateTime.now();
-              store.dispatch(UpdateGoalAction(goal: entity!));
-              LocalStorage.saveGoals(store.state.goals);
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Goal deleted!'),
-                  duration: const Duration(seconds: 2),
-                  action: SnackBarAction(
-                    label: 'Undo',
-                    onPressed: () {
-                      entity!.deletedOn = null;
-                      store.dispatch(UpdateGoalAction(goal: entity!));
-                      LocalStorage.saveGoals(store.state.goals);
-                    },
-                  ),
-                ),
+              ModuleService.deleteGoal(store, entity!).then(
+                (_) {
+                  Navigator.of(context)
+                      .popUntil((route) => route.settings.name == '/');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Goal deleted successfully!'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
               );
             },
             child: const Text(
@@ -325,7 +295,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
 
   @override
   Goal? get entity => store.state.goals
-      .where((element) =>
-          element.goalID == ModalRoute.of(context)!.settings.arguments)
+      .where(
+          (element) => element.id == ModalRoute.of(context)!.settings.arguments)
       .firstOrNull;
 }

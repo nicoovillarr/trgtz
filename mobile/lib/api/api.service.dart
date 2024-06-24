@@ -25,6 +25,16 @@ class ApiBaseService {
     return _call('POST', action, params);
   }
 
+  @protected
+  Future<ApiResponse> put(String action, dynamic params) async {
+    return _call('PUT', action, params);
+  }
+
+  @protected
+  Future<ApiResponse> delete(String action, dynamic params) async {
+    return _call('DELETE', action, params);
+  }
+
   Future<ApiResponse> _call(
       String method, String action, dynamic params) async {
     assert(controller != '');
@@ -41,6 +51,12 @@ class ApiBaseService {
         break;
       case 'POST':
         callMethod = _postApiCallImpl;
+        break;
+      case 'PUT':
+        callMethod = _putApiCallImpl;
+        break;
+      case 'DELETE':
+        callMethod = _deleteApiCallImpl;
         break;
       default:
         throw UnimplementedError();
@@ -79,6 +95,21 @@ class ApiBaseService {
         headers: await _buildHeaders(),
       );
 
+  Future<http.Response> _putApiCallImpl(Uri endpoint, dynamic params) async =>
+      http.put(
+        endpoint,
+        body: jsonEncode(params),
+        headers: await _buildHeaders(),
+      );
+
+  Future<http.Response> _deleteApiCallImpl(
+          Uri endpoint, dynamic params) async =>
+      http.delete(
+        endpoint,
+        body: jsonEncode(params),
+        headers: await _buildHeaders(),
+      );
+
   Future<Map<String, String>> _buildHeaders() async {
     Map<String, String> headers = {'Content-Type': 'application/json'};
     String? token = await LocalStorage.getToken();
@@ -91,7 +122,7 @@ class ApiBaseService {
 
 class ApiResponse {
   final bool status;
-  final Map<String, dynamic> content;
+  final dynamic content;
 
   ApiResponse({required this.content, this.status = true});
 
