@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trgtz/models/goal.dart';
+import 'package:trgtz/screens/goal/services/index.dart';
 import 'package:trgtz/store/index.dart';
-import 'package:trgtz/store/local_storage.dart';
-import 'package:redux/redux.dart';
 
 class GoalMenuAction {
   late IconData icon;
@@ -44,30 +43,10 @@ class GoalMenuModal extends StatelessWidget {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {
-                      Navigator.of(context)
-                          .popUntil((route) => route.settings.name == '/');
-                      Store<AppState> store =
-                          StoreProvider.of<AppState>(context);
-                      goal.deletedOn = DateTime.now();
-                      store.dispatch(UpdateGoalAction(goal: goal));
-                      LocalStorage.saveGoals(store.state.goals);
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Goal deleted!'),
-                          duration: const Duration(seconds: 2),
-                          action: SnackBarAction(
-                            label: 'Undo',
-                            onPressed: () {
-                              goal.deletedOn = null;
-                              store.dispatch(UpdateGoalAction(goal: goal));
-                              LocalStorage.saveGoals(store.state.goals);
-                            },
-                          ),
-                        ),
-                      );
-                    },
+                    onPressed: () => ModuleService.deleteGoal(
+                            StoreProvider.of<AppState>(context), goal)
+                        .then((_) => Navigator.of(context)
+                            .popUntil((route) => route.settings.name == '/')),
                     child: const Text(
                       'Delete',
                       style: TextStyle(color: Colors.redAccent),

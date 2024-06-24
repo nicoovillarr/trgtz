@@ -6,4 +6,6 @@ class ModuleService {
 
   static Future<Goal> createGoal(Goal goal) async =>
       (await _goalService.createGoal([goal])).first;
+
+  static Future deleteGoal(String id) async => _goalService.deleteGoal(id);
 }

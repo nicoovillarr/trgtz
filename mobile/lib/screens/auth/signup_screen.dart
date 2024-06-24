@@ -3,12 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/index.dart';
-import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/auth/services/index.dart';
 import 'package:trgtz/screens/auth/widgets/index.dart';
 import 'package:trgtz/security.dart';
 import 'package:trgtz/store/index.dart';
-import 'package:trgtz/store/local_storage.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -182,38 +180,14 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
 
             Map<String, dynamic> me = await ModuleService().getMe();
             store.dispatch(SetUserAction(user: me['user']));
-
-            List<Goal> goals = await LocalStorage.getSavedGoals();
-            goals = goals.where((g) => g.deletedOn == null).toList();
-            String? error;
-            if (goals.isNotEmpty) {
-              goals = await ModuleService().saveGoals(goals);
-              goals.addAll(me['goals'] as List<Goal>);
-              LocalStorage.saveGoals([]);
-            }
-
-            store.dispatch(SetGoalsAction(goals: goals));
+            store.dispatch(SetGoalsAction(goals: me['goals']));
 
             if (mounted) {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Error'),
-                  content: Text(error!),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).popAndPushNamed('/home');
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Signed up'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
-                      child: const Text('OK'),
-                    ),
-                  ],
+              Navigator.of(context).popAndPushNamed('/home');
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Signed up'),
+                  duration: Duration(seconds: 2),
                 ),
               );
             }
