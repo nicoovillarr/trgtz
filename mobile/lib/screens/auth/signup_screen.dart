@@ -191,6 +191,14 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
                 ),
               );
             }
+          }).catchError((error) {
+            setIsLoading(false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(error.toString()),
+                duration: const Duration(seconds: 2),
+              ),
+            );
           });
         },
         style: ElevatedButton.styleFrom(
