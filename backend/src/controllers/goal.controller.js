@@ -58,7 +58,7 @@ const deleteGoal = async (req, res) => {
     const goal = await goalService.deleteGoal(id, user)
     if (goal == null)
       res.status(400).json({ message: `Goal with id ${id} not found.` })
-    else res.status(200).json(goal)
+    else res.status(204).json(goal)
   } catch (error) {
     res.status(500).json(error)
     console.error(error)
