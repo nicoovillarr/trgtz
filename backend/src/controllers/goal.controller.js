@@ -5,7 +5,7 @@ const createMultipleGoals = async (req, res) => {
     const user = req.user
     const goals = req.body
     const createdGoals = await goalService.createMultipleGoals(user, goals)
-    res.status(200).json(createdGoals)
+    res.status(200).json(createdGoals.map((goal) => goal.toJSON()))
   } catch (error) {
     res.status(500).json(error)
     console.error('Error creating goals: ', error)
