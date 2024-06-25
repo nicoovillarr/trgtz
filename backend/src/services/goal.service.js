@@ -6,10 +6,8 @@ const getGoals = async (userId) => await Goal.find({ user: userId })
 const createMultipleGoals = async (user_id, goals) => {
   const createdGoals = []
   for (const goal of goals) {
-    const { title, description, year, createdOn } = goal
-    createdGoals.push(
-      await createGoal(user_id, title, description, year, createdOn)
-    )
+    const { title, description, year } = goal
+    createdGoals.push(await createGoal(user_id, title, description, year))
   }
 
   const user = await User.findOne({ _id: user_id })
@@ -18,13 +16,12 @@ const createMultipleGoals = async (user_id, goals) => {
   return createdGoals
 }
 
-const createGoal = async (user_id, title, description, year, createdOn) => {
+const createGoal = async (user_id, title, description, year) => {
   const goal = new Goal({
     user: user_id,
     title,
     description,
-    year,
-    createdOn
+    year
   })
   await goal.save()
   return goal
