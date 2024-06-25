@@ -20,7 +20,7 @@ const goalSchema = new mongoose.Schema({
     required: true
   },
   createdOn: {
-    type: String,
+    type: Date,
     required: true,
     default: new Date()
   },
