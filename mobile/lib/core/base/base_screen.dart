@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/store/index.dart';
@@ -13,50 +11,61 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   void initState() {
     super.initState();
     customInitState();
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => afterFirstBuild(context));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      store.onChange
+          .map((event) => event.isLoading ?? false)
+          .listen((isLoading) {
+        if (isLoading != _isLoading) {
+          setState(() => _isLoading = isLoading);
+        }
+      });
+      afterFirstBuild(context);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return Scaffold(
-      appBar: useAppBar
-          ? AppBar(
-              leading: addBackButton
-                  ? IconButton(
-                      icon: const Icon(Icons.arrow_back),
-                      onPressed: () => Navigator.of(context).pop(),
-                    )
-                  : null,
-              title: title != null ? Text(title!) : null,
-              elevation: 1,
-              actions: actions,
-            )
-          : null,
-      floatingActionButton: fab,
-      backgroundColor: backgroundColor,
-      body: Stack(
-        children: [
-          SizedBox(
-            height: size.height,
-            width: size.width,
-            child: body(context) ?? const SizedBox.shrink(),
-          ),
-          if (_isLoading)
-            Container(
+    return Stack(children: [
+      Scaffold(
+        appBar: useAppBar
+            ? AppBar(
+                leading: addBackButton
+                    ? IconButton(
+                        icon: const Icon(Icons.arrow_back),
+                        onPressed: () => Navigator.of(context).pop(),
+                      )
+                    : null,
+                title: title != null ? Text(title!) : null,
+                elevation: 1,
+                actions: actions,
+              )
+            : null,
+        floatingActionButton: fab,
+        backgroundColor: backgroundColor,
+        body: Stack(
+          children: [
+            SizedBox(
               height: size.height,
               width: size.width,
-              color: Colors.black.withOpacity(0.6),
-              child: const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                ),
-              ),
+              child: body(context) ?? const SizedBox.shrink(),
             ),
-        ],
+          ],
+        ),
       ),
-    );
+      if (_isLoading)
+        Container(
+          height: size.height,
+          width: size.width,
+          color: Colors.black.withOpacity(0.6),
+          child: const Center(
+            child: CircularProgressIndicator(
+              color: Colors.white,
+            ),
+          ),
+        ),
+    ]);
   }
 
   Widget? body(BuildContext context) => null;
@@ -137,7 +146,50 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     );
   }
 
-  void setIsLoading(bool isLoading) => setState(() => _isLoading = isLoading);
+  void setIsLoading(bool isLoading) {
+    store.dispatch(SetIsLoadingAction(isLoading: isLoading));
+  }
+
+  void showMessage(
+    String title,
+    String description, {
+    String positiveText = 'Ok',
+    Function()? onPositiveTap,
+    String? negativeText,
+    Function()? onNegativeTap,
+  }) =>
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(title),
+          content: Text(description),
+          actions: [
+            TextButton(
+              onPressed: () => onPositiveTap != null
+                  ? onPositiveTap()
+                  : Navigator.of(context).pop(),
+              child: Text(positiveText),
+            ),
+            if (negativeText != null)
+              TextButton(
+                onPressed: () => onNegativeTap != null
+                    ? onNegativeTap()
+                    : Navigator.of(context).pop(),
+                child: Text(negativeText),
+              ),
+          ],
+        ),
+      );
+
+  void showSnackBar(String message, {SnackBarAction? action}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+        action: action,
+      ),
+    );
+  }
 
   void dismissKeyboard() => FocusScope.of(context).unfocus();
 
