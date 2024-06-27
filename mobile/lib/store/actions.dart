@@ -80,3 +80,14 @@ class SetUserAction implements ReducerActionBase {
     return currentState.copyWith(user: user);
   }
 }
+
+class SetIsLoadingAction implements ReducerActionBase {
+  final bool isLoading;
+
+  const SetIsLoadingAction({required this.isLoading});
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(isLoading: isLoading);
+  }
+}
