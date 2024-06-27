@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/store/index.dart';
@@ -20,43 +18,33 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return Scaffold(
-      appBar: useAppBar
-          ? AppBar(
-              leading: addBackButton
-                  ? IconButton(
-                      icon: const Icon(Icons.arrow_back),
-                      onPressed: () => Navigator.of(context).pop(),
-                    )
-                  : null,
-              title: title != null ? Text(title!) : null,
-              elevation: 1,
-              actions: actions,
-            )
-          : null,
-      floatingActionButton: fab,
-      backgroundColor: backgroundColor,
-      body: Stack(
-        children: [
-          SizedBox(
-            height: size.height,
-            width: size.width,
-            child: body(context) ?? const SizedBox.shrink(),
-          ),
-          if (_isLoading)
-            Container(
+    return Stack(children: [
+      Scaffold(
+        appBar: useAppBar
+            ? AppBar(
+                leading: addBackButton
+                    ? IconButton(
+                        icon: const Icon(Icons.arrow_back),
+                        onPressed: () => Navigator.of(context).pop(),
+                      )
+                    : null,
+                title: title != null ? Text(title!) : null,
+                elevation: 1,
+                actions: actions,
+              )
+            : null,
+        floatingActionButton: fab,
+        backgroundColor: backgroundColor,
+        body: Stack(
+          children: [
+            SizedBox(
               height: size.height,
               width: size.width,
-              color: Colors.black.withOpacity(0.6),
-              child: const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                ),
-              ),
+              child: body(context) ?? const SizedBox.shrink(),
             ),
-        ],
+          ],
+        ),
       ),
-    );
   }
 
   Widget? body(BuildContext context) => null;
