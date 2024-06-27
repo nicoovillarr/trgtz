@@ -21,6 +21,16 @@ class GoalsListView extends StatefulWidget {
 class _GoalsListViewState extends State<GoalsListView> {
   List<Goal> goals = [];
 
+  late final Store<AppState> store;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      store = StoreProvider.of<AppState>(context);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     goals = Utils.sortGoals(widget.goals);
@@ -77,16 +87,10 @@ class _GoalsListViewState extends State<GoalsListView> {
           ),
           TextButton(
             onPressed: () {
-              ModuleService.deleteGoal(goal.id).then((_) {
-                Store<AppState> store = StoreProvider.of<AppState>(context);
-                store.dispatch(DeleteGoalAction(goal: goal));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Goal deleted successfully'),
-                  ),
-                );
+              if (Navigator.of(context).canPop()) {
                 Navigator.of(context).pop();
-              });
+              }
+              _deleteGoal(goal);
             },
             child: const Text(
               'Delete',
@@ -96,5 +100,19 @@ class _GoalsListViewState extends State<GoalsListView> {
         ],
       ),
     );
+  }
+
+  void _deleteGoal(Goal goal) {
+    store.dispatch(const SetIsLoadingAction(isLoading: true));
+    ModuleService.deleteGoal(goal.id).then((_) {
+      store.dispatch(const SetIsLoadingAction(isLoading: false));
+      store.dispatch(DeleteGoalAction(goal: goal));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Goal deleted successfully'),
+        ),
+      );
+      // Navigator.of(context).pop();
+    });
   }
 }
