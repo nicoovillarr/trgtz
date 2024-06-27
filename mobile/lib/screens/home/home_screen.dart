@@ -205,7 +205,14 @@ class _HomeScreenState extends BaseScreen<HomeScreen> {
           ));
 
   @override
-  FloatingActionButton get fab => FloatingActionButton(
+  bool get addBackButton => false;
+
+  @override
+  String get title => 'Hi, ${store.state.user!.firstName}';
+
+  @override
+  FloatingActionButton? get fab => FloatingActionButton(
+        heroTag: "add_goal",
         child: const Icon(Icons.add),
         onPressed: () {
           simpleBottomSheet(
@@ -228,19 +235,27 @@ class _HomeScreenState extends BaseScreen<HomeScreen> {
                     deletedOn: null,
                   );
 
+                  setIsLoading(true);
                   ModuleService.createGoal(newGoal).then((goal) {
+                    setIsLoading(false);
                     store.dispatch(CreateGoalAction(goal: goal));
 
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: const Text('New goal created!'),
-                      duration: const Duration(seconds: 2),
+                    showSnackBar(
+                      'New goal created!',
                       action: SnackBarAction(
-                          label: 'View',
-                          onPressed: () {
-                            Navigator.of(context)
-                                .pushNamed('/goal', arguments: newGoal.id);
-                          }),
-                    ));
+                        label: 'View',
+                        onPressed: () {
+                          Navigator.of(context)
+                              .pushNamed('/goal', arguments: goal.id);
+                        },
+                      ),
+                    );
+                  }).catchError((_) {
+                    setIsLoading(false);
+                    showMessage(
+                      'Error',
+                      'An error occurred while creating the goal.',
+                    );
                   });
                 }
               },
@@ -248,10 +263,4 @@ class _HomeScreenState extends BaseScreen<HomeScreen> {
           );
         },
       );
-
-  @override
-  bool get addBackButton => false;
-
-  @override
-  String get title => 'Hi, ${store.state.user!.firstName}';
 }

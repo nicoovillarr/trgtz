@@ -96,36 +96,6 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
           ),
       ];
 
-  @override
-  FloatingActionButton? get fab => entity != null && entity!.completedOn == null
-      ? FloatingActionButton.extended(
-          onPressed: () async {
-            ModuleService.completeGoal(store, entity!).then((_) {
-              setState(() {});
-              _centerController.play();
-              Future.delayed(const Duration(milliseconds: 10), () {
-                _centerController.stop();
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Goal completed!'),
-                  duration: const Duration(seconds: 2),
-                  action: SnackBarAction(
-                    label: 'Undo',
-                    onPressed: () {
-                      ModuleService.updateGoal(
-                              store, entity!..completedOn = null)
-                          .then((value) => setState(() {}));
-                    },
-                  ),
-                ),
-              );
-            });
-          },
-          label: const Text('Complete'),
-        )
-      : null;
-
   Widget _buildBody(Size size, Goal goal) => Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -226,12 +196,13 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
 
     setter(newValue);
 
+    setIsLoading(true);
     ModuleService.updateGoal(store, goal).then((_) {
-      setState(() {});
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Goal updated successfully!'),
-        duration: Duration(seconds: 2),
-      ));
+      setIsLoading(false);
+      showSnackBar('Goal updated successfully!');
+    }).catchError((_) {
+      setIsLoading(false);
+      showMessage('Error', 'An error occurred while updating the goal');
     });
   }
 
@@ -267,18 +238,10 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
           ),
           TextButton(
             onPressed: () {
-              ModuleService.deleteGoal(store, entity!).then(
-                (_) {
-                  Navigator.of(context)
-                      .popUntil((route) => route.settings.name == '/home');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Goal deleted successfully!'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                },
-              );
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              }
+              _deleteGoal();
             },
             child: const Text(
               'Delete',
@@ -290,6 +253,25 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
     );
   }
 
+  void _deleteGoal() {
+    setIsLoading(true);
+    ModuleService.deleteGoal(store, entity!).then(
+      (_) {
+        setIsLoading(false);
+        Navigator.of(context)
+            .popUntil((route) => route.settings.name == '/home');
+        showSnackBar('Goal deleted successfully!');
+      },
+    ).catchError((e) {
+      debugPrint(e.toString());
+      setIsLoading(false);
+      showMessage(
+        'Error',
+        'An error occurred while deleting the goal',
+      );
+    });
+  }
+
   @override
   String? get title => entity?.title;
 
@@ -298,4 +280,35 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
       .where(
           (element) => element.id == ModalRoute.of(context)!.settings.arguments)
       .firstOrNull;
+
+  @override
+  FloatingActionButton? get fab =>
+      entity != null && entity!.completedOn == null && entity!.deletedOn == null
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                ModuleService.completeGoal(store, entity!).then((_) {
+                  setState(() {});
+                  _centerController.play();
+                  Future.delayed(const Duration(milliseconds: 10), () {
+                    _centerController.stop();
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Goal completed!'),
+                      duration: const Duration(seconds: 2),
+                      action: SnackBarAction(
+                        label: 'Undo',
+                        onPressed: () {
+                          ModuleService.updateGoal(
+                                  store, entity!..completedOn = null)
+                              .then((value) => setState(() {}));
+                        },
+                      ),
+                    ),
+                  );
+                });
+              },
+              label: const Text('Complete'),
+            )
+          : null;
 }
