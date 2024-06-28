@@ -91,3 +91,14 @@ class SetIsLoadingAction implements ReducerActionBase {
     return currentState.copyWith(isLoading: isLoading);
   }
 }
+
+class SetCurrentEditorObjectAction implements ReducerActionBase {
+  final dynamic obj;
+
+  const SetCurrentEditorObjectAction({required this.obj});
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(currentEditorObject: obj);
+  }
+}

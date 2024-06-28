@@ -17,7 +17,7 @@ const signup = async (req, res) => {
       await authService.hashPassword(password)
     )
 
-    const token = await authService.createJWT(user)
+    const token = await authService.createJWT(user._id)
     res.status(201).json({
       token
     })
@@ -37,7 +37,7 @@ const login = async (req, res) => {
     const user = await authService.login(email, password)
     if (user == null) res.status(400).json({ message: 'Invalid credentials' })
     else {
-      const token = await authService.createJWT(user)
+      const token = await authService.createJWT(user._id)
       res.status(200).json({
         token
       })

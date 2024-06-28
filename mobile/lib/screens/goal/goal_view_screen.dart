@@ -1,12 +1,13 @@
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
-import 'package:trgtz/models/goal.dart';
+import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/goal/services/index.dart';
-import 'package:trgtz/store/app_state.dart';
+import 'package:trgtz/store/index.dart';
 import 'package:trgtz/utils.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:confetti/confetti.dart';
 
 import 'dart:math';
@@ -20,7 +21,6 @@ class GoalViewScreen extends StatefulWidget {
 
 class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
   late ConfettiController _centerController;
-  late Goal? goal;
 
   @override
   void customInitState() {
@@ -29,13 +29,17 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
   }
 
   @override
-  Widget body(BuildContext context) {
+  Future afterFirstBuild(BuildContext context) async {
     String goalId = ModalRoute.of(context)!.settings.arguments as String;
+    final goal = await ModuleService.getGoal(goalId);
+    store.dispatch(SetCurrentEditorObjectAction(obj: goal));
+  }
+
+  @override
+  Widget body(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return StoreConnector<AppState, Goal?>(
-      converter: (store) => store.state.goals
-          .where((element) => element.id == goalId)
-          .firstOrNull,
+      converter: (store) => store.state.currentEditorObject as Goal?,
       builder: (ctx, goal) {
         if (goal == null) {
           return const Center(
@@ -89,6 +93,11 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
                 ),
               ),
               MenuItem(
+                title: 'Milestones',
+                onTap: () => Navigator.of(context)
+                    .pushNamed('/goal/milestones', arguments: entity!.id),
+              ),
+              MenuItem(
                 title: 'Delete',
                 onTap: _onDeleteGoal,
               ),
@@ -98,81 +107,198 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
 
   Widget _buildBody(Size size, Goal goal) => Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
+        child: SeparatedColumn(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildDesc(size, goal),
-            _buildCreatedOn(goal),
+            if (goal.milestones.isEmpty) _buildNewMilestoneButton(goal),
+            if (goal.milestones.isNotEmpty) _buildMilestonesSummary(goal),
           ],
         ),
       );
 
-  Widget _buildDesc(Size size, Goal goal) => Padding(
-        padding: const EdgeInsets.only(bottom: 16.0),
-        child: Material(
-          color: const Color.fromARGB(0, 65, 37, 37),
-          child: InkWell(
-            onTap: () => _showDescriptionModal(size, goal),
-            borderRadius: BorderRadius.circular(4.0),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: goal.description != null
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          goal.description!,
-                          style: const TextStyle(
-                            color: Color(0xFF003E4B),
-                          ),
-                        ),
-                        const Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Icon(
-                              Icons.edit,
-                              color: Color(0xFF003E4B),
-                              size: 16.0,
-                            ),
-                          ],
-                        )
-                      ],
-                    )
-                  : const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Add description',
-                          style: TextStyle(
-                            color: Color(0xFF003E4B),
-                          ),
-                        ),
-                        SizedBox(width: 8.0),
-                        Icon(
-                          Icons.edit,
-                          color: Color(0xFF003E4B),
-                          size: 16.0,
-                        ),
-                      ],
+  Row _buildNewMilestoneButton(Goal goal) {
+    return Row(
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                child: DottedBorder(
+                  dashPattern: const [8],
+                  padding: const EdgeInsets.all(0),
+                  borderType: BorderType.RRect,
+                  radius: const Radius.circular(8),
+                  borderPadding: EdgeInsets.zero,
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                      // side: const BorderSide(color: mainColor),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      visualDensity: VisualDensity.compact,
                     ),
-            ),
+                    onPressed: () => Navigator.of(context).pushNamed(
+                      '/goal/milestones',
+                      arguments: goal.id,
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Center(
+                        child: Text(
+                          'Add milestone',
+                          style: TextStyle(color: mainColor),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDesc(Size size, Goal goal) => Material(
+        color: const Color.fromARGB(0, 65, 37, 37),
+        child: InkWell(
+          onTap: () => _showDescriptionModal(size, goal),
+          borderRadius: BorderRadius.circular(4.0),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: goal.description != null
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        goal.description!,
+                        style: const TextStyle(
+                          color: Color(0xFF003E4B),
+                        ),
+                      ),
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Icon(
+                            Icons.edit,
+                            color: Color(0xFF003E4B),
+                            size: 16.0,
+                          ),
+                        ],
+                      )
+                    ],
+                  )
+                : const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Add description',
+                        style: TextStyle(
+                          color: Color(0xFF003E4B),
+                        ),
+                      ),
+                      SizedBox(width: 8.0),
+                      Icon(
+                        Icons.edit,
+                        color: Color(0xFF003E4B),
+                        size: 16.0,
+                      ),
+                    ],
+                  ),
           ),
         ),
       );
 
-  Widget _buildCreatedOn(Goal goal) => Wrap(
-        direction: Axis.vertical,
-        children: [
-          const Text(
-            'Created:',
-            style: TextStyle(
-              color: Color(0xFF808080),
-              fontSize: 12,
+  Widget _buildMilestonesSummary(Goal goal) {
+    final int completed =
+        goal.milestones.where((m) => m.completedOn != null).length;
+    final int total = goal.milestones.length;
+    return Card(
+      elevation: 2.0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4.0),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SeparatedColumn(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Progress',
+              style: TextStyle(
+                fontSize: 12.0,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          Text(timeago.format(goal.createdOn)),
-        ],
-      );
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: ProgressBar(
+                    height: 6,
+                    percentage: completed / total,
+                    showPercentage: false,
+                    cornerRadius: 4,
+                  ),
+                ),
+                const SizedBox(
+                  width: 16,
+                ),
+                Text('$completed/$total'),
+              ],
+            ),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: goal.getMilestonesSublist().length,
+              itemBuilder: (context, index) {
+                final milestone = goal.getMilestonesSublist()[index];
+                return AnimatedOpacity(
+                  duration: const Duration(milliseconds: 300),
+                  opacity: milestone.completedOn != null ? 0.5 : 1.0,
+                  child: Stack(
+                    children: [
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4.0),
+                        ),
+                        title: Text(
+                          milestone.title,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        leading: Checkbox(
+                          value: milestone.completedOn != null,
+                          activeColor: mainColor,
+                          onChanged: (_) => _onMilestoneCompleted(milestone),
+                        ),
+                        onTap: () => _onMilestoneCompleted(milestone),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+            if (goal.getMilestonesSublist().length < goal.milestones.length)
+              TextButton(
+                style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                ),
+                onPressed: () => Navigator.of(context).pushNamed(
+                  '/goal/milestones',
+                  arguments: goal.id,
+                ),
+                child: const Text('View all milestones'),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 
   void _onSaveField({
     required Goal goal,
@@ -272,43 +398,77 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
     });
   }
 
+  void _onMilestoneCompleted(Milestone milestone) {
+    final int currentIndex = entity!.milestones.indexOf(milestone);
+    final bool hasIncompleteMilestones = entity!.milestones
+        .sublist(0, currentIndex)
+        .any((m) => m.completedOn == null);
+
+    final bool hasCompletedMilestones = entity!.milestones
+        .sublist(currentIndex + 1)
+        .any((m) => m.completedOn != null);
+
+    if (hasCompletedMilestones) {
+      showMessage(
+        'Wait!',
+        'Cannot uncomplete a milestone before the last completed milestone.',
+      );
+      return;
+    }
+
+    if (hasIncompleteMilestones) {
+      showMessage(
+        'Wait!',
+        'You must complete the previous milestones first.',
+      );
+      return;
+    }
+
+    milestone.completedOn =
+        milestone.completedOn == null ? DateTime.now() : null;
+    ModuleService.setMilestones(store, entity!, entity!.milestones)
+        .catchError((_) {
+      setIsLoading(false);
+      showSnackBar('There was an error updating the milestone');
+    });
+  }
+
   @override
   String? get title => entity?.title;
 
   @override
-  Goal? get entity => store.state.goals
-      .where(
-          (element) => element.id == ModalRoute.of(context)!.settings.arguments)
-      .firstOrNull;
+  Goal? get entity => store.state.currentEditorObject;
 
   @override
-  FloatingActionButton? get fab =>
-      entity != null && entity!.completedOn == null && entity!.deletedOn == null
-          ? FloatingActionButton.extended(
-              onPressed: () async {
-                ModuleService.completeGoal(store, entity!).then((_) {
-                  setState(() {});
-                  _centerController.play();
-                  Future.delayed(const Duration(milliseconds: 10), () {
-                    _centerController.stop();
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Goal completed!'),
-                      duration: const Duration(seconds: 2),
-                      action: SnackBarAction(
-                        label: 'Undo',
-                        onPressed: () {
-                          ModuleService.updateGoal(
-                                  store, entity!..completedOn = null)
-                              .then((value) => setState(() {}));
-                        },
-                      ),
-                    ),
-                  );
-                });
-              },
-              label: const Text('Complete'),
-            )
-          : null;
+  FloatingActionButton? get fab => entity != null &&
+          entity!.completedOn == null &&
+          entity!.deletedOn == null &&
+          entity!.milestones.isEmpty
+      ? FloatingActionButton.extended(
+          onPressed: () async {
+            ModuleService.completeGoal(store, entity!).then((_) {
+              setState(() {});
+              _centerController.play();
+              Future.delayed(const Duration(milliseconds: 10), () {
+                _centerController.stop();
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Goal completed!'),
+                  duration: const Duration(seconds: 2),
+                  action: SnackBarAction(
+                    label: 'Undo',
+                    onPressed: () {
+                      ModuleService.updateGoal(
+                              store, entity!..completedOn = null)
+                          .then((value) => setState(() {}));
+                    },
+                  ),
+                ),
+              );
+            });
+          },
+          label: const Text('Complete'),
+        )
+      : null;
 }

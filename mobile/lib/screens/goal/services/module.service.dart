@@ -1,10 +1,12 @@
 import 'package:redux/redux.dart';
-import 'package:trgtz/models/goal.dart';
+import 'package:trgtz/models/index.dart';
 import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
 
 class ModuleService {
   static final GoalService _goalService = GoalService();
+
+  static Future<Goal> getGoal(String id) => _goalService.getGoalById(id);
 
   static Future completeGoal(Store<AppState> store, Goal goal) {
     goal.completedOn = DateTime.now();
@@ -22,5 +24,11 @@ class ModuleService {
     return _goalService
         .deleteGoal(goal.id)
         .then((_) => store.dispatch(DeleteGoalAction(goal: goal)));
+  }
+
+  static Future setMilestones(
+      Store<AppState> store, Goal goal, List<Milestone> milestones) {
+    return _goalService.setMilestones(goal, milestones).then(
+        (value) => store.dispatch(SetCurrentEditorObjectAction(obj: value)));
   }
 }

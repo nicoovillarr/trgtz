@@ -16,13 +16,49 @@ const createMultipleGoals = async (user_id, goals) => {
   return createdGoals
 }
 
-const createGoal = async (user_id, title, description, year) => {
-  const goal = new Goal({
-    user: user_id,
-    title,
-    description,
-    year
-  })
+const setMilestones = async (id, user, milestones) => {
+  const goal = await Goal.findOne({ _id: id, user })
+  if (goal == null) return null
+
+  goal.milestones = []
+  for (const milestone of milestones) {
+    const { title, completedOn } = milestone
+    goal.milestones.push({ title, completedOn })
+  }
+  if (
+    goal.milestones.length > 0 &&
+    goal.milestones.filter((milestone) => !milestone.completedOn).length === 0
+  ) {
+    goal.completedOn = new Date()
+  }
+  await goal.save()
+  return goal
+}
+
+const deleteMilestone = async (id, user, milestoneId) => {
+  const goal = await Goal.findOne({ _id: id, user })
+  if (goal == null) return null
+
+  const milestone = goal.milestones.id(milestoneId)
+  if (milestone == null) return null
+
+  goal.milestones = goal.milestones.filter(
+    (milestone) => milestone._id != milestoneId
+  )
+  await goal.save()
+  return goal
+}
+
+const updateMilestone = async (id, user, milestoneId, data) => {
+  const goal = await Goal.findOne({ _id: id, user })
+  if (goal == null) return null
+
+  const milestone = goal.milestones.id(milestoneId)
+  if (milestone == null) return null
+
+  const { title, completedOn } = data
+  milestone.title = title
+  milestone.completedOn = completedOn
   await goal.save()
   return goal
 }
@@ -50,9 +86,22 @@ const deleteGoal = async (id, user) => {
   return goal
 }
 
+const createGoal = async (user_id, title, description, year) => {
+  const goal = new Goal({
+    user: user_id,
+    title,
+    description,
+    year
+  })
+  await goal.save()
+  return goal
+}
+
 module.exports = {
   createMultipleGoals,
-  createGoal,
+  setMilestones,
+  deleteMilestone,
+  updateMilestone,
   getGoals,
   getSingleGoal,
   updateGoal,

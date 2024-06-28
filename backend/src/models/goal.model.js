@@ -19,6 +19,24 @@ const goalSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  milestones: [
+    {
+      title: {
+        type: String,
+        required: true
+      },
+      createdOn: {
+        type: Date,
+        required: true,
+        default: new Date()
+      },
+      completedOn: {
+        type: Date,
+        required: false,
+        default: null
+      }
+    }
+  ],
   createdOn: {
     type: Date,
     required: true,
