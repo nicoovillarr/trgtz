@@ -428,6 +428,10 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
       if (entity!.milestones.every((element) => element.completedOn != null) &&
           entity!.completedOn != null) {
         showSnackBar('Goal completed!');
+        _centerController.play();
+        Future.delayed(const Duration(milliseconds: 10), () {
+          _centerController.stop();
+        });
       }
     }).catchError((_) {
       setIsLoading(false);
