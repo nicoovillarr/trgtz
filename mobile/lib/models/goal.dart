@@ -5,6 +5,7 @@ class Goal extends ModelBase {
   String title;
   String? description;
   int year;
+  List<Milestone> milestones;
   DateTime createdOn;
   DateTime? completedOn;
   DateTime? deletedOn;
@@ -14,17 +15,23 @@ class Goal extends ModelBase {
     required this.title,
     required this.year,
     required this.createdOn,
+    this.milestones = const [],
     this.description,
     this.completedOn,
     this.deletedOn,
   });
 
   factory Goal.fromJson(Map<String, dynamic> json) {
+    final milestones =
+        json.containsKey('milestones') ? json['milestones'] as List : [];
     return Goal(
       id: json['_id'],
       title: json['title'],
       description: json['description'],
       year: json['year'],
+      milestones: (milestones)
+          .map((milestone) => Milestone.fromJson(milestone))
+          .toList(),
       createdOn: ModelBase.tryParseDateTime('createdOn', json)!,
       completedOn: ModelBase.tryParseDateTime('completedOn', json),
       deletedOn: ModelBase.tryParseDateTime('deletedOn', json),
@@ -40,4 +47,27 @@ class Goal extends ModelBase {
         'completedOn': completedOn?.toString(),
         'deletedOn': deletedOn?.toString(),
       };
+
+  List<Milestone> getMilestonesSublist({int count = 3}) {
+    if (milestones.length <= count) {
+      return milestones;
+    }
+
+    int lastCompletedIndex =
+        milestones.lastIndexWhere((item) => item.completedOn != null);
+
+    if (lastCompletedIndex == -1) {
+      return milestones.take(count).toList();
+    }
+
+    int startIndex = lastCompletedIndex;
+    int endIndex = startIndex + count;
+
+    if (endIndex > milestones.length) {
+      startIndex -= endIndex - milestones.length;
+      endIndex = milestones.length;
+    }
+
+    return milestones.sublist(startIndex, endIndex);
+  }
 }

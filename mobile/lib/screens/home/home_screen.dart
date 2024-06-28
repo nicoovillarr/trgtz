@@ -19,6 +19,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends BaseScreen<HomeScreen> {
+  late DateTime endYear;
+
+  @override
+  void initState() {
+    endYear = DateTime(DateTime.now().year + 1).add(const Duration(days: -1));
+    super.initState();
+  }
+
   @override
   Widget body(BuildContext context) =>
       SingleChildScrollView(child: _buildBody());
@@ -49,7 +57,9 @@ class _HomeScreenState extends BaseScreen<HomeScreen> {
             ),
           ),
         ),
-        ProgressBar(date: date),
+        ProgressBar(
+            percentage:
+                _getDateMiliseconds(date) / _getDateMiliseconds(endYear)),
         const SizedBox(height: 16.0),
       ]);
 
@@ -203,6 +213,11 @@ class _HomeScreenState extends BaseScreen<HomeScreen> {
               ),
             ],
           ));
+
+  int _getDateMiliseconds(DateTime date) {
+    return date.millisecondsSinceEpoch -
+        DateTime(date.year).millisecondsSinceEpoch;
+  }
 
   @override
   bool get addBackButton => false;

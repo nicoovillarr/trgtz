@@ -33,7 +33,9 @@ const checkEmailInUse = async (email) =>
   (await User.findOne({ email })) !== null
 
 const createJWT = async (id) => {
-  const token = jwt.sign({ id }, process.env.JWT_SECRET)
+  const token = jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: '15d'
+  })
   const user = await User.findById(id)
   user.sessions.push(token)
   await user.save()

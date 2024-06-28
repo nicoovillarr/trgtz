@@ -12,6 +12,53 @@ const createMultipleGoals = async (req, res) => {
   }
 }
 
+const setMilestones = async (req, res) => {
+  try {
+    const user = req.user
+    const { id } = req.params
+    const goal = await goalService.setMilestones(id, user, req.body)
+    if (goal == null)
+      res.status(400).json({ message: `Goal with id ${id} not found.` })
+    else res.status(200).json(goal)
+  } catch (error) {
+    res.status(500).json(error)
+    console.error(error)
+  }
+}
+
+const deleteMilestone = async (req, res) => {
+  try {
+    const user = req.user
+    const { id, milestoneId } = req.params
+    const goal = await goalService.deleteMilestone(id, user, milestoneId)
+    if (goal == null)
+      res.status(400).json({ message: `Goal with id ${id} not found.` })
+    else res.status(200).json(goal)
+  } catch (error) {
+    res.status(500).json(error)
+    console.error(error)
+  }
+}
+
+const updateMilestone = async (req, res) => {
+  try {
+    const user = req.user
+    const { id, milestoneId } = req.params
+    const goal = await goalService.updateMilestone(
+      id,
+      user,
+      milestoneId,
+      req.body
+    )
+    if (goal == null)
+      res.status(400).json({ message: `Goal with id ${id} not found.` })
+    else res.status(200).json(goal)
+  } catch (error) {
+    res.status(500).json(error)
+    console.error(error)
+  }
+}
+
 const getGoals = async (req, res) => {
   try {
     const user = req.user
@@ -67,6 +114,9 @@ const deleteGoal = async (req, res) => {
 
 module.exports = {
   createMultipleGoals,
+  setMilestones,
+  deleteMilestone,
+  updateMilestone,
   getGoals,
   getSingleGoal,
   updateGoal,

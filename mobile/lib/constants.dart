@@ -7,4 +7,5 @@ const String loremIpsum =
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
 
 const Color mainColor = Color(0xFF00242C);
+const Color secondaryColor = Color(0xFFCDF6FF);
 const Color accentColor = Color(0xFFED5076);

@@ -1,5 +1,5 @@
 import 'package:trgtz/api/index.dart';
-import 'package:trgtz/models/goal.dart';
+import 'package:trgtz/models/index.dart';
 
 class GoalService {
   final GoalsApiService _goalsApiService = GoalsApiService();
@@ -41,6 +41,16 @@ class GoalService {
   Future updateGoal(Goal goal) async {
     ApiResponse response = await _goalsApiService.updateGoal(goal);
     if (!response.status) {
+      throw Exception(response.content['message']);
+    }
+  }
+
+  Future<Goal> setMilestones(Goal goal, List<Milestone> milestones) async {
+    ApiResponse response =
+        await _goalsApiService.setMilestones(goal, milestones);
+    if (response.status) {
+      return Goal.fromJson(response.content);
+    } else {
       throw Exception(response.content['message']);
     }
   }

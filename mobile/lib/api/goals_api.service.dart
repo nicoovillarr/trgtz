@@ -17,4 +17,9 @@ class GoalsApiService extends ApiBaseService {
 
   Future<ApiResponse> updateGoal(Goal goal) async =>
       await put(goal.id, goal.toJson());
+
+  Future<ApiResponse> setMilestones(
+          Goal goal, List<Milestone> milestones) async =>
+      await post('${goal.id}/milestones',
+          milestones.map((milestone) => milestone.toJson()).toList());
 }

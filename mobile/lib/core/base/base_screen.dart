@@ -1,11 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:redux/redux.dart';
 
+enum ScreenState { loading, ready, leaving }
+
 abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   bool _isLoading = false;
+  ScreenState _state = ScreenState.loading;
+
+  final Map<String, StreamSubscription> _subscriptions = {};
 
   @override
   void initState() {
@@ -13,15 +20,17 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     customInitState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      store.onChange
-          .map((event) => event.isLoading ?? false)
-          .listen((isLoading) {
-        if (isLoading != _isLoading) {
-          setState(() => _isLoading = isLoading);
-        }
+      initSubscriptions();
+      afterFirstBuild(context).then((_) {
+        setState(() => _state = ScreenState.ready);
       });
-      afterFirstBuild(context);
     });
+  }
+
+  @override
+  void dispose() {
+    _disposeSubscriptions();
+    super.dispose();
   }
 
   @override
@@ -29,7 +38,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     Size size = MediaQuery.of(context).size;
     return Stack(children: [
       Scaffold(
-        appBar: useAppBar
+        appBar: useAppBar && _state != ScreenState.loading
             ? AppBar(
                 leading: addBackButton
                     ? IconButton(
@@ -42,19 +51,20 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
                 actions: actions,
               )
             : null,
-        floatingActionButton: fab,
+        floatingActionButton: _state != ScreenState.loading ? fab : null,
         backgroundColor: backgroundColor,
         body: Stack(
           children: [
-            SizedBox(
-              height: size.height,
-              width: size.width,
-              child: body(context) ?? const SizedBox.shrink(),
-            ),
+            if (_state != ScreenState.loading)
+              SizedBox(
+                height: size.height,
+                width: size.width,
+                child: body(context) ?? const SizedBox.shrink(),
+              ),
           ],
         ),
       ),
-      if (_isLoading)
+      if (_isLoading || _state == ScreenState.loading)
         Container(
           height: size.height,
           width: size.width,
@@ -72,7 +82,20 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
 
   void customInitState() {}
 
-  void afterFirstBuild(BuildContext context) {}
+  void initSubscriptions() {
+    addSubscription(
+      'isLoading',
+      store.onChange
+          .map((event) => event.isLoading ?? false)
+          .listen((isLoading) {
+        if (isLoading != _isLoading) {
+          setState(() => _isLoading = isLoading);
+        }
+      }),
+    );
+  }
+
+  Future afterFirstBuild(BuildContext context) async {}
 
   void simpleBottomSheet(
       {required Widget child, String? title, int height = 350}) {
@@ -164,12 +187,6 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
           title: Text(title),
           content: Text(description),
           actions: [
-            TextButton(
-              onPressed: () => onPositiveTap != null
-                  ? onPositiveTap()
-                  : Navigator.of(context).pop(),
-              child: Text(positiveText),
-            ),
             if (negativeText != null)
               TextButton(
                 onPressed: () => onNegativeTap != null
@@ -177,6 +194,12 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
                     : Navigator.of(context).pop(),
                 child: Text(negativeText),
               ),
+            TextButton(
+              onPressed: () => onPositiveTap != null
+                  ? onPositiveTap()
+                  : Navigator.of(context).pop(),
+              child: Text(positiveText),
+            ),
           ],
         ),
       );
@@ -206,4 +229,14 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   List<Widget> get actions => [];
 
   FloatingActionButton? get fab => null;
+
+  void addSubscription(String name, StreamSubscription subscription) {
+    _subscriptions[name] = subscription;
+  }
+
+  void _disposeSubscriptions() {
+    _subscriptions.forEach((key, value) {
+      value.cancel();
+    });
+  }
 }
