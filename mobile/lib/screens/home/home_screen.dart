@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
@@ -96,9 +97,9 @@ class _HomeScreenState extends BaseScreen<HomeScreen> {
                               Utils.getCompletedGoals(goals).length.toDouble(),
                           "ToDo": Utils.getToDoGoals(goals).length.toDouble(),
                         },
-                        colorList: const [
-                          Color(0xFF98CE5A),
-                          Color(0xFFE0E0E0),
+                        colorList: [
+                          mainColor.withOpacity(0.85),
+                          const Color(0xFFE0E0E0),
                         ],
                         legendOptions: const LegendOptions(showLegends: false),
                         chartValuesOptions:

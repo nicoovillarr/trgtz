@@ -409,16 +409,14 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
         .any((m) => m.completedOn != null);
 
     if (hasCompletedMilestones) {
-      showMessage(
-        'Wait!',
+      showSnackBar(
         'Cannot uncomplete a milestone before the last completed milestone.',
       );
       return;
     }
 
     if (hasIncompleteMilestones) {
-      showMessage(
-        'Wait!',
+      showSnackBar(
         'You must complete the previous milestones first.',
       );
       return;
@@ -426,8 +424,12 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
 
     milestone.completedOn =
         milestone.completedOn == null ? DateTime.now() : null;
-    ModuleService.setMilestones(store, entity!, entity!.milestones)
-        .catchError((_) {
+    ModuleService.setMilestones(store, entity!, entity!.milestones).then((_) {
+      if (entity!.milestones.every((element) => element.completedOn != null) &&
+          entity!.completedOn != null) {
+        showSnackBar('Goal completed!');
+      }
+    }).catchError((_) {
       setIsLoading(false);
       showSnackBar('There was an error updating the milestone');
     });

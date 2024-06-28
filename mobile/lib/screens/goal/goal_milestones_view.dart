@@ -116,12 +116,16 @@ class _GoalMilestonesViewState
   String? get title => 'Milestones';
 
   void reorder(int oldIndex, int newIndex, {bool force = false}) {
+    if (oldIndex == newIndex) {
+      return;
+    }
+
     if (entity!.milestones.any((element) => element.completedOn != null) &&
         !force) {
       showMessage(
         'Wait!',
         'Some milestones have already been completed and doing this will uncomplete them. Do you want to continue?',
-        positiveText: 'Yes!',
+        positiveText: 'Yes',
         onPositiveTap: () {
           Navigator.of(context).pop();
           reorder(oldIndex, newIndex, force: true);
@@ -141,27 +145,15 @@ class _GoalMilestonesViewState
     for (final m in milestones) {
       m.completedOn = null;
     }
-    setIsLoading(true);
-    ModuleService.setMilestones(store, entity!, milestones).then((value) {
-      setIsLoading(false);
-      setState(() {});
-    }).catchError((_) {
-      showSnackBar('There was an error reordering the milestones');
-      setIsLoading(false);
-    });
+    ModuleService.setMilestones(store, entity!, milestones).catchError(
+        (_) => showSnackBar('There was an error reordering the milestones'));
   }
 
   void add(String title) {
     final milestones = entity!.milestones.toList();
     milestones.add(Milestone.of(title: title));
-    setIsLoading(true);
-    ModuleService.setMilestones(store, entity!, milestones).then((value) {
-      setIsLoading(false);
-      setState(() {});
-    }).catchError((_) {
-      showSnackBar('There was an error adding the milestone');
-      setIsLoading(false);
-    });
+    ModuleService.setMilestones(store, entity!, milestones).catchError(
+        (_) => showSnackBar('There was an error adding the milestone'));
   }
 
   void delete(Milestone milestone, {bool force = false}) {
@@ -169,7 +161,7 @@ class _GoalMilestonesViewState
       showMessage(
         'Wait!',
         'This milestone has already been completed. Are you sure you want to delete it?',
-        positiveText: 'Yes!',
+        positiveText: 'Yes',
         onPositiveTap: () {
           Navigator.of(context).pop();
           delete(milestone, force: true);
