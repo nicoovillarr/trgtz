@@ -48,6 +48,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
         }
         return Stack(
           children: [
+            _buildBody(size, goal),
             Align(
               alignment: Alignment.center,
               child: ConfettiWidget(
@@ -60,7 +61,6 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
                 gravity: 0.05,
               ),
             ),
-            _buildBody(size, goal),
           ],
         );
       },
@@ -146,7 +146,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
                       padding: EdgeInsets.all(8.0),
                       child: Center(
                         child: Text(
-                          'Add milestone',
+                          'View milestone',
                           style: TextStyle(color: mainColor),
                         ),
                       ),
@@ -292,7 +292,12 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
                   '/goal/milestones',
                   arguments: goal.id,
                 ),
-                child: const Text('View all milestones'),
+                child: const Text(
+                  'View all milestones',
+                  style: TextStyle(
+                    color: mainColor,
+                  ),
+                ),
               ),
           ],
         ),
