@@ -279,4 +279,14 @@ class _HomeScreenState extends BaseScreen<HomeScreen> {
           );
         },
       );
+
+  @override
+  List<Widget> get actions => [
+        IconButton(
+          onPressed: () => Navigator.of(context).pushNamed('/profile'),
+          icon: const Icon(
+            Icons.settings,
+          ),
+        ),
+      ];
 }

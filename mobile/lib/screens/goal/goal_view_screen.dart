@@ -339,7 +339,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
 
   void _showDescriptionModal(Size size, Goal goal) => simpleBottomSheet(
         title: 'Add description',
-        height: (size.height * 0.9).toInt(),
+        height: size.height * 0.9,
         child: TextEditModal(
           placeholder: 'Description',
           initialValue: goal.description,

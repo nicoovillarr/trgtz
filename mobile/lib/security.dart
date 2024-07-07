@@ -37,7 +37,7 @@ class Security {
       if (tickResponse.status) {
         return true;
       } else {
-        LocalStorage.saveToken(null);
+        await LocalStorage.clear();
         String? email, pass;
         try {
           email = await LocalStorage.getEmail();
@@ -52,8 +52,7 @@ class Security {
             LocalStorage.saveToken(token);
             return true;
           } else {
-            LocalStorage.saveEmail(null);
-            LocalStorage.savePass(null);
+            await LocalStorage.clear();
           }
         }
       }

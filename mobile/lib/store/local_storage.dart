@@ -51,4 +51,11 @@ class LocalStorage {
       instance.setString(_PASS_KEY, Security.encrypt(pass));
     }
   }
+
+  static Future clear() async {
+    final instance = await SharedPreferences.getInstance();
+    instance.remove(_TOKEN_KEY);
+    instance.remove(_EMAIL_KEY);
+    instance.remove(_PASS_KEY);
+  }
 }
