@@ -17,11 +17,8 @@ const signup = async (firstName, email, password) => {
 const login = async (email, password) => {
   const user = await User.findOne({ email })
   if (user == null) return null
-  const validPassword = await bcrypt.compare(password, user.password)
-  if (!validPassword) return null
-  const json = user.toJSON()
-  delete json.goals
-  return json
+  if (!(await validatePassword(user, password))) return null
+  return user
 }
 
 const hashPassword = async (password) => {
@@ -42,10 +39,13 @@ const createJWT = async (id) => {
   return token
 }
 
+const validatePassword = async (user, password) => await bcrypt.compare(password, user.password).then(res => res)
+
 module.exports = {
   signup,
   login,
   checkEmailInUse,
   hashPassword,
-  createJWT
+  createJWT,
+  validatePassword
 }

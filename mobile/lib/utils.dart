@@ -54,4 +54,6 @@ class Utils {
       input.trim().replaceAll(RegExp(r'\s+'), ' ');
 
   static Future<bool> hasToken() async => await LocalStorage.getToken() != null;
+
+  static bool validateEmail(String input) => input.contains('@');
 }

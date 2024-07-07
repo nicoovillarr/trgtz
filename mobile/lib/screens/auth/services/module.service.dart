@@ -16,12 +16,5 @@ class ModuleService {
   Future<List<Goal>> saveGoals(List<Goal> goals) async =>
       await _goalsService.createGoal(goals);
 
-  Future<Map<String, dynamic>> getMe() async {
-    Map<String, dynamic> result = {};
-    final meResponse = await _userService.getMe();
-    result['user'] = User.fromJson(meResponse);
-    result['goals'] =
-        (meResponse['goals'] as List).map((e) => Goal.fromJson(e)).toList();
-    return result;
-  }
+  Future<Map<String, dynamic>> getMe() async => await _userService.getMe();
 }

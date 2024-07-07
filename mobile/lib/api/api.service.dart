@@ -31,6 +31,11 @@ class ApiBaseService {
   }
 
   @protected
+  Future<ApiResponse> patch(String action, dynamic params) async {
+    return _call('PATCH', action, params);
+  }
+
+  @protected
   Future<ApiResponse> delete(String action, dynamic params) async {
     return _call('DELETE', action, params);
   }
@@ -54,6 +59,9 @@ class ApiBaseService {
         break;
       case 'PUT':
         callMethod = _putApiCallImpl;
+        break;
+      case 'PATCH':
+        callMethod = _patchApiCallImpl;
         break;
       case 'DELETE':
         callMethod = _deleteApiCallImpl;
@@ -97,6 +105,13 @@ class ApiBaseService {
 
   Future<http.Response> _putApiCallImpl(Uri endpoint, dynamic params) async =>
       http.put(
+        endpoint,
+        body: jsonEncode(params),
+        headers: await _buildHeaders(),
+      );
+
+  Future<http.Response> _patchApiCallImpl(Uri endpoint, dynamic params) async =>
+      http.patch(
         endpoint,
         body: jsonEncode(params),
         headers: await _buildHeaders(),
