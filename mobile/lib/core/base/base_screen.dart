@@ -8,9 +8,22 @@ import 'package:redux/redux.dart';
 
 enum ScreenState { loading, ready, leaving }
 
+class BottomModalOption {
+  final String title;
+  final String? tooltip;
+  final Function() onTap;
+
+  BottomModalOption({
+    required this.title,
+    required this.onTap,
+    this.tooltip,
+  });
+}
+
 abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   bool _isLoading = false;
   ScreenState _state = ScreenState.loading;
+  OverlayEntry? _overlayEntry;
 
   final Map<String, StreamSubscription> _subscriptions = {};
 
@@ -53,6 +66,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
             : null,
         floatingActionButton: _state != ScreenState.loading ? fab : null,
         backgroundColor: backgroundColor,
+        bottomNavigationBar: bottomNavigationBar,
         body: Stack(
           children: [
             if (_state != ScreenState.loading)
@@ -64,17 +78,6 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
           ],
         ),
       ),
-      if (_isLoading || _state == ScreenState.loading)
-        Container(
-          height: size.height,
-          width: size.width,
-          color: Colors.black.withOpacity(0.6),
-          child: const Center(
-            child: CircularProgressIndicator(
-              color: Colors.white,
-            ),
-          ),
-        ),
     ]);
   }
 
@@ -130,6 +133,45 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     );
   }
 
+  void simpleBottomSheetOptions({
+    required List<BottomModalOption> options,
+    String? title,
+    int height = 350,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      enableDrag: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16.0),
+          topRight: Radius.circular(16.0),
+        ),
+      ),
+      builder: (_) => ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: height.toDouble(),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (title != null) Text(title),
+            ...options
+                .map(
+                  (option) => ListTile(
+                    title: Text(option.title),
+                    onTap: option.onTap,
+                    subtitle:
+                        option.tooltip != null ? Text(option.tooltip!) : null,
+                  ),
+                )
+                .toList(),
+          ],
+        ),
+      ),
+    );
+  }
+
   void draggableBottomSheet(
       {required Widget child, String? title, double initialHeight = 0.5}) {
     showModalBottomSheet(
@@ -173,6 +215,13 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   }
 
   void setIsLoading(bool isLoading) {
+    if (isLoading) {
+      _overlayEntry = _createOverlayEntry();
+      Overlay.of(context).insert(_overlayEntry!);
+    } else {
+      _overlayEntry?.remove();
+      _overlayEntry = null;
+    }
     store.dispatch(SetIsLoadingAction(isLoading: isLoading));
   }
 
@@ -233,6 +282,8 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
 
   FloatingActionButton? get fab => null;
 
+  BottomNavigationBar? get bottomNavigationBar => null;
+
   void addSubscription(String name, StreamSubscription subscription) {
     _subscriptions[name] = subscription;
   }
@@ -241,5 +292,28 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     _subscriptions.forEach((key, value) {
       value.cancel();
     });
+  }
+
+  OverlayEntry _createOverlayEntry() {
+    return OverlayEntry(
+      builder: (context) => Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              color: Colors.black.withOpacity(0.6),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -23,6 +23,7 @@ void main() async {
     initialState = initialState.copyWith(
       user: user['user'],
       goals: user['goals'],
+      friends: user['friends'],
     );
     loggedIn = true;
   }

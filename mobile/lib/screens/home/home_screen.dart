@@ -1,283 +1,123 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
+import 'package:trgtz/screens/home/fragments/index.dart';
 import 'package:trgtz/screens/home/services/index.dart';
-import 'package:trgtz/screens/home/widgets/index.dart';
 import 'package:trgtz/store/index.dart';
-import 'package:trgtz/utils.dart';
-import 'package:pie_chart/pie_chart.dart';
 import 'package:redux/redux.dart';
 import 'package:uuid/uuid.dart';
+import 'package:timeago/timeago.dart' as timeago;
+
+GlobalKey<HomeScreenState> homeScreenKey = GlobalKey();
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends BaseScreen<HomeScreen> {
-  late DateTime endYear;
+class HomeScreenState extends BaseScreen<HomeScreen> {
+  int _currentIndex = 0;
+  late List<Widget> _fragments;
 
   @override
   void initState() {
-    endYear = DateTime(DateTime.now().year + 1).add(const Duration(days: -1));
+    _fragments = [
+      DashboardFragment(
+        enimtAction: _processAction,
+      ),
+      FriendsFragment(
+        enimtAction: _processAction,
+      ),
+    ];
     super.initState();
   }
 
   @override
   Widget body(BuildContext context) =>
-      SingleChildScrollView(child: _buildBody());
-
-  Widget _buildBody() => SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: _buildRows(),
-          ),
-        ),
-      );
-
-  List<Widget> _buildRows() => [
-        _buildProgressBar(DateTime.now()),
-        _buildStatsAndSelector(),
-        _buildGoalsListView(),
-      ];
-
-  Widget _buildProgressBar(DateTime date) => Column(children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Text(
-            Utils.dateToFullString(date),
-            style: const TextStyle(
-              fontWeight: FontWeight.w300,
-              fontSize: 18,
-            ),
-          ),
-        ),
-        ProgressBar(
-            percentage:
-                _getDateMiliseconds(date) / _getDateMiliseconds(endYear)),
-        const SizedBox(height: 16.0),
-      ]);
-
-  Widget _buildStatsAndSelector() => Row(
-        children: [
-          _buildPieCard(),
-          _buildYearSelectorCard(),
-        ],
-      );
-
-  Widget _buildPieCard() => SizedBox(
-        width: 120,
-        height: 120,
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4.0),
-          ),
-          child: StoreConnector<AppState, List<Goal>>(
-            converter: (store) => store.state.goals
-                .where((g) =>
-                    g.year == store.state.date.year && g.deletedOn == null)
-                .toList(),
-            builder: (context, goals) => InkWell(
-              onLongPress: () => _showStatsDialog(context, goals),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: PieChart(
-                        dataMap: {
-                          "Completed":
-                              Utils.getCompletedGoals(goals).length.toDouble(),
-                          "ToDo": Utils.getToDoGoals(goals).length.toDouble(),
-                        },
-                        colorList: [
-                          mainColor.withOpacity(0.85),
-                          const Color(0xFFE0E0E0),
-                        ],
-                        legendOptions: const LegendOptions(showLegends: false),
-                        chartValuesOptions:
-                            const ChartValuesOptions(showChartValues: false),
-                      ),
-                    ),
-                    Text(
-                        "${Utils.getCompletedGoals(goals).length} / ${Utils.getToDoGoals(goals).length}"),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-
-  Widget _buildYearSelectorCard() => Flexible(
-        child: SizedBox(
-          height: 120,
-          child: Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4.0),
-            ),
-            child: StoreConnector<AppState, DateTime>(
-              builder: (ctx, date) => SizedBox(
-                width: double.infinity,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildArrowButton(
-                        () => StoreProvider.of<AppState>(context)
-                            .dispatch(const AddDateYearAction(years: -1)),
-                        false),
-                    Text(
-                      date.year.toString(),
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    _buildArrowButton(
-                        () => StoreProvider.of<AppState>(context)
-                            .dispatch(const AddDateYearAction(years: 1)),
-                        true),
-                  ],
-                ),
-              ),
-              converter: (store) => store.state.date,
-            ),
-          ),
-        ),
-      );
-
-  Widget _buildArrowButton(Function() onPressed, bool right) => TextButton(
-        onPressed: onPressed,
-        style: TextButton.styleFrom(
-          padding: EdgeInsets.zero,
-          minimumSize: Size.zero,
-        ),
-        child: Icon(
-          right ? Icons.arrow_right : Icons.arrow_left,
-          size: 40,
-          color: Colors.grey,
-        ),
-      );
-
-  Widget _buildGoalsListView() => StoreConnector<AppState, AppState>(
-        builder: (ctx, state) => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 8.0),
-            Text(
-              'Your goals for ${state.date.year}...',
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFF808080),
-              ),
-            ),
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: GoalsListView(
-                goals: state.goals
-                    .where(
-                        (g) => g.year == state.date.year && g.deletedOn == null)
-                    .toList(),
-              ),
-            ),
-          ],
-        ),
-        converter: (store) => store.state,
-      );
-
-  void _showStatsDialog(BuildContext context, List<Goal> goals) => showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: const Text('Your goals:'),
-            content: Wrap(
-              direction: Axis.vertical,
-              children: [
-                Text("Completed: ${Utils.getCompletedGoals(goals).length}"),
-                Text("To Do: ${Utils.getToDoGoals(goals).length}"),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Ok'),
-              ),
-            ],
-          ));
-
-  int _getDateMiliseconds(DateTime date) {
-    return date.millisecondsSinceEpoch -
-        DateTime(date.year).millisecondsSinceEpoch;
-  }
+      IndexedStack(index: _currentIndex, children: _fragments);
 
   @override
   bool get addBackButton => false;
 
   @override
-  String get title => 'Hi, ${store.state.user!.firstName}';
+  String get title =>
+      _currentIndex == 0 ? 'Hi, ${store.state.user!.firstName}' : 'Friends';
 
   @override
-  FloatingActionButton? get fab => FloatingActionButton(
-        heroTag: "add_goal",
-        child: const Icon(Icons.add),
-        onPressed: () {
-          simpleBottomSheet(
-            title: 'New goal',
-            child: TextEditModal(
-              placeholder: 'I wanna...',
-              maxLength: 50,
-              maxLines: 1,
-              validate: (title) => title != null && title.isNotEmpty
-                  ? null
-                  : 'Title cannot be empty',
-              onSave: (s) {
-                if (s != null && s.isNotEmpty) {
-                  Store<AppState> store = StoreProvider.of<AppState>(context);
-                  final newGoal = Goal(
-                    id: const Uuid().v4(),
-                    title: s,
-                    year: store.state.date.year,
-                    createdOn: DateTime.now(),
-                    deletedOn: null,
-                  );
-
-                  setIsLoading(true);
-                  ModuleService.createGoal(newGoal).then((goal) {
-                    setIsLoading(false);
-                    store.dispatch(CreateGoalAction(goal: goal));
-
-                    showSnackBar(
-                      'New goal created!',
-                      action: SnackBarAction(
-                        label: 'View',
-                        onPressed: () {
-                          Navigator.of(context)
-                              .pushNamed('/goal', arguments: goal.id);
-                        },
-                      ),
+  FloatingActionButton? get fab => _currentIndex == 0
+      ? FloatingActionButton(
+          heroTag: "add_goal",
+          child: const Icon(Icons.add),
+          onPressed: () {
+            simpleBottomSheet(
+              title: 'New goal',
+              child: TextEditModal(
+                placeholder: 'I wanna...',
+                maxLength: 50,
+                maxLines: 1,
+                validate: (title) => title != null && title.isNotEmpty
+                    ? null
+                    : 'Title cannot be empty',
+                onSave: (s) {
+                  if (s != null && s.isNotEmpty) {
+                    Store<AppState> store = StoreProvider.of<AppState>(context);
+                    final newGoal = Goal(
+                      id: const Uuid().v4(),
+                      title: s,
+                      year: store.state.date.year,
+                      createdOn: DateTime.now(),
+                      deletedOn: null,
                     );
-                  }).catchError((_) {
-                    setIsLoading(false);
-                    showMessage(
-                      'Error',
-                      'An error occurred while creating the goal.',
-                    );
-                  });
-                }
-              },
-            ),
-          );
-        },
+
+                    setIsLoading(true);
+                    ModuleService.createGoal(newGoal).then((goal) {
+                      setIsLoading(false);
+                      store.dispatch(CreateGoalAction(goal: goal));
+
+                      showSnackBar(
+                        'New goal created!',
+                        action: SnackBarAction(
+                          label: 'View',
+                          onPressed: () {
+                            Navigator.of(context)
+                                .pushNamed('/goal', arguments: goal.id);
+                          },
+                        ),
+                      );
+                    }).catchError((_) {
+                      setIsLoading(false);
+                      showMessage(
+                        'Error',
+                        'An error occurred while creating the goal.',
+                      );
+                    });
+                  }
+                },
+              ),
+            );
+          },
+        )
+      : null;
+
+  @override
+  BottomNavigationBar? get bottomNavigationBar => BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Friends',
+          ),
+        ],
       );
 
   @override
@@ -288,5 +128,189 @@ class _HomeScreenState extends BaseScreen<HomeScreen> {
             Icons.settings,
           ),
         ),
+        if (_currentIndex == 1) ..._buildFriendsActions(),
       ];
+
+  List<Widget> _buildFriendsActions() => [
+        IconButton(
+          onPressed: () => _showSearchDialog(),
+          icon: const Icon(Icons.search),
+        ),
+        CustomPopUpMenuButton(
+          items: [
+            MenuItem(
+              title: 'Show QR code',
+              onTap: () => _showQRCodeDialog(),
+            ),
+          ],
+        ),
+      ];
+
+  void _processAction(String name, {dynamic data}) {
+    switch (name) {
+      case showQRCode:
+        _showQRCodeDialog();
+        break;
+
+      case showFriendRequests:
+        _showFriendRequests(
+            context,
+            store.state.friends!
+                .where((element) =>
+                    element.status == 'pending' &&
+                    element.requester != store.state.user!.id)
+                .toList());
+        break;
+
+      case showFriendOptions:
+        simpleBottomSheetOptions(
+          options: [
+            BottomModalOption(
+              title: 'Remove',
+              onTap: () => _deleteFriend(store.state.user!.id, data),
+            ),
+          ],
+        );
+        break;
+
+      default:
+        debugPrint('Unknown action: $name');
+        break;
+    }
+  }
+
+  void _showQRCodeDialog() {
+    Size size = MediaQuery.of(context).size;
+    Store<AppState> store = StoreProvider.of<AppState>(context);
+    simpleBottomSheet(
+      child: SizedBox(
+        height: size.height * 0.75,
+        width: size.width,
+        child: Column(
+          children: [
+            const Text('Share this code with your friends:'),
+            const SizedBox(height: 16),
+            Center(
+              child: SizedBox(
+                width: size.width * 0.5,
+                height: size.width * 0.5,
+                child: const Placeholder(),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('#${store.state.user!.id}'),
+                IconButton(
+                  onPressed: () => Clipboard.setData(
+                      ClipboardData(text: store.state.user!.id)),
+                  icon: const Icon(
+                    Icons.copy,
+                    size: 16,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showFriendRequests(BuildContext context, List<Friendship> requests) {
+    simpleBottomSheet(
+      title: 'Friend requests',
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height * 0.85,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              for (int i = 0; i < requests.length; i++)
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(requests[i].friendDetails.firstName),
+                          Text(
+                            timeago.format(
+                              requests[i].createdOn,
+                            ),
+                            style: const TextStyle(
+                              color: Colors.black45,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => _answerFriendRequest(
+                        requests[i].requester,
+                        true,
+                      ),
+                      icon: const Icon(Icons.check),
+                    ),
+                    IconButton(
+                      onPressed: () => _answerFriendRequest(
+                        requests[i].requester,
+                        false,
+                      ),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _answerFriendRequest(String requesterId, bool answer) async {
+    setIsLoading(true);
+    try {
+      await ModuleService.answerFriendRequest(requesterId, answer);
+    } catch (e) {
+      showMessage('Error', e.toString());
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  void _deleteFriend(String userId, Friendship friendship) {
+    setIsLoading(true);
+    ModuleService.deleteFriend(userId, friendship).then((_) {
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      setIsLoading(false);
+    }).catchError((e) {
+      showMessage('Error', e.toString());
+      setIsLoading(false);
+    });
+  }
+
+  void _showSearchDialog() {
+    simpleBottomSheet(
+      title: 'Add a friend',
+      child: TextEditModal(
+        placeholder: 'Search by code',
+        onSave: (code) async {
+          if (code != null && code.isNotEmpty) {
+            setIsLoading(true);
+            try {
+              await ModuleService.addFriend(code);
+            } catch (e) {
+              showMessage('Error', e.toString());
+            } finally {
+              setIsLoading(false);
+            }
+          }
+        },
+      ),
+    );
+  }
 }
