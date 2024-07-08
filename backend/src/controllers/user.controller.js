@@ -3,6 +3,7 @@ const userService = require('../services/user.service')
 const getMe = async (req, res) => {
   try {
     const user = (await userService.getUserInfo(req.user)).toJSON()
+    user.friends = await userService.getFriends(req.user)
     res.status(200).json(user)
   } catch (error) {
     res.status(500).json(error)

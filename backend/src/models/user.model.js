@@ -1,8 +1,17 @@
 const mongoose = require('mongoose')
 const { Schema } = mongoose
 
+const generateHexId = () =>
+  Math.floor(Math.random() * 0xffffff)
+    .toString(16)
+    .padStart(6, '0')
+
 const userSchema = new Schema(
   {
+    _id: {
+      type: String,
+      default: generateHexId
+    },
     email: {
       type: String,
       required: true
@@ -24,11 +33,11 @@ const userSchema = new Schema(
     friends: [
       {
         requester: {
-          type: Schema.Types.ObjectId,
+          type: String,
           ref: 'User'
         },
         recipient: {
-          type: Schema.Types.ObjectId,
+          type: String,
           ref: 'User'
         },
         status: {
@@ -63,6 +72,7 @@ const userSchema = new Schema(
     toJSON: {
       transform(doc, ret) {
         delete ret.password
+        delete ret.sessions
       }
     }
   }

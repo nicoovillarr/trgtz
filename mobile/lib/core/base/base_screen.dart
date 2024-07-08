@@ -8,6 +8,18 @@ import 'package:redux/redux.dart';
 
 enum ScreenState { loading, ready, leaving }
 
+class BottomModalOption {
+  final String title;
+  final String? tooltip;
+  final Function() onTap;
+
+  BottomModalOption({
+    required this.title,
+    required this.onTap,
+    this.tooltip,
+  });
+}
+
 abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   bool _isLoading = false;
   ScreenState _state = ScreenState.loading;
@@ -53,6 +65,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
             : null,
         floatingActionButton: _state != ScreenState.loading ? fab : null,
         backgroundColor: backgroundColor,
+        bottomNavigationBar: bottomNavigationBar,
         body: Stack(
           children: [
             if (_state != ScreenState.loading)
@@ -121,6 +134,45 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
             SingleChildScrollView(
               child: child,
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void simpleBottomSheetOptions({
+    required List<BottomModalOption> options,
+    String? title,
+    int height = 350,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      enableDrag: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16.0),
+          topRight: Radius.circular(16.0),
+        ),
+      ),
+      builder: (_) => ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: height.toDouble(),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (title != null) Text(title),
+            ...options
+                .map(
+                  (option) => ListTile(
+                    title: Text(option.title),
+                    onTap: option.onTap,
+                    subtitle:
+                        option.tooltip != null ? Text(option.tooltip!) : null,
+                  ),
+                )
+                .toList(),
           ],
         ),
       ),
@@ -229,6 +281,8 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   List<Widget> get actions => [];
 
   FloatingActionButton? get fab => null;
+
+  BottomNavigationBar? get bottomNavigationBar => null;
 
   void addSubscription(String name, StreamSubscription subscription) {
     _subscriptions[name] = subscription;

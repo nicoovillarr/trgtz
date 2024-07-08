@@ -23,6 +23,7 @@ void main() async {
     initialState = initialState.copyWith(
       user: user['user'],
       goals: user['goals'],
+      friends: user['friends'],
     );
     loggedIn = true;
   }
@@ -39,6 +40,9 @@ Future<Map<String, dynamic>> getUser() async {
   Map<String, dynamic> result = {};
   final meResponse = await UserService().getMe();
   result['user'] = User.fromJson(meResponse);
+  result['friends'] = (meResponse['friends'] as List)
+      .map((e) => Friendship.fromJson(e))
+      .toList();
   result['goals'] =
       (meResponse['goals'] as List).map((e) => Goal.fromJson(e)).toList();
   return result;
