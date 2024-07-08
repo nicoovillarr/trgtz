@@ -41,4 +41,7 @@ class Friendship extends ModelBase {
         'deletedOn': deletedOn?.toIso8601String(),
         'friendDetails': friendDetails.toJson(),
       };
+
+  String get otherUserId =>
+      requester != friendDetails.id ? recipient : requester;
 }

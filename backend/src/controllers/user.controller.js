@@ -5,8 +5,11 @@ const getMe = async (req, res) => {
   try {
     const user = await userService.getUserInfo(req.user)
     await user.populate('goals')
+
     const json = user.toJSON()
     delete json.sessions
+    json.friends = await userService.getFriends(req.user)
+
     res.status(200).json(json)
   } catch (error) {
     res.status(500).json(error)
@@ -95,10 +98,28 @@ const answerFriendRequest = async (req, res) => {
   }
 }
 
+const deleteFriend = async (req, res) => {
+  try {
+    const _id = req.user
+    const { otherUser } = req.params
+    if (!(await userService.userExist(otherUser))) {
+      res.status(400).json({ message: 'Friend not found.' })
+      return
+    }
+
+    await userService.deleteFriend(_id, otherUser)
+    res.status(204).end()
+  } catch (error) {
+    res.status(500).json(error)
+    console.error('Error deleting friend: ', error)
+  }
+}
+
 module.exports = {
   getMe,
   patchUser,
   updatePassword,
   sendFriendRequest,
-  answerFriendRequest
+  answerFriendRequest,
+  deleteFriend
 }

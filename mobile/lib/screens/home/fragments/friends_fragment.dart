@@ -127,20 +127,21 @@ class _FriendsFragmentState extends BaseFragmentState<FriendsFragment> {
           itemCount: actualFriends.length,
           separatorBuilder: (context, index) => const Divider(),
           itemBuilder: (context, index) => _buildFriendItem(
-            actualFriends[index].friendDetails,
+            actualFriends[index],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildFriendItem(User friend) => Material(
+  Widget _buildFriendItem(Friendship friend) => Material(
         elevation: 2,
         shadowColor: Colors.blueGrey,
         child: ListTile(
-          title: Text(friend.firstName),
-          subtitle: Text(friend.email),
-          onLongPress: () => widget.enimtAction(showFriendOptions),
+          title: Text(friend.friendDetails.firstName),
+          subtitle: Text(friend.friendDetails.email),
+          onLongPress: () =>
+              widget.enimtAction(showFriendOptions, data: friend),
         ),
       );
 }
