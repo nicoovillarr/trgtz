@@ -23,6 +23,7 @@ class BottomModalOption {
 abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   bool _isLoading = false;
   ScreenState _state = ScreenState.loading;
+  OverlayEntry? _overlayEntry;
 
   final Map<String, StreamSubscription> _subscriptions = {};
 
@@ -77,17 +78,6 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
           ],
         ),
       ),
-      if (_isLoading || _state == ScreenState.loading)
-        Container(
-          height: size.height,
-          width: size.width,
-          color: Colors.black.withOpacity(0.6),
-          child: const Center(
-            child: CircularProgressIndicator(
-              color: Colors.white,
-            ),
-          ),
-        ),
     ]);
   }
 
@@ -225,6 +215,13 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   }
 
   void setIsLoading(bool isLoading) {
+    if (isLoading) {
+      _overlayEntry = _createOverlayEntry();
+      Overlay.of(context).insert(_overlayEntry!);
+    } else {
+      _overlayEntry?.remove();
+      _overlayEntry = null;
+    }
     store.dispatch(SetIsLoadingAction(isLoading: isLoading));
   }
 
@@ -295,5 +292,28 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     _subscriptions.forEach((key, value) {
       value.cancel();
     });
+  }
+
+  OverlayEntry _createOverlayEntry() {
+    return OverlayEntry(
+      builder: (context) => Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              color: Colors.black.withOpacity(0.6),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

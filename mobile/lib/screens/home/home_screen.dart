@@ -280,15 +280,17 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
     }
   }
 
-  void _deleteFriend(String userId, Friendship friendship) async {
+  void _deleteFriend(String userId, Friendship friendship) {
     setIsLoading(true);
-    try {
-      await ModuleService.deleteFriend(userId, friendship);
-    } catch (e) {
-      showMessage('Error', e.toString());
-    } finally {
+    ModuleService.deleteFriend(userId, friendship).then((_) {
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
       setIsLoading(false);
-    }
+    }).catchError((e) {
+      showMessage('Error', e.toString());
+      setIsLoading(false);
+    });
   }
 
   void _showSearchDialog() {
