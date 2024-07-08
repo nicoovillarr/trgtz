@@ -5,7 +5,7 @@ class Friendship extends ModelBase {
   String recipient;
   String status;
   DateTime createdOn;
-  DateTime updatedOn;
+  DateTime? updatedOn;
   DateTime? deletedOn;
 
   User friendDetails;
@@ -15,7 +15,7 @@ class Friendship extends ModelBase {
     required this.recipient,
     required this.status,
     required this.createdOn,
-    required this.updatedOn,
+    this.updatedOn,
     this.deletedOn,
     required this.friendDetails,
   });
@@ -26,7 +26,7 @@ class Friendship extends ModelBase {
       recipient: json['recipient'],
       status: json['status'],
       createdOn: ModelBase.tryParseDateTime('createdOn', json)!,
-      updatedOn: ModelBase.tryParseDateTime('updatedOn', json)!,
+      updatedOn: ModelBase.tryParseDateTime('updatedOn', json),
       deletedOn: ModelBase.tryParseDateTime('deletedOn', json),
       friendDetails: User.fromJson(json['friendDetails']),
     );
@@ -37,7 +37,7 @@ class Friendship extends ModelBase {
         'recipient': recipient,
         'status': status,
         'createdOn': createdOn.toIso8601String(),
-        'updatedOn': updatedOn.toIso8601String(),
+        'updatedOn': updatedOn?.toIso8601String(),
         'deletedOn': deletedOn?.toIso8601String(),
         'friendDetails': friendDetails.toJson(),
       };
