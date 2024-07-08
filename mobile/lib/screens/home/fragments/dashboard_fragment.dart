@@ -2,26 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'package:trgtz/constants.dart';
+import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/home/widgets/index.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:trgtz/utils.dart';
 
-class DashboardFragment extends StatefulWidget {
-  const DashboardFragment({super.key});
+class DashboardFragment extends BaseFragment {
+  const DashboardFragment({super.key, required super.enimtAction});
 
   @override
   State<DashboardFragment> createState() => _DashboardFragmentState();
 }
 
-class _DashboardFragmentState extends State<DashboardFragment> {
+class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
   late DateTime endYear;
 
   @override
-  void initState() {
+  void customInitState() {
     endYear = DateTime(DateTime.now().year + 1).add(const Duration(days: -1));
-    super.initState();
   }
 
   @override

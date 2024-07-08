@@ -7,6 +7,7 @@ const userController = require('../controllers/user.controller')
 app.get('/', protect, userController.getMe)
 app.patch('/', protect, userController.patchUser)
 app.patch('/change-password', protect, userController.updatePassword)
+app.post('/friend', protect, userController.sendFriendRequest)
 app.put('/friend', protect, userController.answerFriendRequest)
 app.delete('/friend/:otherUser', protect, userController.deleteFriend)
 

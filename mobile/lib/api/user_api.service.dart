@@ -29,4 +29,7 @@ class UserApiService extends ApiBaseService {
 
   Future<ApiResponse> deleteFriend(String userId, Friendship friendship) =>
       delete('/friend/${friendship.otherUserId}', null);
+
+  Future<ApiResponse> addFriend(String code) =>
+      post('/friend', {'recipientId': code});
 }

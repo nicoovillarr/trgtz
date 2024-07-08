@@ -45,7 +45,7 @@ const canSendFriendRequest = async (me, other) => {
     requester.friends.filter(
       (friend) =>
         (friend.recipient != other && friend.requester != other) ||
-        friend.status != 'rejected' ||
+        (friend.status != 'rejected' && friend.status != 'accepted') ||
         friend.deletedOn == null
     ).length == 0
   )
@@ -155,26 +155,16 @@ const getFriends = async (userId) => {
         createdOn: '$friends.createdOn',
         updatedOn: '$friends.updatedOn',
         deletedOn: '$friends.deletedOn',
-        friendDetails: {
-          $arrayElemAt: [
-            {
-              $filter: {
-                input: '$friendDetails',
-                as: 'friend',
-                cond: {
-                  $ne: ['$$friend._id', '$_id']
-                }
-              }
-            },
-            0
-          ]
-        }
+        friendDetails: '$friendDetails'
       }
     }
   ]
   const cursor = coll.aggregate(agg)
   const result = await cursor.toArray().then((res) => res)
-  return result
+  return result.map((f) => {
+    f.friendDetails = f.friendDetails.find((fd) => fd._id != userId)
+    return f
+  })
 }
 
 const getMinUserInfo = async (ids) => {

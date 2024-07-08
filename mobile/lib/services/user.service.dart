@@ -60,4 +60,13 @@ class UserService {
       throw Exception(response.content['message']);
     }
   }
+
+  Future<dynamic> addFriend(String code) async {
+    ApiResponse response = await _userApiService.addFriend(code);
+    if (response.status) {
+      return response.content;
+    } else {
+      throw Exception(response.content['message']);
+    }
+  }
 }

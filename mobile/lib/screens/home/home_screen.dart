@@ -27,7 +27,9 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
   @override
   void initState() {
     _fragments = [
-      const DashboardFragment(),
+      DashboardFragment(
+        enimtAction: _processAction,
+      ),
       FriendsFragment(
         enimtAction: _processAction,
       ),
@@ -131,7 +133,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
 
   List<Widget> _buildFriendsActions() => [
         IconButton(
-          onPressed: () {},
+          onPressed: () => _showSearchDialog(),
           icon: const Icon(Icons.search),
         ),
         CustomPopUpMenuButton(
@@ -287,5 +289,26 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  void _showSearchDialog() {
+    simpleBottomSheet(
+      title: 'Add a friend',
+      child: TextEditModal(
+        placeholder: 'Search by code',
+        onSave: (code) async {
+          if (code != null && code.isNotEmpty) {
+            setIsLoading(true);
+            try {
+              await ModuleService.addFriend(code);
+            } catch (e) {
+              showMessage('Error', e.toString());
+            } finally {
+              setIsLoading(false);
+            }
+          }
+        },
+      ),
+    );
   }
 }

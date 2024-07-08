@@ -15,4 +15,7 @@ class ModuleService {
 
   static Future deleteFriend(String userId, Friendship friendship) async =>
       await _userService.deleteFriend(userId, friendship);
+
+  static Future addFriend(String code) async =>
+      await _userService.addFriend(code);
 }
