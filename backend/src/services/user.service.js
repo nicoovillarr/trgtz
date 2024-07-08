@@ -1,4 +1,6 @@
 const User = require('../models/user.model')
+const mongoose = require('mongoose')
+const { Schema } = mongoose
 
 const getUsers = async () => await User.find()
 
@@ -70,6 +72,71 @@ const answerFriendRequest = async (recipientId, requesterId, answer) => {
   return true
 }
 
+const getFriends = async (userId) => {
+  const friends = await User.aggregate([
+    { $match: { _id: userId } },
+    { $unwind: '$friends' },
+    {
+      $lookup: {
+        from: 'users', // nombre de la colección de usuarios
+        let: {
+          requesterId: '$friends.requester',
+          recipientId: '$friends.recipient'
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $cond: [
+                  {
+                    $eq: ['$$requesterId', userId]
+                  },
+                  { $eq: ['$_id', '$$recipientId'] },
+                  { $eq: ['$_id', '$$requesterId'] }
+                ]
+              }
+            }
+          },
+          {
+            $project: {
+              _id: 1,
+              email: 1,
+              firstName: 1
+            }
+          }
+        ],
+        as: 'friendDetails'
+      }
+    },
+    { $unwind: '$friendDetails' },
+    {
+      $project: {
+        _id: 0,
+        requester: '$friends.requester',
+        recipient: '$friends.recipient',
+        status: '$friends.status',
+        createdOn: '$friends.createdOn',
+        updatedOn: '$friends.updatedOn',
+        deletedOn: '$friends.deletedOn',
+        friendDetails: '$friendDetails'
+      }
+    }
+  ])
+
+  return friends
+}
+
+const getMinUserInfo = async (ids) => {
+  const users = await User.find({ _id: { $in: ids } })
+  return users.map((user) => {
+    return {
+      _id: user._id,
+      firstName: user.firstName,
+      email: user.email
+    }
+  })
+}
+
 module.exports = {
   getUsers,
   getUserInfo,
@@ -77,5 +144,7 @@ module.exports = {
   sendFriendRequest,
   userExist,
   canSendFriendRequest,
-  answerFriendRequest
+  answerFriendRequest,
+  getFriends,
+  getMinUserInfo
 }

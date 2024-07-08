@@ -11,4 +11,14 @@ class UserService {
       throw Exception(response.content['message']);
     }
   }
+
+  Future<dynamic> answerFriendRequest(String requesterId, bool answer) async {
+    ApiResponse response =
+        await _userApiService.answerFriendRequest(requesterId, answer);
+    if (response.status) {
+      return response.content;
+    } else {
+      throw Exception(response.content['message']);
+    }
+  }
 }
