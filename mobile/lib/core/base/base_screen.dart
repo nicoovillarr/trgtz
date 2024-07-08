@@ -110,8 +110,11 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
 
   Future afterFirstBuild(BuildContext context) async {}
 
-  void simpleBottomSheet(
-      {required Widget child, String? title, int height = 350}) {
+  void simpleBottomSheet({
+    required Widget child,
+    String? title,
+    double height = 350,
+  }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
