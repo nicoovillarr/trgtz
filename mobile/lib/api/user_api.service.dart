@@ -17,13 +17,16 @@ class UserApiService extends ApiBaseService {
         'oldPassword': oldPassword,
         'newPassword': newPassword,
       });
-      
+
   Future<ApiResponse> answerFriendRequest(String requesterId, bool answer) =>
       put(
-        '/friend-request',
+        '/friend',
         {
           'requesterId': requesterId,
           'answer': answer,
         },
       );
+
+  Future<ApiResponse> deleteFriend(String userId, Friendship friendship) =>
+      delete('/friend/${friendship.otherUserId}', null);
 }

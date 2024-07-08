@@ -12,4 +12,7 @@ class ModuleService {
 
   static Future answerFriendRequest(String requesterId, bool answer) async =>
       await _userService.answerFriendRequest(requesterId, answer);
+
+  static Future deleteFriend(String userId, Friendship friendship) async =>
+      await _userService.deleteFriend(userId, friendship);
 }

@@ -50,4 +50,14 @@ class UserService {
       throw Exception(response.content['message']);
     }
   }
+
+  Future<dynamic> deleteFriend(String userId, Friendship friendship) async {
+    ApiResponse response =
+        await _userApiService.deleteFriend(userId, friendship);
+    if (response.status) {
+      return response.content;
+    } else {
+      throw Exception(response.content['message']);
+    }
+  }
 }

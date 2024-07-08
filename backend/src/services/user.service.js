@@ -1,7 +1,5 @@
 const User = require('../models/user.model')
 const mongoose = require('mongoose')
-const { hashPassword } = require('./auth.service')
-const { Schema } = mongoose
 
 const getUsers = async () => await User.find()
 
@@ -10,7 +8,9 @@ const getUserInfo = async (id) => await User.findById(id)
 const patchUser = async (id, updates) => {
   const user = await User.findOne({ _id: id })
   const editableFields = ['firstName', 'email']
-  for (const key of Object.keys(updates).filter(t => editableFields.includes(t))) {
+  for (const key of Object.keys(updates).filter((t) =>
+    editableFields.includes(t)
+  )) {
     user[key] = updates[key]
   }
   await user.save()
@@ -80,13 +80,29 @@ const answerFriendRequest = async (recipientId, requesterId, answer) => {
 }
 
 const getFriends = async (userId) => {
-  const friends = await User.aggregate([
-    { $match: { _id: userId } },
-    { $unwind: '$friends' },
+  const db = mongoose.connection.db
+  const coll = db.collection('users')
+  const agg = [
+    {
+      $match: { _id: userId }
+    },
+    {
+      $unwind: {
+        path: '$friends'
+      }
+    },
+    {
+      $project: {
+        friends: true,
+        requester: '$friends.requester',
+        recipient: '$friends.recipient'
+      }
+    },
     {
       $lookup: {
-        from: 'users', // nombre de la colección de usuarios
+        from: 'users',
         let: {
+          currentId: '$_id',
           requesterId: '$friends.requester',
           recipientId: '$friends.recipient'
         },
@@ -94,43 +110,71 @@ const getFriends = async (userId) => {
           {
             $match: {
               $expr: {
-                $cond: [
+                $or: [
                   {
-                    $eq: ['$$requesterId', userId]
+                    $and: [
+                      {
+                        $eq: ['$_id', '$$recipientId']
+                      },
+                      {
+                        $eq: ['$$requesterId', '$$currentId']
+                      }
+                    ]
                   },
-                  { $eq: ['$_id', '$$recipientId'] },
-                  { $eq: ['$_id', '$$requesterId'] }
+                  {
+                    $and: [
+                      {
+                        $eq: ['$_id', '$$requesterId']
+                      },
+                      {
+                        $eq: ['$$recipientId', '$$currentId']
+                      }
+                    ]
+                  }
                 ]
               }
             }
           },
           {
             $project: {
-              _id: 1,
-              email: 1,
-              firstName: 1
+              _id: true,
+              email: true,
+              firstName: true
             }
           }
         ],
         as: 'friendDetails'
       }
     },
-    { $unwind: '$friendDetails' },
     {
       $project: {
-        _id: 0,
+        _id: false,
         requester: '$friends.requester',
         recipient: '$friends.recipient',
         status: '$friends.status',
         createdOn: '$friends.createdOn',
         updatedOn: '$friends.updatedOn',
         deletedOn: '$friends.deletedOn',
-        friendDetails: '$friendDetails'
+        friendDetails: {
+          $arrayElemAt: [
+            {
+              $filter: {
+                input: '$friendDetails',
+                as: 'friend',
+                cond: {
+                  $ne: ['$$friend._id', '$_id']
+                }
+              }
+            },
+            0
+          ]
+        }
       }
     }
-  ])
-
-  return friends
+  ]
+  const cursor = coll.aggregate(agg)
+  const result = await cursor.toArray().then((res) => res)
+  return result
 }
 
 const getMinUserInfo = async (ids) => {
@@ -144,6 +188,31 @@ const getMinUserInfo = async (ids) => {
   })
 }
 
+const deleteFriend = async (me, friend) => {
+  const meUser = await User.findById(me)
+  const friendUser = await User.findById(friend)
+  meUser.friends = meUser.friends.map((f) => {
+    if (
+      (f.requester == friend && f.recipient == me) ||
+      (f.requester == me && f.recipient == friend)
+    ) {
+      f.deletedOn = new Date()
+    }
+    return f
+  })
+  friendUser.friends = friendUser.friends.map((f) => {
+    if (
+      (f.requester == friend && f.recipient == me) ||
+      (f.requester == me && f.recipient == friend)
+    ) {
+      f.deletedOn = new Date()
+    }
+    return f
+  })
+  await meUser.save()
+  await friendUser.save()
+}
+
 module.exports = {
   getUsers,
   getUserInfo,
@@ -154,5 +223,6 @@ module.exports = {
   canSendFriendRequest,
   answerFriendRequest,
   getFriends,
-  getMinUserInfo
+  getMinUserInfo,
+  deleteFriend
 }

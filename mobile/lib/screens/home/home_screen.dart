@@ -144,7 +144,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         ),
       ];
 
-  void _processAction(String name) {
+  void _processAction(String name, {dynamic data}) {
     switch (name) {
       case showQRCode:
         _showQRCodeDialog();
@@ -165,7 +165,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
           options: [
             BottomModalOption(
               title: 'Remove',
-              onTap: () => debugPrint('Remove friend'),
+              onTap: () => _deleteFriend(store.state.user!.id, data),
             ),
           ],
         );
@@ -271,6 +271,17 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
     setIsLoading(true);
     try {
       await ModuleService.answerFriendRequest(requesterId, answer);
+    } catch (e) {
+      showMessage('Error', e.toString());
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  void _deleteFriend(String userId, Friendship friendship) async {
+    setIsLoading(true);
+    try {
+      await ModuleService.deleteFriend(userId, friendship);
     } catch (e) {
       showMessage('Error', e.toString());
     } finally {

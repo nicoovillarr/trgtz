@@ -73,8 +73,9 @@ class ApiBaseService {
     dynamic content;
     bool status = false;
     try {
-      final response = await callMethod(
-              Uri.parse('$endpoint/$controller/$action$query'), params)
+      final url =
+          '$endpoint/${'$controller/$action$query'.replaceAll(RegExp(r'/+'), '/')}';
+      final response = await callMethod(Uri.parse(url), params)
           .timeout(const Duration(seconds: 50));
       status = response.statusCode >= 200 && response.statusCode <= 299;
       if (response.statusCode != 204 && response.body != '') {
