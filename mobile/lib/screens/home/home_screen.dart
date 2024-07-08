@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
@@ -8,8 +7,8 @@ import 'package:trgtz/screens/home/fragments/index.dart';
 import 'package:trgtz/screens/home/services/index.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:redux/redux.dart';
+import 'package:trgtz/utils.dart';
 import 'package:uuid/uuid.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 GlobalKey<HomeScreenState> homeScreenKey = GlobalKey();
 
@@ -27,12 +26,8 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
   @override
   void initState() {
     _fragments = [
-      DashboardFragment(
-        enimtAction: _processAction,
-      ),
-      FriendsFragment(
-        enimtAction: _processAction,
-      ),
+      DashboardFragment(enimtAction: _processProfileAction),
+      ProfileFragment(enimtAction: _processProfileAction),
     ];
     super.initState();
   }
@@ -46,7 +41,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
 
   @override
   String get title =>
-      _currentIndex == 0 ? 'Hi, ${store.state.user!.firstName}' : 'Friends';
+      _currentIndex == 0 ? 'Hi, ${store.state.user!.firstName}' : 'Profile';
 
   @override
   FloatingActionButton? get fab => _currentIndex == 0
@@ -115,62 +110,26 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: 'Friends',
+            label: 'Profile',
           ),
         ],
       );
 
   @override
-  List<Widget> get actions => [
-        IconButton(
-          onPressed: () => Navigator.of(context).pushNamed('/profile'),
-          icon: const Icon(
-            Icons.settings,
-          ),
-        ),
-        if (_currentIndex == 1) ..._buildFriendsActions(),
-      ];
+  List<Widget> get actions => [];
 
-  List<Widget> _buildFriendsActions() => [
-        IconButton(
-          onPressed: () => _showSearchDialog(),
-          icon: const Icon(Icons.search),
-        ),
-        CustomPopUpMenuButton(
-          items: [
-            MenuItem(
-              title: 'Show QR code',
-              onTap: () => _showQRCodeDialog(),
-            ),
-          ],
-        ),
-      ];
-
-  void _processAction(String name, {dynamic data}) {
+  void _processProfileAction(String name, {dynamic data}) {
     switch (name) {
-      case showQRCode:
-        _showQRCodeDialog();
+      case editUserFirstName:
+        _openNameEditor();
         break;
 
-      case showFriendRequests:
-        _showFriendRequests(
-            context,
-            store.state.friends!
-                .where((element) =>
-                    element.status == 'pending' &&
-                    element.requester != store.state.user!.id)
-                .toList());
+      case editUserEmail:
+        _openEmailEditor();
         break;
 
-      case showFriendOptions:
-        simpleBottomSheetOptions(
-          options: [
-            BottomModalOption(
-              title: 'Remove',
-              onTap: () => _deleteFriend(store.state.user!.id, data),
-            ),
-          ],
-        );
+      case editUserPassword:
+        _openPasswordEditor();
         break;
 
       default:
@@ -179,137 +138,129 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
     }
   }
 
-  void _showQRCodeDialog() {
-    Size size = MediaQuery.of(context).size;
+  void _openNameEditor() {
     Store<AppState> store = StoreProvider.of<AppState>(context);
+    String original = store.state.user!.firstName;
     simpleBottomSheet(
-      child: SizedBox(
-        height: size.height * 0.75,
-        width: size.width,
-        child: Column(
-          children: [
-            const Text('Share this code with your friends:'),
-            const SizedBox(height: 16),
-            Center(
-              child: SizedBox(
-                width: size.width * 0.5,
-                height: size.width * 0.5,
-                child: const Placeholder(),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('#${store.state.user!.id}'),
-                IconButton(
-                  onPressed: () => Clipboard.setData(
-                      ClipboardData(text: store.state.user!.id)),
-                  icon: const Icon(
-                    Icons.copy,
-                    size: 16,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+      title: 'Change your name',
+      child: TextEditModal(
+        placeholder: 'John',
+        initialValue: original,
+        maxLength: 20,
+        maxLines: 1,
+        validate: (s) =>
+            s == null || s.isEmpty ? 'You must enter a name.' : null,
+        onSave: (s) {
+          setIsLoading(true);
+          Store<AppState> store = StoreProvider.of(context);
+          User user = store.state.user!;
+          user.firstName = s!;
+          ModuleService.updateUser(user, store)
+              .then((_) => setIsLoading(false))
+              .catchError((_) => setIsLoading(false));
+        },
       ),
     );
   }
 
-  void _showFriendRequests(BuildContext context, List<Friendship> requests) {
+  void _openEmailEditor() {
+    Store<AppState> store = StoreProvider.of<AppState>(context);
+    String original = store.state.user!.email;
     simpleBottomSheet(
-      title: 'Friend requests',
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height * 0.85,
+      title: 'Change your email',
+      child: TextEditModal(
+        placeholder: 'john@email.com',
+        initialValue: original,
+        maxLength: 150,
+        maxLines: 1,
+        validate: (s) => s == null || s.isEmpty || !Utils.validateEmail(s)
+            ? "You must enter a valid email address."
+            : null,
+        onSave: (s) {
+          setIsLoading(true);
+          Store<AppState> store = StoreProvider.of(context);
+          User user = store.state.user!;
+          user.email = s!;
+          ModuleService.updateUser(user, store)
+              .then((_) => setIsLoading(false))
+              .catchError((_) => setIsLoading(false));
+        },
+      ),
+    );
+  }
+
+  void _openPasswordEditor() {
+    GlobalKey<FormState> passwordFormKey = GlobalKey();
+    GlobalKey<TextEditState> oldPassKey = GlobalKey();
+    GlobalKey<TextEditState> newPassKey = GlobalKey();
+    GlobalKey<TextEditState> repeatPassKey = GlobalKey();
+    simpleBottomSheet(
+      title: 'Change your password',
+      child: Form(
+        key: passwordFormKey,
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
+          padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+          child: SeparatedColumn(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: 24.0,
             children: [
-              for (int i = 0; i < requests.length; i++)
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(requests[i].friendDetails.firstName),
-                          Text(
-                            timeago.format(
-                              requests[i].createdOn,
-                            ),
-                            style: const TextStyle(
-                              color: Colors.black45,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => _answerFriendRequest(
-                        requests[i].requester,
-                        true,
-                      ),
-                      icon: const Icon(Icons.check),
-                    ),
-                    IconButton(
-                      onPressed: () => _answerFriendRequest(
-                        requests[i].requester,
-                        false,
-                      ),
-                      icon: const Icon(Icons.close),
-                    ),
-                  ],
-                ),
+              TextEdit(
+                key: oldPassKey,
+                placeholder: 'Current password',
+                isPassword: true,
+                maxLines: 1,
+                validate: (s) => s == null || s.isEmpty
+                    ? 'You must enter the current password.'
+                    : null,
+              ),
+              TextEdit(
+                key: newPassKey,
+                placeholder: 'New password',
+                isPassword: true,
+                maxLines: 1,
+                validate: (s) => s == null || s.isEmpty
+                    ? 'You must enter a new password.'
+                    : null,
+              ),
+              TextEdit(
+                key: repeatPassKey,
+                placeholder: 'Repeat password',
+                isPassword: true,
+                maxLines: 1,
+                validate: (s) {
+                  if (s == null || s.isEmpty) {
+                    return 'You must repeat the new password.';
+                  }
+                  if (newPassKey.currentState!.value != s) {
+                    return 'Password mismatch.';
+                  }
+                  return null;
+                },
+              ),
+              MButton(
+                onPressed: () async {
+                  NavigatorState navigator = Navigator.of(context);
+                  if (passwordFormKey.currentState!.validate() &&
+                      navigator.canPop()) {
+                    String oldPassword = oldPassKey.currentState!.value;
+                    String newPassword = newPassKey.currentState!.value;
+                    setIsLoading(true);
+                    try {
+                      await ModuleService.changePassword(
+                          oldPassword, newPassword, store);
+                      navigator.pop();
+                    } catch (e) {
+                      showSnackBar(e.toString());
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  }
+                },
+                text: 'Save',
+              ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _answerFriendRequest(String requesterId, bool answer) async {
-    setIsLoading(true);
-    try {
-      await ModuleService.answerFriendRequest(requesterId, answer);
-    } catch (e) {
-      showMessage('Error', e.toString());
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  void _deleteFriend(String userId, Friendship friendship) {
-    setIsLoading(true);
-    ModuleService.deleteFriend(userId, friendship).then((_) {
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
-      setIsLoading(false);
-    }).catchError((e) {
-      showMessage('Error', e.toString());
-      setIsLoading(false);
-    });
-  }
-
-  void _showSearchDialog() {
-    simpleBottomSheet(
-      title: 'Add a friend',
-      child: TextEditModal(
-        placeholder: 'Search by code',
-        onSave: (code) async {
-          if (code != null && code.isNotEmpty) {
-            setIsLoading(true);
-            try {
-              await ModuleService.addFriend(code);
-            } catch (e) {
-              showMessage('Error', e.toString());
-            } finally {
-              setIsLoading(false);
-            }
-          }
-        },
       ),
     );
   }

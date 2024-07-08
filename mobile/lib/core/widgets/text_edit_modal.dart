@@ -9,6 +9,7 @@ class TextEditModal extends StatelessWidget {
   final String placeholder;
   final Function(String?) onSave;
   final String? Function(String?)? validate;
+  final String buttonText;
   String? initialValue;
   int? maxLines;
   int? maxLength;
@@ -17,6 +18,7 @@ class TextEditModal extends StatelessWidget {
     super.key,
     required this.placeholder,
     required this.onSave,
+    this.buttonText = 'Save',
     this.validate,
     this.initialValue = '',
     this.maxLines,
@@ -57,7 +59,7 @@ class TextEditModal extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4.0),
                 ),
               ),
-              child: const Text('Save'),
+              child: Text(buttonText),
             ),
           ],
         ),
