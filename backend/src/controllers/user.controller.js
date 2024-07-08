@@ -51,7 +51,7 @@ const sendFriendRequest = async (req, res) => {
   try {
     const _id = req.user
     const { recipientId } = req.body
-    if (!userService.userExist(recipientId)) {
+    if (!(await userService.userExist(recipientId))) {
       res.status(400).json({ message: 'Recipient not found.' })
       return
     }

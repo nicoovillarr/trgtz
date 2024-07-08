@@ -30,7 +30,10 @@ class _FriendsFragmentState extends BaseFragmentState<FriendsFragment> {
               context,
               friends
                   .where(
-                    (f) => f.status == 'pending',
+                    (f) =>
+                        f.status == 'pending' &&
+                        f.deletedOn == null &&
+                        f.requester != userId,
                   )
                   .toList(),
             ),
