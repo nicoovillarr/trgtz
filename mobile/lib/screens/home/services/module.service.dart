@@ -1,5 +1,7 @@
+import 'package:redux/redux.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/services/index.dart';
+import 'package:trgtz/store/index.dart';
 
 class ModuleService {
   static final GoalService _goalService = GoalService();
@@ -18,4 +20,18 @@ class ModuleService {
 
   static Future addFriend(String code) async =>
       await _userService.addFriend(code);
+
+  static Future updateUser(User user, Store<AppState> store) async {
+    dynamic response = await _userService.patchUser(user);
+    store.dispatch(SetUserAction(user: response['user']));
+    store.dispatch(SetGoalsAction(goals: response['goals']));
+  }
+
+  static Future changePassword(
+      String oldPassword, String newPassword, Store<AppState> store) async {
+    dynamic response =
+        await _userService.changePassword(oldPassword, newPassword);
+    store.dispatch(SetUserAction(user: response['user']));
+    store.dispatch(SetGoalsAction(goals: response['goals']));
+  }
 }

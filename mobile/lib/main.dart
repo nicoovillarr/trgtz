@@ -3,9 +3,9 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/screens/auth/index.dart';
+import 'package:trgtz/screens/friends/index.dart';
 import 'package:trgtz/screens/goal/index.dart';
 import 'package:trgtz/screens/index.dart';
-import 'package:trgtz/screens/profile/index.dart';
 import 'package:trgtz/security.dart';
 import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
@@ -69,7 +69,7 @@ class MyApp extends StatelessWidget {
           '/home': (context) => const HomeScreen(),
           '/goal': (context) => const GoalViewScreen(),
           '/goal/milestones': (context) => const GoalMilestonesView(),
-          '/profile': (context) => const ProfileScreen(),
+          '/friends': (context) => const FriendsListScreen(),
         },
       ),
     );
