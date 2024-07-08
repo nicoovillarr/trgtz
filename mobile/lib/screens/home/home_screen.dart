@@ -120,6 +120,12 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
 
   @override
   List<Widget> get actions => [
+        IconButton(
+          onPressed: () => Navigator.of(context).pushNamed('/profile'),
+          icon: const Icon(
+            Icons.settings,
+          ),
+        ),
         if (_currentIndex == 1) ..._buildFriendsActions(),
       ];
 
