@@ -24,7 +24,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   bool _isLoading = false;
   ScreenState _state = ScreenState.loading;
   OverlayEntry? _overlayEntry;
-  String _userId = '';
+  String? _userId;
 
   final Map<String, StreamSubscription> _subscriptions = {};
 
@@ -35,7 +35,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initSubscriptions();
-      _userId = StoreProvider.of<AppState>(context).state.user!.id;
+      _userId = StoreProvider.of<AppState>(context).state.user?.id;
       afterFirstBuild(context).then((_) {
         setState(() => _state = ScreenState.ready);
       });
@@ -280,7 +280,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
 
   String? get title => appName;
 
-  String get userId => _userId;
+  String? get userId => _userId;
 
   List<Widget> get actions => [];
 
