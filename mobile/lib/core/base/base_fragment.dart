@@ -11,12 +11,12 @@ abstract class BaseFragment extends StatefulWidget {
 }
 
 abstract class BaseFragmentState<T extends BaseFragment> extends State<T> {
-  String _userId = '';
+  String? _userId;
 
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _userId = StoreProvider.of<AppState>(context).state.user!.id;
+      _userId = StoreProvider.of<AppState>(context).state.user?.id;
     });
     customInitState();
     super.initState();
@@ -24,5 +24,5 @@ abstract class BaseFragmentState<T extends BaseFragment> extends State<T> {
 
   void customInitState() {}
 
-  String get userId => _userId;
+  String? get userId => _userId;
 }
