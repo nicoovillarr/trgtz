@@ -1,4 +1,4 @@
-package com.example.mobile
+package com.marppa.trgtz
 
 import io.flutter.embedding.android.FlutterActivity
 
