@@ -49,8 +49,8 @@ const canSendFriendRequest = async (me, other) => {
       (friend) =>
         (friend.recipient != other && friend.requester != other) ||
         (friend.status != 'rejected' && friend.status != 'accepted') ||
-        friend.deletedOn == null
-    ).length == 0
+        friend.deletedOn != null
+    ).length !== 0
   )
 }
 
