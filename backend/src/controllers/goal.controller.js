@@ -1,10 +1,24 @@
 const goalService = require('../services/goal.service')
+const userService = require('../services/user.service')
+const alertService = require('../services/alert.service')
 
 const createMultipleGoals = async (req, res) => {
   try {
     const user = req.user
     const goals = req.body
     const createdGoals = await goalService.createMultipleGoals(user, goals)
+    const friends = (await userService.getFriends(user)).filter(
+      (f) => f.status == 'accepted' && f.deletedOn == null
+    )
+    for (const friend of friends) {
+      for (const goal of createdGoals) {
+        await alertService.addAlert(
+          user,
+          friend.requester == user ? friend.recipient : friend.requester,
+          'goal_created'
+        )
+      }
+    }
     res.status(200).json(createdGoals.map((goal) => goal.toJSON()))
   } catch (error) {
     res.status(500).json(error)

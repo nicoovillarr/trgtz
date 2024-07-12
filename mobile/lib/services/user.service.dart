@@ -15,6 +15,8 @@ class UserService {
       result['friends'] = (content['friends'] as List)
           .map((e) => Friendship.fromJson(e))
           .toList();
+      result['alerts'] =
+          (content['alerts'] as List).map((e) => Alert.fromJson(e)).toList();
       return result;
     } else {
       throw Exception(response.content['message']);

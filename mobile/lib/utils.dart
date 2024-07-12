@@ -56,4 +56,21 @@ class Utils {
   static Future<bool> hasToken() async => await LocalStorage.getToken() != null;
 
   static bool validateEmail(String input) => input.contains('@');
+
+  static String getAlertMessage(String message) {
+    switch (message) {
+      case 'friend_requested':
+        return 'Wants to be your friend';
+      case 'friend_accepted':
+        return 'Accepted your friend request';
+      case 'goal_created':
+        return 'Created a new goal';
+      case 'goal_completed':
+        return 'Completed a goal';
+      case 'milestone_completed':
+        return 'Completed a milestone';
+      default:
+        return message;
+    }
+  }
 }

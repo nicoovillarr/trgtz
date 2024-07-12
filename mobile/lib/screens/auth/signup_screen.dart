@@ -181,6 +181,8 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
             Map<String, dynamic> me = await ModuleService().getMe();
             store.dispatch(SetUserAction(user: me['user']));
             store.dispatch(SetGoalsAction(goals: me['goals']));
+            store.dispatch(SetFriendsAction(friends: me['friends']));
+            store.dispatch(SetAlertsAction(alerts: me['alerts']));
 
             if (mounted) {
               Navigator.of(context).popAndPushNamed('/home');

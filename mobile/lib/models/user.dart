@@ -13,10 +13,7 @@ class User extends ModelBase {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['_id'],
-      firstName: json['firstName'],
-      email: json['email'],
-    );
+        id: json['_id'], firstName: json['firstName'], email: json['email']);
   }
 
   Map<String, dynamic> toJson() => {
