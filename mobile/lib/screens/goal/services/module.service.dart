@@ -31,4 +31,10 @@ class ModuleService {
     return _goalService.setMilestones(goal, milestones).then(
         (value) => store.dispatch(SetCurrentEditorObjectAction(obj: value)));
   }
+
+  static Future updateMilestone(
+      Store<AppState> store, Goal goal, Milestone milestone) {
+    return _goalService.updateMilestone(goal, milestone).then(
+        (value) => store.dispatch(SetCurrentEditorObjectAction(obj: value)));
+  }
 }

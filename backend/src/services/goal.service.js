@@ -97,6 +97,12 @@ const createGoal = async (user_id, title, description, year) => {
   return goal
 }
 
+const getMilestone = async (id, milestoneId) => {
+  const goal = await Goal.findOne({ _id: id })
+  if (goal == null) return null
+  return goal.milestones.id(milestoneId)
+}
+
 module.exports = {
   createMultipleGoals,
   setMilestones,
@@ -105,5 +111,6 @@ module.exports = {
   getGoals,
   getSingleGoal,
   updateGoal,
-  deleteGoal
+  deleteGoal,
+  getMilestone
 }

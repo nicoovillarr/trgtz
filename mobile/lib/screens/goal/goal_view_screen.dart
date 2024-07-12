@@ -429,7 +429,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
 
     milestone.completedOn =
         milestone.completedOn == null ? DateTime.now() : null;
-    ModuleService.setMilestones(store, entity!, entity!.milestones).then((_) {
+    ModuleService.updateMilestone(store, entity!, milestone).then((_) {
       if (entity!.milestones.every((element) => element.completedOn != null) &&
           entity!.completedOn != null) {
         showSnackBar('Goal completed!');
@@ -454,7 +454,8 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
   FloatingActionButton? get fab => entity != null &&
           entity!.completedOn == null &&
           entity!.deletedOn == null &&
-          entity!.milestones.isEmpty
+          (entity!.milestones.isEmpty ||
+              entity!.milestones.every((m) => m.completedOn != null))
       ? FloatingActionButton.extended(
           onPressed: () async {
             ModuleService.completeGoal(store, entity!).then((_) {
