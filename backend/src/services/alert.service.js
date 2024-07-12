@@ -39,8 +39,18 @@ const markAlertsAsSeen = async (userId) => {
   await Promise.all(alerts.map((alert) => alert.save()))
 }
 
+const deleteAlerts = async (sent_by, sent_to) => {
+  await Alert.deleteMany({
+    $or: [
+      { sent_by, sent_to },
+      { sent_by: sent_to, sent_to: sent_by }
+    ]
+  })
+}
+
 module.exports = {
   sendAlertToFriends,
   addAlert,
-  markAlertsAsSeen
+  markAlertsAsSeen,
+  deleteAlerts
 }

@@ -109,6 +109,7 @@ const deleteFriend = async (req, res) => {
     }
 
     await userService.deleteFriend(_id, otherUser)
+    await alertService.deleteAlerts(_id, otherUser)
     res.status(204).end()
   } catch (error) {
     res.status(500).json(error)
