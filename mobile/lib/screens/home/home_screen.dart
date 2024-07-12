@@ -20,12 +20,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends BaseScreen<HomeScreen> {
-  int _currentIndex = 0;
+  int _currentIndex = 1;
   late List<Widget> _fragments;
 
   @override
   void initState() {
     _fragments = [
+      NotificationsFragment(enimtAction: _processProfileAction),
       DashboardFragment(enimtAction: _processProfileAction),
       ProfileFragment(enimtAction: _processProfileAction),
     ];
@@ -40,11 +41,14 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
   bool get addBackButton => false;
 
   @override
-  String get title =>
-      _currentIndex == 0 ? 'Hi, ${store.state.user!.firstName}' : 'Profile';
+  String get title => _currentIndex == 0
+      ? 'Notifications'
+      : _currentIndex == 1
+          ? 'Hi, ${store.state.user!.firstName}'
+          : 'Profile';
 
   @override
-  FloatingActionButton? get fab => _currentIndex == 0
+  FloatingActionButton? get fab => _currentIndex == 1
       ? FloatingActionButton(
           heroTag: "add_goal",
           child: const Icon(Icons.add),
@@ -104,6 +108,10 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
         items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Notifications',
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',

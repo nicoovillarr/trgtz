@@ -30,6 +30,12 @@ const userSchema = new Schema(
         ref: 'Goal'
       }
     ],
+    alerts: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Alert'
+      }
+    ],
     friends: [
       {
         requester: {

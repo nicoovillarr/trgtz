@@ -59,6 +59,12 @@ const updateMilestone = async (id, user, milestoneId, data) => {
   const { title, completedOn } = data
   milestone.title = title
   milestone.completedOn = completedOn
+
+  goal.completedOn =
+    goal.milestones.some((milestone) => !milestone.completedOn) === false
+      ? new Date()
+      : null
+
   await goal.save()
   return goal
 }
@@ -97,6 +103,12 @@ const createGoal = async (user_id, title, description, year) => {
   return goal
 }
 
+const getMilestone = async (id, milestoneId) => {
+  const goal = await Goal.findOne({ _id: id })
+  if (goal == null) return null
+  return goal.milestones.id(milestoneId)
+}
+
 module.exports = {
   createMultipleGoals,
   setMilestones,
@@ -105,5 +117,6 @@ module.exports = {
   getGoals,
   getSingleGoal,
   updateGoal,
-  deleteGoal
+  deleteGoal,
+  getMilestone
 }

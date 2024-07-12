@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/index.dart';
-import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/auth/services/index.dart';
 import 'package:trgtz/screens/auth/widgets/index.dart';
 import 'package:trgtz/security.dart';
@@ -205,9 +204,11 @@ class _LoginScreenState extends BaseScreen<LoginScreen> {
             await Security.saveCredentials(email, password, token);
 
             final me = await ModuleService().getMe();
-            store.dispatch(SetUserAction(user: me['user'] as User));
+            store.dispatch(SetUserAction(user: me['user']));
+            store.dispatch(SetGoalsAction(goals: me['goals']));
+            store.dispatch(SetFriendsAction(friends: me['friends']));
+            store.dispatch(SetAlertsAction(alerts: me['alerts']));
             if (mounted) {
-              store.dispatch(SetGoalsAction(goals: me['goals'] as List<Goal>));
               Navigator.of(context).popAndPushNamed('/home');
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(

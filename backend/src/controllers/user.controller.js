@@ -1,16 +1,12 @@
 const userService = require('../services/user.service')
 const authService = require('../services/auth.service')
+const alertService = require('../services/alert.service')
 
 const getMe = async (req, res) => {
   try {
     const user = await userService.getUserInfo(req.user)
-    await user.populate('goals')
-
-    const json = user.toJSON()
-    delete json.sessions
-    json.friends = await userService.getFriends(req.user)
-
-    res.status(200).json(json)
+    await alertService.markAlertsAsSeen(req.user)
+    res.status(200).json(user)
   } catch (error) {
     res.status(500).json(error)
     console.error('Error getting users: ', error)
@@ -64,6 +60,7 @@ const sendFriendRequest = async (req, res) => {
     }
 
     await userService.sendFriendRequest(_id, recipientId)
+    await alertService.addAlert(_id, recipientId, 'friend_requested')
 
     res.status(204).end()
   } catch (error) {
@@ -91,6 +88,10 @@ const answerFriendRequest = async (req, res) => {
       return
     }
 
+    if (answer === 'accepted') {
+      await userService.sendAlert(_id, requesterId, 'friend_accepted')
+    }
+
     res.status(204).end()
   } catch (error) {
     res.status(500).json(error)
@@ -108,6 +109,7 @@ const deleteFriend = async (req, res) => {
     }
 
     await userService.deleteFriend(_id, otherUser)
+    await alertService.deleteAlerts(_id, otherUser)
     res.status(204).end()
   } catch (error) {
     res.status(500).json(error)
