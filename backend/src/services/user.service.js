@@ -1,9 +1,12 @@
 const User = require('../models/user.model')
 const mongoose = require('mongoose')
+const { viewUsers } = require('../config/views')
 
 const getUsers = async () => await User.find()
 
-const getUserInfo = async (id) => await User.findById(id)
+const getUserInfo = async (id) => {
+  return await viewUsers.findOne({ _id: id })
+}
 
 const patchUser = async (id, updates) => {
   const user = await User.findOne({ _id: id })

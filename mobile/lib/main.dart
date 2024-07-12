@@ -24,6 +24,7 @@ void main() async {
       user: user['user'],
       goals: user['goals'],
       friends: user['friends'],
+      alerts: user['alerts'],
     );
     loggedIn = true;
   }

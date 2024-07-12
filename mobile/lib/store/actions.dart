@@ -102,3 +102,25 @@ class SetCurrentEditorObjectAction implements ReducerActionBase {
     return currentState.copyWith(currentEditorObject: obj);
   }
 }
+
+class SetAlertsAction implements ReducerActionBase {
+  final List<Alert> alerts;
+
+  const SetAlertsAction({required this.alerts});
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(alerts: alerts);
+  }
+}
+
+class SetFriendsAction implements ReducerActionBase {
+  final List<Friendship> friends;
+
+  const SetFriendsAction({required this.friends});
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(friends: friends);
+  }
+}
