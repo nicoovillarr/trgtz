@@ -54,4 +54,14 @@ class GoalService {
       throw Exception(response.content['message']);
     }
   }
+
+  Future<Goal> updateMilestone(Goal goal, Milestone milestone) async {
+    ApiResponse response =
+        await _goalsApiService.updateMilestone(goal, milestone);
+    if (response.status) {
+      return Goal.fromJson(response.content);
+    } else {
+      throw Exception(response.content['message']);
+    }
+  }
 }

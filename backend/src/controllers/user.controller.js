@@ -58,6 +58,7 @@ const sendFriendRequest = async (req, res) => {
     }
 
     await userService.sendFriendRequest(_id, recipientId)
+    await userService.sendAlert(_id, recipientId, 'friend_requested')
 
     res.status(204).end()
   } catch (error) {
@@ -83,6 +84,10 @@ const answerFriendRequest = async (req, res) => {
     if (!answered) {
       res.status(400).json({ message: 'Friend request not found.' })
       return
+    }
+
+    if (answer === 'accepted') {
+      await userService.sendAlert(_id, requesterId, 'friend_accepted')
     }
 
     res.status(204).end()
