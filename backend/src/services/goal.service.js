@@ -59,6 +59,12 @@ const updateMilestone = async (id, user, milestoneId, data) => {
   const { title, completedOn } = data
   milestone.title = title
   milestone.completedOn = completedOn
+
+  goal.completedOn =
+    goal.milestones.some((milestone) => !milestone.completedOn) === false
+      ? new Date()
+      : null
+
   await goal.save()
   return goal
 }
