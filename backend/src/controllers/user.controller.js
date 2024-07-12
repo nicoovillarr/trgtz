@@ -1,9 +1,11 @@
 const userService = require('../services/user.service')
 const authService = require('../services/auth.service')
+const alertService = require('../services/alert.service')
 
 const getMe = async (req, res) => {
   try {
     const user = await userService.getUserInfo(req.user)
+    await alertService.markAlertsAsSeen(req.user)
     res.status(200).json(user)
   } catch (error) {
     res.status(500).json(error)
