@@ -31,7 +31,16 @@ const addAlert = async (sent_by, sent_to, type) => {
   return alert
 }
 
+const markAlertsAsSeen = async (userId) => {
+  const alerts = await Alert.find({ sent_to: userId, seen: false })
+  alerts.forEach((alert) => {
+    alert.seen = true
+  })
+  await Promise.all(alerts.map((alert) => alert.save()))
+}
+
 module.exports = {
   sendAlertToFriends,
-  addAlert
+  addAlert,
+  markAlertsAsSeen
 }
