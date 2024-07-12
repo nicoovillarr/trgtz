@@ -60,7 +60,7 @@ const sendFriendRequest = async (req, res) => {
     }
 
     await userService.sendFriendRequest(_id, recipientId)
-    await userService.sendAlert(_id, recipientId, 'friend_requested')
+    await alertService.addAlert(_id, recipientId, 'friend_requested')
 
     res.status(204).end()
   } catch (error) {
