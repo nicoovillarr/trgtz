@@ -196,13 +196,8 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
   void _deleteFriend(Friendship friend) async {
     setIsLoading(true);
     Store<AppState> store = StoreProvider.of<AppState>(context);
-    try {
-      await ModuleService.deleteFriend(store.state.user!.id, friend);
-    } catch (e) {
-      showMessage('Error', e.toString());
-    } finally {
-      setIsLoading(false);
-    }
+    await ModuleService.deleteFriend(store.state.user!.id, friend);
+    setIsLoading(false);
   }
 
   void _showSearchDialog() {
@@ -214,13 +209,8 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
         onSave: (code) async {
           if (code != null && code.isNotEmpty) {
             setIsLoading(true);
-            try {
-              await ModuleService.addFriend(code);
-            } catch (e) {
-              showMessage('Error', e.toString());
-            } finally {
-              setIsLoading(false);
-            }
+            await ModuleService.addFriend(code);
+            setIsLoading(false);
           }
         },
       ),
@@ -319,12 +309,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
 
   void _answerFriendRequest(String requesterId, bool answer) async {
     setIsLoading(true);
-    try {
-      await ModuleService.answerFriendRequest(requesterId, answer);
-    } catch (e) {
-      showMessage('Error', e.toString());
-    } finally {
-      setIsLoading(false);
-    }
+    await ModuleService.answerFriendRequest(requesterId, answer);
+    setIsLoading(false);
   }
 }

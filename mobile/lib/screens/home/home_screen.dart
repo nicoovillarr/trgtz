@@ -88,12 +88,6 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
                           },
                         ),
                       );
-                    }).catchError((_) {
-                      setIsLoading(false);
-                      showMessage(
-                        'Error',
-                        'An error occurred while creating the goal.',
-                      );
                     });
                   }
                 },
@@ -164,8 +158,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
           User user = store.state.user!;
           user.firstName = s!;
           ModuleService.updateUser(user, store)
-              .then((_) => setIsLoading(false))
-              .catchError((_) => setIsLoading(false));
+              .then((_) => setIsLoading(false));
         },
       ),
     );
@@ -190,8 +183,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
           User user = store.state.user!;
           user.email = s!;
           ModuleService.updateUser(user, store)
-              .then((_) => setIsLoading(false))
-              .catchError((_) => setIsLoading(false));
+              .then((_) => setIsLoading(false));
         },
       ),
     );
@@ -253,15 +245,10 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
                     String oldPassword = oldPassKey.currentState!.value;
                     String newPassword = newPassKey.currentState!.value;
                     setIsLoading(true);
-                    try {
-                      await ModuleService.changePassword(
-                          oldPassword, newPassword, store);
-                      navigator.pop();
-                    } catch (e) {
-                      showSnackBar(e.toString());
-                    } finally {
-                      setIsLoading(false);
-                    }
+                    await ModuleService.changePassword(
+                        oldPassword, newPassword, store);
+                    navigator.pop();
+                    setIsLoading(false);
                   }
                 },
                 text: 'Save',
