@@ -93,8 +93,14 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
       store.onChange
           .map((event) => event.isLoading ?? false)
           .listen((isLoading) {
-        if (isLoading != _isLoading) {
-          setState(() => _isLoading = isLoading);
+        if (isLoading == _isLoading) return;
+        _isLoading = isLoading;
+        if (isLoading) {
+          _overlayEntry = _createOverlayEntry();
+          Overlay.of(context).insert(_overlayEntry!);
+        } else {
+          _overlayEntry?.remove();
+          _overlayEntry = null;
         }
       }),
     );
@@ -217,13 +223,6 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   }
 
   void setIsLoading(bool isLoading) {
-    if (isLoading) {
-      _overlayEntry = _createOverlayEntry();
-      Overlay.of(context).insert(_overlayEntry!);
-    } else {
-      _overlayEntry?.remove();
-      _overlayEntry = null;
-    }
     store.dispatch(SetIsLoadingAction(isLoading: isLoading));
   }
 

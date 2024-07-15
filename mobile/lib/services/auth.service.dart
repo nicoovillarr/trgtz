@@ -1,4 +1,5 @@
 import 'package:trgtz/api/index.dart';
+import 'package:trgtz/core/exceptions/index.dart';
 
 class AuthService {
   final AuthApiService _authApiService = AuthApiService();
@@ -8,7 +9,7 @@ class AuthService {
     if (response.status) {
       return response.content['token'];
     } else {
-      throw Exception(response.content['message']);
+      throw AppException(response.content);
     }
   }
 
@@ -18,7 +19,7 @@ class AuthService {
     if (response.status) {
       return response.content['token'];
     } else {
-      throw Exception(response.content['message']);
+      throw AppException(response.content);
     }
   }
 
