@@ -42,16 +42,20 @@ const sendFriendRequest = async (requesterId, recipientId) => {
 const userExist = async (id) => (await User.countDocuments({ _id: id })) > 0
 
 const canSendFriendRequest = async (me, other) => {
-  if (me == other) return false
-  const requester = await User.findById(me)
-  return (
-    requester.friends.filter(
-      (friend) =>
-        (friend.recipient != other && friend.requester != other) ||
-        (friend.status != 'rejected' && friend.status != 'accepted') ||
-        friend.deletedOn != null
-    ).length !== 0
+  if (me === other) return false
+
+  const user = await User.findById(me)
+  if (!user) return false
+
+  const existingFriendship = user.friends.find(
+    (friend) =>
+      ((friend.requester === me && friend.recipient == other) ||
+        (friend.requester == other && friend.recipient == me)) &&
+      friend.status !== 'accepted' &&
+      (friend.status === 'rejected' ? friend.deletedOn === null : true)
   )
+
+  return !existingFriendship
 }
 
 const answerFriendRequest = async (recipientId, requesterId, answer) => {
