@@ -17,7 +17,6 @@ class FriendsListScreen extends StatefulWidget {
 }
 
 class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
-  final GlobalKey iconKey = GlobalKey();
   @override
   Widget body(BuildContext context) =>
       StoreConnector<AppState, List<Friendship>>(
@@ -71,20 +70,25 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
 
   Widget _buildFriendsList(List<Friendship> friends) => ListView.builder(
         itemCount: friends.length,
-        itemBuilder: (context, index) => ListTile(
-          title: Text(friends[index].friendDetails.firstName),
-          subtitle: Text('Since ${timeago.format(friends[index].updatedOn!)}'),
-          leading: const CircleAvatar(
-            backgroundImage: NetworkImage(
-              'https://static.vecteezy.com/system/resources/previews/004/509/264/non_2x/profile-placeholder-default-female-avatar-vector.jpg',
+        itemBuilder: (context, index) {
+          final GlobalKey iconKey = GlobalKey();
+          return ListTile(
+            title: Text(friends[index].friendDetails.firstName),
+            subtitle:
+                Text('Since ${timeago.format(friends[index].updatedOn!)}'),
+            leading: const CircleAvatar(
+              backgroundImage: NetworkImage(
+                'https://static.vecteezy.com/system/resources/previews/004/509/264/non_2x/profile-placeholder-default-female-avatar-vector.jpg',
+              ),
             ),
-          ),
-          trailing: IconButton(
-            key: iconKey,
-            icon: const Icon(Icons.more_vert),
-            onPressed: () => _showContextMenu(context, friends[index]),
-          ),
-        ),
+            trailing: IconButton(
+              key: iconKey,
+              icon: const Icon(Icons.more_vert),
+              onPressed: () =>
+                  _showContextMenu(context, iconKey, friends[index]),
+            ),
+          );
+        },
       );
 
   Widget _buildPendingRequestModal(
@@ -157,7 +161,8 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
         ),
       ];
 
-  void _showContextMenu(BuildContext context, Friendship friend) async {
+  void _showContextMenu(
+      BuildContext context, GlobalKey iconKey, Friendship friend) async {
     final RenderBox overlay =
         Overlay.of(context).context.findRenderObject() as RenderBox;
     final RenderBox button =
