@@ -4,10 +4,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/index.dart';
+import 'package:trgtz/logger.dart';
+import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/auth/services/index.dart';
 import 'package:trgtz/screens/auth/widgets/index.dart';
 import 'package:trgtz/security.dart';
 import 'package:trgtz/store/index.dart';
+import 'package:trgtz/store/local_storage.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -204,11 +207,15 @@ class _LoginScreenState extends BaseScreen<LoginScreen> {
             await Security.saveCredentials(email, password, token);
 
             final me = await ModuleService().getMe();
-            store.dispatch(SetUserAction(user: me['user']));
+            User u = me['user'];
+            store.dispatch(SetUserAction(user: u));
             store.dispatch(SetGoalsAction(goals: me['goals']));
             store.dispatch(SetFriendsAction(friends: me['friends']));
             store.dispatch(SetAlertsAction(alerts: me['alerts']));
-            if (mounted) {
+
+            await LocalStorage.saveUserID(u.id);
+
+            Logger.logLogin().then((_) {
               Navigator.of(context).popAndPushNamed('/home');
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -216,15 +223,7 @@ class _LoginScreenState extends BaseScreen<LoginScreen> {
                   duration: Duration(seconds: 2),
                 ),
               );
-            }
-          }).catchError((error) {
-            setIsLoading(false);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(error.toString()),
-                duration: const Duration(seconds: 2),
-              ),
-            );
+            });
           });
         },
         style: ElevatedButton.styleFrom(

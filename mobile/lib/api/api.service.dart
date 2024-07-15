@@ -71,18 +71,26 @@ class ApiBaseService {
     }
 
     dynamic content;
-    bool status = false;
+    int? statusCode;
     try {
       final url =
           '$endpoint/${'$controller/$action$query'.replaceAll(RegExp(r'/+'), '/')}';
       final response = await callMethod(Uri.parse(url), params)
           .timeout(const Duration(seconds: 50));
-      status = response.statusCode >= 200 && response.statusCode <= 299;
-      if (response.statusCode != 204 && response.body != '') {
-        try {
-          content = jsonDecode(response.body);
-        } catch (_) {
-          content = response.body;
+      statusCode = response.statusCode;
+      try {
+        content = jsonDecode(response.body);
+      } catch (_) {
+        content = response.body;
+      }
+      if (statusCode < 200 || statusCode > 299) {
+        content = content != null &&
+                content is Map<String, dynamic> &&
+                content.containsKey('message')
+            ? content['message']
+            : 'Unknown error';
+        if (kDebugMode) {
+          print(content);
         }
       }
     } on Exception catch (ex) {
@@ -91,7 +99,7 @@ class ApiBaseService {
       }
     }
 
-    return ApiResponse(status: status, content: content);
+    return ApiResponse(statusCode: statusCode, content: content);
   }
 
   Future<http.Response> _getApiCallImpl(Uri endpoint, dynamic params) async =>
@@ -136,10 +144,13 @@ class ApiBaseService {
 }
 
 class ApiResponse {
-  final bool status;
+  final int? statusCode;
   final dynamic content;
 
-  ApiResponse({required this.content, this.status = true});
+  ApiResponse({required this.content, required this.statusCode});
+
+  bool get status =>
+      statusCode != null ? statusCode! >= 200 && statusCode! <= 299 : false;
 
   @override
   String toString() {

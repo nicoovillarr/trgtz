@@ -7,6 +7,7 @@ class LocalStorage {
   static const String _TOKEN_KEY = 'TOKEN_LIST';
   static const String _EMAIL_KEY = 'EMAIL_KEY';
   static const String _PASS_KEY = 'PASS_KEY';
+  static const String _USER_ID_KEY = 'USER_ID_KEY';
 
   static Future<String?> getToken() async {
     final instance = await SharedPreferences.getInstance();
@@ -20,6 +21,20 @@ class LocalStorage {
     } else {
       instance.setString(_TOKEN_KEY, token);
     }
+  }
+
+  static Future saveUserID(String? id) async {
+    final instance = await SharedPreferences.getInstance();
+    if (id == null) {
+      instance.remove(_USER_ID_KEY);
+    } else {
+      instance.setString(_USER_ID_KEY, id);
+    }
+  }
+
+  static Future<String?> getUserID() async {
+    final instance = await SharedPreferences.getInstance();
+    return instance.getString(_USER_ID_KEY);
   }
 
   static Future<String?> getEmail() async {

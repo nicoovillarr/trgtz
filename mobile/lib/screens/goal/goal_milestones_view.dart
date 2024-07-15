@@ -17,8 +17,12 @@ class _GoalMilestonesViewState
   @override
   Future afterFirstBuild(BuildContext context) async {
     String goalId = ModalRoute.of(context)!.settings.arguments as String;
-    final goal = await ModuleService.getGoal(goalId);
-    store.dispatch(SetCurrentEditorObjectAction(obj: goal));
+    setIsLoading(false);
+    ModuleService.getGoal(goalId).then((goal) {
+      store.dispatch(SetCurrentEditorObjectAction(obj: goal));
+      setIsLoading(false);
+      setState(() {});
+    });
   }
 
   @override
@@ -36,62 +40,64 @@ class _GoalMilestonesViewState
 
   @override
   Widget body(BuildContext context) {
-    return ReorderableListView(
-      onReorder: reorder,
-      footer: entity?.milestones.isNotEmpty ?? false
-          ? const Padding(
-              padding: EdgeInsets.only(top: 8.0),
-              child: Text.rich(
-                TextSpan(
-                  text: 'Drag & drop to reorder.',
-                  children: [TextSpan(text: '\nSwipe right to delete.')],
-                  style: TextStyle(color: Colors.grey),
-                ),
-                textAlign: TextAlign.center,
-              ),
-            )
-          : null,
-      children: [
-        for (final milestone in entity!.milestones)
-          Dismissible(
-            key: UniqueKey(),
-            direction: DismissDirection.startToEnd,
-            onDismissed: (direction) => delete(milestone),
-            background: Container(
-              color: Colors.red,
-              child: const Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: EdgeInsets.only(left: 16),
-                  child: Icon(Icons.delete, color: Colors.white),
-                ),
-              ),
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
-                      spreadRadius: 1,
-                      blurRadius: 2,
-                      offset: const Offset(0, 1),
+    return entity != null
+        ? ReorderableListView(
+            onReorder: reorder,
+            footer: entity?.milestones.isNotEmpty ?? false
+                ? const Padding(
+                    padding: EdgeInsets.only(top: 8.0),
+                    child: Text.rich(
+                      TextSpan(
+                        text: 'Drag & drop to reorder.',
+                        children: [TextSpan(text: '\nSwipe right to delete.')],
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                  ]),
-              child: Material(
-                elevation: 2,
-                child: ListTile(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                  )
+                : null,
+            children: [
+              for (final milestone in entity!.milestones)
+                Dismissible(
+                  key: UniqueKey(),
+                  direction: DismissDirection.startToEnd,
+                  onDismissed: (direction) => delete(milestone),
+                  background: Container(
+                    color: Colors.red,
+                    child: const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 16),
+                        child: Icon(Icons.delete, color: Colors.white),
+                      ),
+                    ),
                   ),
-                  title: Text(milestone.title),
+                  child: Container(
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.2),
+                            spreadRadius: 1,
+                            blurRadius: 2,
+                            offset: const Offset(0, 1),
+                          ),
+                        ]),
+                    child: Material(
+                      elevation: 2,
+                      child: ListTile(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        title: Text(milestone.title),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
-      ],
-    );
+            ],
+          )
+        : const Center(child: Text('Goal not found'));
   }
 
   @override
@@ -145,15 +151,13 @@ class _GoalMilestonesViewState
     for (final m in milestones) {
       m.completedOn = null;
     }
-    ModuleService.setMilestones(store, entity!, milestones).catchError(
-        (_) => showSnackBar('There was an error reordering the milestones'));
+    ModuleService.setMilestones(store, entity!, milestones);
   }
 
   void add(String title) {
     final milestones = entity!.milestones.toList();
     milestones.add(Milestone.of(title: title));
-    ModuleService.setMilestones(store, entity!, milestones).catchError(
-        (_) => showSnackBar('There was an error adding the milestone'));
+    ModuleService.setMilestones(store, entity!, milestones);
   }
 
   void delete(Milestone milestone, {bool force = false}) {
@@ -177,9 +181,6 @@ class _GoalMilestonesViewState
     ModuleService.setMilestones(store, entity!, milestones).then((value) {
       setIsLoading(false);
       setState(() {});
-    }).catchError((_) {
-      showSnackBar('There was an error deleting the milestone');
-      setIsLoading(false);
     });
   }
 }

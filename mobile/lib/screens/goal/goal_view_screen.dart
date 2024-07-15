@@ -31,8 +31,12 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
   @override
   Future afterFirstBuild(BuildContext context) async {
     String goalId = ModalRoute.of(context)!.settings.arguments as String;
-    final goal = await ModuleService.getGoal(goalId);
-    store.dispatch(SetCurrentEditorObjectAction(obj: goal));
+    setIsLoading(true);
+    ModuleService.getGoal(goalId).then((goal) {
+      store.dispatch(SetCurrentEditorObjectAction(obj: goal));
+      setIsLoading(false);
+      setState(() {});
+    });
   }
 
   @override
@@ -331,9 +335,6 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
     ModuleService.updateGoal(store, goal).then((_) {
       setIsLoading(false);
       showSnackBar('Goal updated successfully!');
-    }).catchError((_) {
-      setIsLoading(false);
-      showMessage('Error', 'An error occurred while updating the goal');
     });
   }
 
@@ -393,14 +394,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
             .popUntil((route) => route.settings.name == '/home');
         showSnackBar('Goal deleted successfully!');
       },
-    ).catchError((e) {
-      debugPrint(e.toString());
-      setIsLoading(false);
-      showMessage(
-        'Error',
-        'An error occurred while deleting the goal',
-      );
-    });
+    );
   }
 
   void _onMilestoneCompleted(Milestone milestone) {
@@ -438,9 +432,6 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
           _centerController.stop();
         });
       }
-    }).catchError((_) {
-      setIsLoading(false);
-      showSnackBar('There was an error updating the milestone');
     });
   }
 
