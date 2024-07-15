@@ -1,4 +1,5 @@
 import 'package:trgtz/api/index.dart';
+import 'package:trgtz/core/exceptions/index.dart';
 import 'package:trgtz/models/index.dart';
 
 class UserService {
@@ -19,7 +20,7 @@ class UserService {
           (content['alerts'] as List).map((e) => Alert.fromJson(e)).toList();
       return result;
     } else {
-      throw Exception(response.content['message']);
+      throw AppException(response.content);
     }
   }
 
@@ -28,7 +29,7 @@ class UserService {
     if (response.status) {
       return getMe();
     } else {
-      throw Exception(response.content['message']);
+      throw AppException(response.content);
     }
   }
 
@@ -39,7 +40,7 @@ class UserService {
     if (response.status) {
       return getMe();
     } else {
-      throw Exception(response.content['message']);
+      throw AppException(response.content);
     }
   }
 
@@ -49,7 +50,7 @@ class UserService {
     if (response.status) {
       return response.content;
     } else {
-      throw Exception(response.content['message']);
+      throw AppException(response.content);
     }
   }
 
@@ -59,7 +60,7 @@ class UserService {
     if (response.status) {
       return response.content;
     } else {
-      throw Exception(response.content['message']);
+      throw AppException(response.content);
     }
   }
 
@@ -68,7 +69,7 @@ class UserService {
     if (response.status) {
       return response.content;
     } else {
-      throw Exception(response.content['message']);
+      throw AppException(response.content);
     }
   }
 }

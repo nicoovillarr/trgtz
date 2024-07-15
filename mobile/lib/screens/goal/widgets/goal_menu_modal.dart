@@ -13,7 +13,10 @@ class GoalMenuAction {
 
 class GoalMenuModal extends StatelessWidget {
   final Goal goal;
-  const GoalMenuModal({required this.goal, super.key});
+  const GoalMenuModal({
+    super.key,
+    required this.goal,
+  });
 
   List<GoalMenuAction> getActions(BuildContext context) => [
         GoalMenuAction()

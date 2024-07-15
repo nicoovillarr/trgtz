@@ -12,15 +12,6 @@ class ModuleService {
 
   static Future deleteGoal(String id) async => _goalService.deleteGoal(id);
 
-  static Future answerFriendRequest(String requesterId, bool answer) async =>
-      await _userService.answerFriendRequest(requesterId, answer);
-
-  static Future deleteFriend(String userId, Friendship friendship) async =>
-      await _userService.deleteFriend(userId, friendship);
-
-  static Future addFriend(String code) async =>
-      await _userService.addFriend(code);
-
   static Future updateUser(User user, Store<AppState> store) async {
     dynamic response = await _userService.patchUser(user);
     store.dispatch(SetUserAction(user: response['user']));

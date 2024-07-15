@@ -1,5 +1,6 @@
 import 'package:trgtz/api/index.dart';
 import 'package:trgtz/models/index.dart';
+import 'package:trgtz/core/exceptions/index.dart';
 
 class GoalService {
   final GoalsApiService _goalsApiService = GoalsApiService();
@@ -9,7 +10,7 @@ class GoalService {
     if (response.status) {
       return response.content.map<Goal>((goal) => Goal.fromJson(goal)).toList();
     } else {
-      throw Exception(response.content['message']);
+      throw AppException(response.content);
     }
   }
 
@@ -18,7 +19,7 @@ class GoalService {
     if (response.status) {
       return Goal.fromJson(response.content);
     } else {
-      throw Exception(response.content['message']);
+      throw AppException(response.content);
     }
   }
 
@@ -27,21 +28,21 @@ class GoalService {
     if (response.status) {
       return (response.content as List).map((e) => Goal.fromJson(e)).toList();
     } else {
-      throw Exception(response.content['message']);
+      throw AppException(response.content);
     }
   }
 
   Future deleteGoal(String id) async {
     ApiResponse response = await _goalsApiService.deleteGoal(id);
     if (!response.status) {
-      throw Exception(response.content['message']);
+      throw AppException(response.content);
     }
   }
 
   Future updateGoal(Goal goal) async {
     ApiResponse response = await _goalsApiService.updateGoal(goal);
     if (!response.status) {
-      throw Exception(response.content['message']);
+      throw AppException(response.content);
     }
   }
 
@@ -51,7 +52,7 @@ class GoalService {
     if (response.status) {
       return Goal.fromJson(response.content);
     } else {
-      throw Exception(response.content['message']);
+      throw AppException(response.content);
     }
   }
 
@@ -61,7 +62,7 @@ class GoalService {
     if (response.status) {
       return Goal.fromJson(response.content);
     } else {
-      throw Exception(response.content['message']);
+      throw AppException(response.content);
     }
   }
 }

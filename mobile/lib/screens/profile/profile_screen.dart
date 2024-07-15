@@ -280,8 +280,7 @@ class ProfileScreenState extends BaseScreen<ProfileScreen> {
           User user = store.state.user!;
           user.firstName = s!;
           ModuleService.updateUser(user, store)
-              .then((_) => setIsLoading(false))
-              .catchError((_) => setIsLoading(false));
+              .then((_) => setIsLoading(false));
         },
       ),
     );
@@ -306,8 +305,7 @@ class ProfileScreenState extends BaseScreen<ProfileScreen> {
           User user = store.state.user!;
           user.email = s!;
           ModuleService.updateUser(user, store)
-              .then((_) => setIsLoading(false))
-              .catchError((_) => setIsLoading(false));
+              .then((_) => setIsLoading(false));
         },
       ),
     );
@@ -369,15 +367,10 @@ class ProfileScreenState extends BaseScreen<ProfileScreen> {
                     String oldPassword = oldPassKey.currentState!.value;
                     String newPassword = newPassKey.currentState!.value;
                     setIsLoading(true);
-                    try {
-                      await ModuleService.changePassword(
-                          oldPassword, newPassword, store);
-                      navigator.pop();
-                    } catch (e) {
-                      showSnackBar(e.toString());
-                    } finally {
-                      setIsLoading(false);
-                    }
+                    await ModuleService.changePassword(
+                        oldPassword, newPassword, store);
+                    navigator.pop();
+                    setIsLoading(false);
                   }
                 },
                 text: 'Save',
