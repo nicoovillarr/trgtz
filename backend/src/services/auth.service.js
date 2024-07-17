@@ -1,4 +1,5 @@
 const User = require('../models/user.model')
+const Session = require('../models/session.model')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 
@@ -29,23 +30,13 @@ const hashPassword = async (password) => {
 const checkEmailInUse = async (email) =>
   (await User.findOne({ email })) !== null
 
-const createJWT = async (id) => {
-  const token = jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '15d'
-  })
-  const user = await User.findById(id)
-  user.sessions.push(token)
-  await user.save()
-  return token
-}
-
-const validatePassword = async (user, password) => await bcrypt.compare(password, user.password).then(res => res)
+const validatePassword = async (user, password) =>
+  await bcrypt.compare(password, user.password).then((res) => res)
 
 module.exports = {
   signup,
   login,
   checkEmailInUse,
   hashPassword,
-  createJWT,
   validatePassword
 }

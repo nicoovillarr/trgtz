@@ -4,8 +4,10 @@ import 'package:trgtz/core/exceptions/index.dart';
 class AuthService {
   final AuthApiService _authApiService = AuthApiService();
 
-  Future<String> login(String email, String password) async {
-    ApiResponse response = await _authApiService.login(email, password);
+  Future<String> login(
+      String email, String password, Map<String, dynamic> deviceInfo) async {
+    ApiResponse response =
+        await _authApiService.login(email, password, deviceInfo);
     if (response.status) {
       return response.content['token'];
     } else {
@@ -13,9 +15,10 @@ class AuthService {
     }
   }
 
-  Future<String> signup(String firstName, String email, String password) async {
+  Future<String> signup(String firstName, String email, String password,
+      Map<String, dynamic> deviceInfo) async {
     ApiResponse response =
-        await _authApiService.signup(firstName, email, password);
+        await _authApiService.signup(firstName, email, password, deviceInfo);
     if (response.status) {
       return response.content['token'];
     } else {

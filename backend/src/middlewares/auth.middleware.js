@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
-const User = require('../models/user.model')
+const Session = require('../models/session.model')
+const sessionService = require('../services/session.service')
 
 const protect = async (req, res, next) => {
   const bearer = req.header('Authorization')
@@ -12,8 +13,14 @@ const protect = async (req, res, next) => {
       token.substring(token.indexOf(' ') + 1),
       process.env.JWT_SECRET
     )
-    if (!(await User.exists({ _id: decoded.id, sessions: token })))
-      return res.status(401).json({ message: 'Unauthorized' })
+    const sessionExists = await Session.exists({
+      token: token,
+      expiredOn: null,
+      userId: decoded.id
+    })
+    if (!sessionExists) return res.status(401).json({ message: 'Unauthorized' })
+
+    await sessionService.updateSession(token, req.ip)
 
     req.user = decoded.id
     next()

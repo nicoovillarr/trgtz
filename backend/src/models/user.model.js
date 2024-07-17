@@ -69,7 +69,8 @@ const userSchema = new Schema(
     ],
     sessions: [
       {
-        type: String
+        type: Schema.Types.ObjectId,
+        ref: 'Session'
       }
     ]
   },
