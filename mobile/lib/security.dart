@@ -1,5 +1,6 @@
 import 'package:encrypt/encrypt.dart';
 import 'package:trgtz/api/index.dart';
+import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/local_storage.dart';
 
 class Security {
@@ -38,23 +39,26 @@ class Security {
         return true;
       } else {
         await LocalStorage.clear();
-        String? email, pass;
-        try {
-          email = await LocalStorage.getEmail();
-          pass = await LocalStorage.getPass();
-        } catch (_) {}
-        if (email != null && pass != null) {
-          final loginResponse = await authApiService.login(email, pass);
-          String? token = loginResponse.content.containsKey('token')
-              ? loginResponse.content['token'].toString()
-              : null;
-          if (loginResponse.status && token != null) {
-            LocalStorage.saveToken(token);
-            return true;
-          } else {
-            await LocalStorage.clear();
-          }
-        }
+        // String? email, pass;
+        // try {
+        //   email = await LocalStorage.getEmail();
+        //   pass = await LocalStorage.getPass();
+        // } catch (_) {}
+        // if (email != null && pass != null) {
+        // final deviceInfo =
+        //     await DeviceInformationService.of(context).getDeviceInfo();
+        // final loginResponse =
+        //     await authApiService.login(email, pass, deviceInfo);
+        // String? token = loginResponse.content.containsKey('token')
+        //     ? loginResponse.content['token'].toString()
+        //     : null;
+        // if (loginResponse.status && token != null) {
+        //   LocalStorage.saveToken(token);
+        //   return true;
+        // } else {
+        //   await LocalStorage.clear();
+        // }
+        // }
       }
     }
 

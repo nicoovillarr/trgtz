@@ -5,18 +5,21 @@ class AuthApiService extends ApiBaseService {
     controller = 'auth';
   }
 
-  Future<ApiResponse> login(String email, String password) async =>
+  Future<ApiResponse> login(String email, String password,
+          Map<String, dynamic> deviceInfo) async =>
       await post('login', {
         'email': email,
         'password': password,
+        'deviceInfo': deviceInfo,
       });
 
-  Future<ApiResponse> signup(
-          String firstName, String email, String password) async =>
+  Future<ApiResponse> signup(String firstName, String email, String password,
+          Map<String, dynamic> deviceInfo) async =>
       await post('signup', {
         'firstName': firstName,
         'email': email,
         'password': password,
+        'deviceInfo': deviceInfo,
       });
 
   Future<ApiResponse> tick(String token) async => await get('tick');

@@ -8,6 +8,7 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/exceptions/index.dart';
 import 'package:trgtz/core/index.dart';
+import 'package:trgtz/services/firebase_helper.service.dart';
 import 'package:trgtz/firebase_options.dart';
 import 'package:trgtz/screens/auth/index.dart';
 import 'package:trgtz/screens/friends/index.dart';
@@ -51,6 +52,8 @@ void main() async {
   FlutterNativeSplash.remove();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await FirebaseHelperService.init();
+
   FlutterError.onError = (errorDetails) {
     FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
     showErrorDialog(navigator, errorDetails.exception);

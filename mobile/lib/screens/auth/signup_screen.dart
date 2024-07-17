@@ -8,6 +8,7 @@ import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/auth/services/index.dart';
 import 'package:trgtz/screens/auth/widgets/index.dart';
 import 'package:trgtz/security.dart';
+import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:trgtz/store/local_storage.dart';
 
@@ -167,7 +168,7 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
       );
 
   Widget _buildSignUpButton() => ElevatedButton(
-        onPressed: () {
+        onPressed: () async {
           if (!_formKey.currentState!.validate()) return;
 
           dismissKeyboard();
@@ -175,8 +176,10 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
           final firstName = _firstNameKey.currentState!.value;
           final email = _emailKey.currentState!.value;
           final password = _passwordKey.currentState!.value;
+          final deviceInfo =
+              await DeviceInformationService(context: context).getDeviceInfo();
           ModuleService()
-              .signup(firstName, email, password)
+              .signup(firstName, email, password, deviceInfo)
               .then((token) async {
             setIsLoading(false);
 
