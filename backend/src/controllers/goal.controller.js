@@ -1,5 +1,6 @@
 const goalService = require('../services/goal.service')
 const alertService = require('../services/alert.service')
+const pushNotificationService = require('../services/push-notification.service')
 
 const createMultipleGoals = async (req, res) => {
   try {
@@ -7,7 +8,14 @@ const createMultipleGoals = async (req, res) => {
     const goals = req.body
     const createdGoals = await goalService.createMultipleGoals(user, goals)
     await alertService.sendAlertToFriends(user, 'goal_created')
-    res.status(200).json(createdGoals.map((goal) => goal.toJSON()))
+    await pushNotificationService.sendNotificationToFriends(
+      user,
+      'Goals created',
+      `\$name created ${
+        createdGoals.length > 1 ? 'some new goals' : 'a new goal'
+      }!`
+    )
+    await res.status(200).json(createdGoals.map((goal) => goal.toJSON()))
   } catch (error) {
     res.status(500).json(error)
     console.error('Error creating goals: ', error)
@@ -64,6 +72,11 @@ const updateMilestone = async (req, res) => {
         goal.milestones.find((m) => m._id == milestoneId).completedOn != null
       ) {
         await alertService.sendAlertToFriends(user, 'milestone_completed')
+        await pushNotificationService.sendNotificationToFriends(
+          user,
+          'Milestone completed',
+          '$name completed a milestone!'
+        )
       }
 
       if (wasGoalCompleted == false && goal.completedOn != null) {
@@ -115,6 +128,11 @@ const updateGoal = async (req, res) => {
     else {
       if (wasCompleted == false && goal.completedOn != null) {
         await alertService.sendAlertToFriends(user, 'goal_completed')
+        await pushNotificationService.sendNotificationToFriends(
+          user,
+          'Goal completed',
+          `\$name completed ${goal.title}!`
+        )
       }
       res.status(200).json(goal)
     }

@@ -63,12 +63,14 @@ const sendFriendRequest = async (req, res) => {
     await userService.sendFriendRequest(_id, recipientId)
     await alertService.addAlert(_id, recipientId, 'friend_requested')
 
-    const { firstName } = (await userService.getUserInfo(_id)).toJSON()
-    const recipientToken = await userService.getUserFirebaseTokens(recipientId)
+    const recipientToken = await userService.getUserFirebaseTokens([
+      recipientId
+    ])
     await pushNotificationService.sendNotification(
+      _id,
       recipientToken,
       'New friend request',
-      `${firstName} wants to be your friend!`
+      '$name wants to be your friend!'
     )
 
     res.status(204).end()
@@ -100,14 +102,14 @@ const answerFriendRequest = async (req, res) => {
     if (answer) {
       await alertService.addAlert(_id, requesterId, 'friend_accepted')
 
-      const { firstName } = (await userService.getUserInfo(_id)).toJSON()
-      const recipientToken = await userService.getUserFirebaseTokens(
+      const recipientToken = await userService.getUserFirebaseTokens([
         requesterId
-      )
+      ])
       await pushNotificationService.sendNotification(
+        _id,
         recipientToken,
         'Friend request accepted',
-        `${firstName} and you are now friends!`
+        '$name and you are now friends!'
       )
     }
 
