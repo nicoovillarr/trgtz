@@ -21,6 +21,7 @@ const privateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
 const serviceAccount = Object.assign(require('./config/firebase-admin.json'), {
   private_key: privateKey
 })
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 })
