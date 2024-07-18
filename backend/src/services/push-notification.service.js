@@ -27,6 +27,28 @@ const sendNotification = async (userId, tokens, title, body) => {
         body: body
       }
     })
+
+    const invalidTokens = []
+    response.responses.forEach((result, index) => {
+      if (!result.success) {
+        const error = result.error
+        console.error('Error sending message:', error)
+        if (
+          error.code === 'messaging/invalid-registration-token' ||
+          error.code === 'messaging/registration-token-not-registered'
+        ) {
+          invalidTokens.push(tokens[index])
+        }
+      }
+    })
+
+    if (invalidTokens.length > 0) {
+      await Session.updateMany(
+        { 'device.firebaseToken': { $in: invalidTokens } },
+        { $unset: { 'device.$.firebaseToken': '' } }
+      )
+      console.log('Invalid tokens removed:', invalidTokens)
+    }
   } catch (error) {
     console.error('Error sending notification: ', error)
   }
