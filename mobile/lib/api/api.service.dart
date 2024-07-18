@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:trgtz/constants.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:trgtz/services/index.dart';
 import 'dart:convert';
 
 import 'package:trgtz/store/local_storage.dart';
@@ -138,6 +139,10 @@ class ApiBaseService {
     String? token = await LocalStorage.getToken();
     if (token != null) {
       headers['Authorization'] = 'Bearer $token';
+    }
+    String? firebaseToken = await FirebaseHelperService.token;
+    if (firebaseToken != null) {
+      headers['Firebase-Token'] = firebaseToken;
     }
     return headers;
   }

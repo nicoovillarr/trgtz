@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:trgtz/services/index.dart';
 
 class FirebaseHelperService {
   static final _firebaseMessaging = FirebaseMessaging.instance;
@@ -18,6 +19,9 @@ class FirebaseHelperService {
     await _firebaseMessaging.requestPermission();
     await initPushNotifications();
     await initLocalNotifications();
+    _firebaseMessaging.onTokenRefresh.listen((token) async {
+      await SessionService().updateFirebaseToken(token);
+    });
   }
 
   static Future initPushNotifications() async {
