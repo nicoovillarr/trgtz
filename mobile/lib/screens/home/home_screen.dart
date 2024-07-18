@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
@@ -30,7 +31,19 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
       DashboardFragment(enimtAction: _processProfileAction),
       ProfileFragment(enimtAction: _processProfileAction),
     ];
+
     super.initState();
+  }
+
+  @override
+  Future afterFirstBuild(BuildContext context) async {
+    subscribeToChannel('USER', store.state.user!.id, (message) {
+      switch (message.type) {
+        case broadcastTypeUserUpdate:
+          store.dispatch(UpdateUserFields(fields: message.data));
+          break;
+      }
+    });
   }
 
   @override

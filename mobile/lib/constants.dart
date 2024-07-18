@@ -9,3 +9,9 @@ const String loremIpsum =
 const Color mainColor = Color(0xFF00242C);
 const Color secondaryColor = Color(0xFFCDF6FF);
 const Color accentColor = Color(0xFFED5076);
+
+// Broadcast message types
+const String broadcastTypeSubscribeChannel = 'SUBSCRIBE_CHANNEL';
+const String broadcastTypeUnsubscribeChannel = 'UNSUBSCRIBE_CHANNEL';
+const String broadcastTypeUserUpdate = 'USER_UPDATE';
+const String broadcastTypeGoalUpdate = 'GOAL_UPDATE';

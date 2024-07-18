@@ -46,6 +46,8 @@ class Goal extends ModelBase {
         'createdOn': createdOn.toString(),
         'completedOn': completedOn?.toString(),
         'deletedOn': deletedOn?.toString(),
+        'milestones':
+            milestones.map((milestone) => milestone.toJson()).toList(),
       };
 
   List<Milestone> getMilestonesSublist({int count = 3}) {

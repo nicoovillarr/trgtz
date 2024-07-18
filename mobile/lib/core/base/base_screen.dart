@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trgtz/constants.dart';
+import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:redux/redux.dart';
 
@@ -25,6 +26,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   ScreenState _state = ScreenState.loading;
   OverlayEntry? _overlayEntry;
   String? _userId;
+  final Map<String, String> channelsSubscribed = {};
 
   final Map<String, StreamSubscription> _subscriptions = {};
 
@@ -45,6 +47,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   @override
   void dispose() {
     _disposeSubscriptions();
+    _disposeChannelsSubscriptions();
     super.dispose();
   }
 
@@ -86,6 +89,30 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   Widget? body(BuildContext context) => null;
 
   void customInitState() {}
+
+  void subscribeToChannel(String channelType, String documentId,
+      Function(WebSocketMessage) onMessage) {
+    channelsSubscribed[channelType] = documentId;
+    WebSocketService.getInstance().sendMessage(
+      WebSocketMessage(
+        type: broadcastTypeSubscribeChannel,
+        data: {
+          'channelType': channelType,
+          'documentId': documentId,
+        },
+      ),
+    );
+
+    WebSocketService.getInstance()
+        .messages!
+        .where((event) =>
+            event.channelType == channelType && event.documentId == documentId)
+        .listen((message) {
+      if (mounted) {
+        onMessage(message);
+      }
+    });
+  }
 
   void initSubscriptions() {
     addSubscription(
@@ -294,6 +321,20 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   void _disposeSubscriptions() {
     _subscriptions.forEach((key, value) {
       value.cancel();
+    });
+  }
+
+  void _disposeChannelsSubscriptions() {
+    channelsSubscribed.forEach((key, value) {
+      WebSocketService.getInstance().sendMessage(
+        WebSocketMessage(
+          type: broadcastTypeUnsubscribeChannel,
+          data: {
+            'channelType': key,
+            'documentId': value,
+          },
+        ),
+      );
     });
   }
 

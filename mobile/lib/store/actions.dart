@@ -124,3 +124,40 @@ class SetFriendsAction implements ReducerActionBase {
     return currentState.copyWith(friends: friends);
   }
 }
+
+class UpdateUserFields implements ReducerActionBase {
+  final Map<String, dynamic> fields;
+
+  const UpdateUserFields({required this.fields});
+
+  @override
+  execute(AppState currentState) {
+    final User user = currentState.user!;
+    final Map<String, dynamic> updatedFields = {
+      ...user.toJson(),
+      ...fields,
+    };
+
+    final User updatedUser = User.fromJson(updatedFields);
+    return currentState.copyWith(user: updatedUser);
+  }
+}
+
+class UpdateCurrentEditorObjectFields implements ReducerActionBase {
+  final Map<String, dynamic> fields;
+  final dynamic Function(Map<String, dynamic>) converter;
+
+  const UpdateCurrentEditorObjectFields({
+    required this.fields,
+    required this.converter,
+  });
+
+  @override
+  execute(AppState currentState) {
+    final Map<String, dynamic> updatedFields = {
+      ...currentState.currentEditorObject.toJson(),
+      ...fields,
+    };
+    return currentState.copyWith(currentEditorObject: converter(updatedFields));
+  }
+}
