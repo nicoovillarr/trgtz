@@ -1,4 +1,5 @@
 const User = require('../models/user.model')
+const Session = require('../models/session.model')
 const mongoose = require('mongoose')
 const { viewUsers } = require('../config/views')
 
@@ -210,6 +211,11 @@ const deleteFriend = async (me, friend) => {
   await friendUser.save()
 }
 
+const getUserFirebaseTokens = async (id) => {
+  const users = await Session.find({ userId: id })
+  return users.map((user) => user.device.firebaseToken)
+}
+
 module.exports = {
   getUsers,
   getUserInfo,
@@ -221,5 +227,6 @@ module.exports = {
   answerFriendRequest,
   getFriends,
   getMinUserInfo,
-  deleteFriend
+  deleteFriend,
+  getUserFirebaseTokens
 }
