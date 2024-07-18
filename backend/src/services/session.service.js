@@ -48,7 +48,14 @@ const updateSession = async (token, ip) => {
   await session.save()
 }
 
+const updateFirebaseToken = async (token, firebaseToken) => {
+  const session = await Session.findOne({ token })
+  session.device.firebaseToken = firebaseToken
+  await session.save()
+}
+
 module.exports = {
   createJWT,
-  updateSession
+  updateSession,
+  updateFirebaseToken
 }

@@ -23,6 +23,7 @@ const protect = async (req, res, next) => {
     await sessionService.updateSession(token, req.ip)
 
     req.user = decoded.id
+    req.token = token
     next()
   } catch (error) {
     res.status(401).json(error)

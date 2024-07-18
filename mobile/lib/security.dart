@@ -1,6 +1,5 @@
 import 'package:encrypt/encrypt.dart';
 import 'package:trgtz/api/index.dart';
-import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/local_storage.dart';
 
 class Security {

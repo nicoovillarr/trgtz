@@ -33,6 +33,8 @@ void showErrorDialog(GlobalKey<NavigatorState> navigator, Object error) {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await FirebaseHelperService.init();
   AppState initialState = AppState(
     date: DateTime.now(),
   );
@@ -50,9 +52,6 @@ void main() async {
   }
 
   FlutterNativeSplash.remove();
-
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await FirebaseHelperService.init();
 
   FlutterError.onError = (errorDetails) {
     FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
