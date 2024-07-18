@@ -9,6 +9,7 @@ import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/auth/services/index.dart';
 import 'package:trgtz/screens/auth/widgets/index.dart';
 import 'package:trgtz/security.dart';
+import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:trgtz/store/local_storage.dart';
 
@@ -195,14 +196,18 @@ class _LoginScreenState extends BaseScreen<LoginScreen> {
       );
 
   Widget _buildLoginButton() => ElevatedButton(
-        onPressed: () {
+        onPressed: () async {
           if (!_formKey.currentState!.validate()) return;
 
           dismissKeyboard();
           setIsLoading(true);
           final email = _emailKey.currentState!.value;
           final password = _passwordKey.currentState!.value;
-          ModuleService().login(email, password).then((token) async {
+          final deviceInfo =
+              await DeviceInformationService.of(context).getDeviceInfo();
+          ModuleService()
+              .login(email, password, deviceInfo)
+              .then((token) async {
             setIsLoading(false);
             await Security.saveCredentials(email, password, token);
 

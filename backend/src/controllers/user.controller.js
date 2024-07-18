@@ -1,6 +1,7 @@
 const userService = require('../services/user.service')
 const authService = require('../services/auth.service')
 const alertService = require('../services/alert.service')
+const pushNotificationService = require('../services/push-notification.service')
 
 const getMe = async (req, res) => {
   try {
@@ -62,6 +63,14 @@ const sendFriendRequest = async (req, res) => {
     await userService.sendFriendRequest(_id, recipientId)
     await alertService.addAlert(_id, recipientId, 'friend_requested')
 
+    const { firstName } = (await userService.getUserInfo(_id)).toJSON()
+    const recipientToken = await userService.getUserFirebaseTokens(recipientId)
+    await pushNotificationService.sendNotification(
+      recipientToken,
+      'New friend request',
+      `${firstName} wants to be your friend!`
+    )
+
     res.status(204).end()
   } catch (error) {
     res.status(500).json(error)
@@ -88,8 +97,18 @@ const answerFriendRequest = async (req, res) => {
       return
     }
 
-    if (answer === 'accepted') {
-      await userService.sendAlert(_id, requesterId, 'friend_accepted')
+    if (answer) {
+      await alertService.addAlert(_id, requesterId, 'friend_accepted')
+
+      const { firstName } = (await userService.getUserInfo(_id)).toJSON()
+      const recipientToken = await userService.getUserFirebaseTokens(
+        requesterId
+      )
+      await pushNotificationService.sendNotification(
+        recipientToken,
+        'Friend request accepted',
+        `${firstName} and you are now friends!`
+      )
     }
 
     res.status(204).end()
