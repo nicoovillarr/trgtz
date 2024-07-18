@@ -17,7 +17,6 @@ app.use(info)
 app.use('/', require('./routes'))
 
 const admin = require('firebase-admin')
-console.log('before', process.env.FIREBASE_PRIVATE_KEY)
 const privateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
 const serviceAccount = Object.assign(require('./config/firebase-admin.json'), {
   private_key: privateKey
