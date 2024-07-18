@@ -194,6 +194,9 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
 
             await LocalStorage.saveUserID(u.id);
 
+            final ws = WebSocketService.getInstance();
+            await ws.init();
+
             Logger.logSignup().then((_) {
               Navigator.of(context).popAndPushNamed('/home');
               ScaffoldMessenger.of(context).showSnackBar(

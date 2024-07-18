@@ -6,6 +6,7 @@ import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/goal/services/index.dart';
+import 'package:trgtz/store/actions.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:trgtz/utils.dart';
 import 'package:confetti/confetti.dart';
@@ -20,6 +21,7 @@ class GoalViewScreen extends StatefulWidget {
 }
 
 class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
+  late final String goalId;
   late ConfettiController _centerController;
 
   @override
@@ -30,12 +32,25 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
 
   @override
   Future afterFirstBuild(BuildContext context) async {
-    String goalId = ModalRoute.of(context)!.settings.arguments as String;
+    goalId = ModalRoute.of(context)!.settings.arguments as String;
     setIsLoading(true);
     ModuleService.getGoal(goalId).then((goal) {
       store.dispatch(SetCurrentEditorObjectAction(obj: goal));
       setIsLoading(false);
       setState(() {});
+    });
+    subscribeToChannel('GOAL', goalId, (message) {
+      switch (message.type) {
+        case broadcastTypeGoalUpdate:
+          store.dispatch(
+            UpdateCurrentEditorObjectFields(
+              fields: message.data,
+              converter: Goal.fromJson,
+            ),
+          );
+          setState(() {});
+          break;
+      }
     });
   }
 
@@ -439,7 +454,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
   String? get title => entity?.title;
 
   @override
-  Goal? get entity => store.state.currentEditorObject;
+  Goal? get entity => store.state.currentEditorObject as Goal?;
 
   @override
   FloatingActionButton? get fab => entity != null &&
