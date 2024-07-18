@@ -92,87 +92,44 @@ const getFriends = async (userId) => {
   const coll = db.collection('users')
   const agg = [
     {
-      $match: { _id: userId }
+      $match: {
+        _id: userId
+      }
     },
     {
       $unwind: {
-        path: '$friends'
+        path: '$friends',
+        preserveNullAndEmptyArrays: true
       }
     },
     {
-      $project: {
-        friends: true,
-        requester: '$friends.requester',
-        recipient: '$friends.recipient'
+      $match: {
+        'friends.status': 'accepted',
+        'friends.deletedOn': { $eq: null }
       }
     },
     {
-      $lookup: {
-        from: 'users',
-        let: {
-          currentId: '$_id',
-          requesterId: '$friends.requester',
-          recipientId: '$friends.recipient'
-        },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $or: [
-                  {
-                    $and: [
-                      {
-                        $eq: ['$_id', '$$recipientId']
-                      },
-                      {
-                        $eq: ['$$requesterId', '$$currentId']
-                      }
-                    ]
-                  },
-                  {
-                    $and: [
-                      {
-                        $eq: ['$_id', '$$requesterId']
-                      },
-                      {
-                        $eq: ['$$recipientId', '$$currentId']
-                      }
-                    ]
-                  }
-                ]
-              }
-            }
-          },
-          {
-            $project: {
-              _id: true,
-              email: true,
-              firstName: true
-            }
+      $addFields: {
+        otherUserID: {
+          $cond: {
+            if: { $ne: ['$friends.requester', '$_id'] },
+            then: '$friends.requester',
+            else: '$friends.recipient'
           }
-        ],
-        as: 'friendDetails'
+        }
       }
     },
     {
       $project: {
-        _id: false,
-        requester: '$friends.requester',
-        recipient: '$friends.recipient',
-        status: '$friends.status',
-        createdOn: '$friends.createdOn',
-        updatedOn: '$friends.updatedOn',
-        deletedOn: '$friends.deletedOn',
-        friendDetails: '$friendDetails'
+        _id: 1,
+        otherUserID: 1
       }
     }
   ]
+
   const cursor = coll.aggregate(agg)
   const result = await cursor.toArray().then((res) => res)
-  return result.map((f) => {
-    f.friendDetails = f.friendDetails.find((fd) => fd._id != userId)
-    return f
-  })
+  return result.map((f) => f.otherUserID)
 }
 
 const getMinUserInfo = async (ids) => {
@@ -211,8 +168,8 @@ const deleteFriend = async (me, friend) => {
   await friendUser.save()
 }
 
-const getUserFirebaseTokens = async (id) => {
-  const users = await Session.find({ userId: id })
+const getUserFirebaseTokens = async (ids) => {
+  const users = await Session.find({ userId: { $in: ids } })
   return users.map((user) => user.device.firebaseToken)
 }
 
