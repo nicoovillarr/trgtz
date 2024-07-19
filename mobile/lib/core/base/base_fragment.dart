@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
 import 'package:trgtz/store/index.dart';
 
 abstract class BaseFragment extends StatefulWidget {
@@ -16,7 +17,8 @@ abstract class BaseFragmentState<T extends BaseFragment> extends State<T> {
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _userId = StoreProvider.of<AppState>(context).state.user?.id;
+      _userId = store.state.user?.id;
+      afterInitState();
     });
     customInitState();
     super.initState();
@@ -24,5 +26,9 @@ abstract class BaseFragmentState<T extends BaseFragment> extends State<T> {
 
   void customInitState() {}
 
+  void afterInitState() {}
+
   String? get userId => _userId;
+
+  Store<AppState> get store => StoreProvider.of<AppState>(context);
 }

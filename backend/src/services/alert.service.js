@@ -1,12 +1,14 @@
 const User = require('../models/user.model')
 const Alert = require('../models/alert.model')
+const userService = require('./user.service')
+const { sendAlertsChannelMessage } = require('../config/websocket')
 
 const sendAlertToFriends = async (userId, type) => {
-  const user = await User.findById(userId)
-  const friends = user.friends.filter(
-    (friend) => friend.status === 'accepted' && friend.deletedOn === null
-  )
-  for (const friend of friends) {
+  const friends = await userService.getFriends(userId, {
+    status: 'accepted',
+    deletedOn: { $eq: null }
+  })
+  for (const friend of friends.map((friend) => friend.toJSON())) {
     await addAlert(
       userId,
       friend.recipient === userId ? friend.requester : friend.recipient,
@@ -27,6 +29,15 @@ const addAlert = async (sent_by, sent_to, type) => {
   const user = await User.findById(sent_to)
   user.alerts.push(alert)
   await user.save()
+
+  sent_by = (await userService.getMinUserInfo(sent_by))[0]
+  sendAlertsChannelMessage(
+    sent_to,
+    'NEW_ALERT',
+    Object.assign(alert.toJSON(), {
+      sent_by
+    })
+  )
 
   return alert
 }

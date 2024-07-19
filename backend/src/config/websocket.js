@@ -1,13 +1,15 @@
 const WebSocket = require('ws')
 const wss = new WebSocket.Server({ port: 8080 })
-const mongoose = require('mongoose')
 
 const sessionService = require('../services/session.service')
 
 const channels = {
   USER: {},
+  ALERTS: {},
+  FRIENDS: {},
   GOAL: {}
 }
+
 const clients = {}
 
 const init = () => {
@@ -85,39 +87,19 @@ const init = () => {
       console.log('A client disconnected from websocket...')
     })
   })
-
-  const db = mongoose.connection.db
-
-  db.collection('users')
-    .watch()
-    .on('change', (next) => {
-      switch (next.operationType) {
-        case 'update':
-          sendMessage(
-            'USER',
-            next.documentKey._id,
-            'USER_UPDATE',
-            next.updateDescription.updatedFields
-          )
-          break
-      }
-    })
-
-  db.collection('goals')
-    .watch()
-    .on('change', (next) => {
-      switch (next.operationType) {
-        case 'update':
-          sendMessage(
-            'GOAL',
-            next.documentKey._id,
-            'GOAL_UPDATE',
-            next.updateDescription.updatedFields
-          )
-          break
-      }
-    })
 }
+
+const sendUserChannelMessage = (userId, type, data) =>
+  sendMessage('USER', userId, type, data)
+
+const sendAlertsChannelMessage = (userId, type, data) =>
+  sendMessage('ALERTS', userId, type, data)
+
+const sendFriendsChannelMessage = (userId, type, data) =>
+  sendMessage('FRIENDS', userId, type, data)
+
+const sendGoalChannelMessage = (goalId, type, data) =>
+  sendMessage('GOAL', goalId, type, data)
 
 const sendMessage = (channelType, documentId, type, data) => {
   if (
@@ -147,9 +129,10 @@ const sendMessage = (channelType, documentId, type, data) => {
   console.log(`Broadcast message to ${channelType}:${documentId}: ${message}`)
 }
 
-const buildMessage = (type, data) => JSON.stringify({ type, data })
-
 module.exports = {
   init,
-  sendMessage
+  sendUserChannelMessage,
+  sendAlertsChannelMessage,
+  sendFriendsChannelMessage,
+  sendGoalChannelMessage
 }

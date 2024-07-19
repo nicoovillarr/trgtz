@@ -23,4 +23,6 @@ class AuthApiService extends ApiBaseService {
       });
 
   Future<ApiResponse> tick(String token) async => await get('tick');
+
+  Future<ApiResponse> logout() async => await post('logout', {});
 }

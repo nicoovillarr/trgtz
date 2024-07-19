@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/store/index.dart';
@@ -30,7 +32,17 @@ class _NotificationsFragmentState
   Widget _buildNotificationRow(Alert alert) => ListTile(
         onTap: () {},
         title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            if (!alert.seen)
+              Container(
+                margin: const EdgeInsets.only(left: 5, right: 5),
+                padding: const EdgeInsets.all(3),
+                decoration: const BoxDecoration(
+                  color: accentColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
             Expanded(
               child: Text(
                 alert.sentBy.firstName,

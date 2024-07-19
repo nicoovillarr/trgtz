@@ -32,4 +32,8 @@ class UserApiService extends ApiBaseService {
 
   Future<ApiResponse> addFriend(String code) =>
       post('/friend', {'recipientId': code});
+
+  Future<ApiResponse> getPendingFriendRequests() => get('/friend/pending');
+
+  Future<ApiResponse> getFriends() => get('/friend');
 }

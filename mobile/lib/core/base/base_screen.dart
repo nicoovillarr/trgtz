@@ -54,6 +54,17 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    Widget? body = _state == ScreenState.loading
+        ? const Center(
+            child: CircularProgressIndicator(),
+          )
+        : this.body(context);
+    if (body != null && onRefresh != null) {
+      body = RefreshIndicator(
+        onRefresh: onRefresh!,
+        child: body,
+      );
+    }
     return Stack(children: [
       Scaffold(
         appBar: useAppBar && _state != ScreenState.loading
@@ -78,7 +89,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
               SizedBox(
                 height: size.height,
                 width: size.width,
-                child: body(context) ?? const SizedBox.shrink(),
+                child: body ?? const SizedBox.shrink(),
               ),
           ],
         ),
@@ -313,6 +324,8 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   FloatingActionButton? get fab => null;
 
   BottomNavigationBar? get bottomNavigationBar => null;
+
+  RefreshCallback? get onRefresh => null;
 
   void addSubscription(String name, StreamSubscription subscription) {
     _subscriptions[name] = subscription;

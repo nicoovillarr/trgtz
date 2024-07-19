@@ -92,4 +92,10 @@ class WebSocketService {
     _channel?.sink.close();
     _channel = null;
   }
+
+  void close() {
+    _controller?.close();
+    _channel?.sink.close();
+    _channel = null;
+  }
 }

@@ -201,3 +201,70 @@ class UpdateCurrentEditorObjectFields implements ReducerActionBase {
     return currentState.copyWith(currentEditorObject: converter(obj));
   }
 }
+
+class SetPendingFriendRequestsAction implements ReducerActionBase {
+  final int count;
+
+  const SetPendingFriendRequestsAction({required this.count});
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(pendingFriendRequests: count);
+  }
+}
+
+class AddPendingFriendRequestAction implements ReducerActionBase {
+  const AddPendingFriendRequestAction();
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(
+      pendingFriendRequests: (currentState.pendingFriendRequests ?? 0) + 1,
+    );
+  }
+}
+
+class AddFriendAction implements ReducerActionBase {
+  final Friendship newFriend;
+  const AddFriendAction({required this.newFriend});
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(
+      friends: [
+        ...currentState.friends!,
+        newFriend,
+      ],
+    );
+  }
+}
+
+class DeleteFriend implements ReducerActionBase {
+  final String friendId;
+  const DeleteFriend({required this.friendId});
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(
+      friends: currentState.friends!
+          .where((element) => element.otherUserId != friendId)
+          .toList(),
+    );
+  }
+}
+
+class AddAlertAction implements ReducerActionBase {
+  final Alert alert;
+
+  const AddAlertAction({required this.alert});
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(
+      alerts: [
+        alert,
+        ...?currentState.alerts,
+      ],
+    );
+  }
+}
