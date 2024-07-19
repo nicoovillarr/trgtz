@@ -30,4 +30,6 @@ class AuthService {
     ApiResponse response = await _authApiService.tick(token);
     return response.status;
   }
+
+  Future logout() async => await _authApiService.logout();
 }

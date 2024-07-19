@@ -9,6 +9,7 @@ import 'package:trgtz/store/index.dart';
 const String editUserFirstName = 'EDIT_USER_FIRST_NAME';
 const String editUserEmail = 'EDIT_USER_EMAIL';
 const String editUserPassword = 'EDIT_USER_PASSWORD';
+const String logout = 'LOGOUT';
 
 class ProfileFragment extends BaseFragment {
   const ProfileFragment({super.key, required super.enimtAction});
@@ -76,7 +77,7 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
               _buildOptionsList(
                 children: [
                   _buildListItem(
-                    onTap: _logout,
+                    onTap: () => widget.enimtAction(logout),
                     field: 'Log out',
                     foregroundColor: accentColor,
                   ),
@@ -268,9 +269,4 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
           ),
         ),
       );
-
-  void _logout() {
-    LocalStorage.clear().then((_) => Navigator.of(context)
-        .pushNamedAndRemoveUntil('/login', (route) => false));
-  }
 }

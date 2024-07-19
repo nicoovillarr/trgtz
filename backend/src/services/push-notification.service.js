@@ -5,6 +5,11 @@ const Session = require('../models/session.model')
 
 const sendNotification = async (userId, tokens, title, body) => {
   try {
+    tokens = tokens.reduce((acc, val) => {
+      if (acc.includes(val)) return acc
+      else acc.push(val)
+      return acc
+    }, [])
     console.log(
       `Sending notification to: ${tokens
         .map((t) => t.substring(0, 8) + '...')
@@ -55,8 +60,13 @@ const sendNotification = async (userId, tokens, title, body) => {
 }
 
 const sendNotificationToFriends = async (userId, title, body) => {
-  const friends = await userService.getFriends(userId)
-  const tokens = await userService.getUserFirebaseTokens(friends)
+  const friends = await userService.getFriends(userId, {
+    status: 'accepted',
+    deletedOn: { $eq: null }
+  })
+  const tokens = await userService.getUserFirebaseTokens(
+    friends.map((f) => f.otherUserID)
+  )
   await sendNotification(userId, tokens, title, body)
 }
 
