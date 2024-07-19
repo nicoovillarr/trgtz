@@ -41,6 +41,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
       switch (message.type) {
         case broadcastTypeUserUpdate:
           store.dispatch(UpdateUserFields(fields: message.data));
+          setState(() {});
           break;
       }
     });
@@ -168,7 +169,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         onSave: (s) {
           setIsLoading(true);
           Store<AppState> store = StoreProvider.of(context);
-          User user = store.state.user!;
+          User user = store.state.user!.deepCopy();
           user.firstName = s!;
           ModuleService.updateUser(user, store)
               .then((_) => setIsLoading(false));
@@ -193,7 +194,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         onSave: (s) {
           setIsLoading(true);
           Store<AppState> store = StoreProvider.of(context);
-          User user = store.state.user!;
+          User user = store.state.user!.deepCopy();
           user.email = s!;
           ModuleService.updateUser(user, store)
               .then((_) => setIsLoading(false));

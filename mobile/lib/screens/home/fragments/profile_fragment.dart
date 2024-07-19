@@ -5,7 +5,6 @@ import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/store/index.dart';
-import 'package:trgtz/store/local_storage.dart';
 
 const String editUserFirstName = 'EDIT_USER_FIRST_NAME';
 const String editUserEmail = 'EDIT_USER_EMAIL';
