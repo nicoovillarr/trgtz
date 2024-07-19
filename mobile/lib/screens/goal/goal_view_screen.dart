@@ -5,8 +5,8 @@ import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
+import 'package:trgtz/models/milestone.dart';
 import 'package:trgtz/screens/goal/services/index.dart';
-import 'package:trgtz/store/actions.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:trgtz/utils.dart';
 import 'package:confetti/confetti.dart';
@@ -46,6 +46,13 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
             UpdateCurrentEditorObjectFields(
               fields: message.data,
               converter: Goal.fromJson,
+            ),
+          );
+          store.dispatch(
+            UpdateGoalFieldsAction(
+              goal: store.state.goals
+                  .firstWhere((element) => element.id == goalId),
+              fields: message.data,
             ),
           );
           setState(() {});
@@ -329,7 +336,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
     required String field,
     String? newValue = '',
   }) {
-    Goal editedGoal = goal;
+    Goal editedGoal = goal.deepCopy();
     setter(String? v) {
       switch (field) {
         case 'title':
@@ -347,7 +354,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
     setter(newValue);
 
     setIsLoading(true);
-    ModuleService.updateGoal(store, goal).then((_) {
+    ModuleService.updateGoal(store, editedGoal).then((_) {
       setIsLoading(false);
       showSnackBar('Goal updated successfully!');
     });
@@ -436,9 +443,9 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
       return;
     }
 
-    milestone.completedOn =
-        milestone.completedOn == null ? DateTime.now() : null;
-    ModuleService.updateMilestone(store, entity!, milestone).then((_) {
+    Milestone copy = milestone.deepCopy();
+    copy.completedOn = milestone.completedOn == null ? DateTime.now() : null;
+    ModuleService.updateMilestone(store, entity!, copy).then((_) {
       if (entity!.milestones.every((element) => element.completedOn != null) &&
           entity!.completedOn != null) {
         showSnackBar('Goal completed!');

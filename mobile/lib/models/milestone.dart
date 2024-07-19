@@ -31,4 +31,13 @@ class Milestone extends ModelBase {
         'createdOn': createdOn.toString(),
         'completedOn': completedOn?.toString(),
       };
+
+  Milestone deepCopy() {
+    return Milestone(
+      id: id,
+      title: title,
+      createdOn: createdOn,
+      completedOn: completedOn,
+    );
+  }
 }

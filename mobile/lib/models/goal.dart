@@ -72,4 +72,17 @@ class Goal extends ModelBase {
 
     return milestones.sublist(startIndex, endIndex);
   }
+
+  Goal deepCopy() {
+    return Goal(
+      id: id,
+      title: title,
+      description: description,
+      year: year,
+      milestones: milestones.map((milestone) => milestone.deepCopy()).toList(),
+      createdOn: createdOn,
+      completedOn: completedOn,
+      deletedOn: deletedOn,
+    );
+  }
 }

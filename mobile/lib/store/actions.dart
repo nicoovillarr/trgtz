@@ -56,6 +56,26 @@ class UpdateGoalAction implements ReducerActionBase {
   }
 }
 
+class UpdateGoalFieldsAction implements ReducerActionBase {
+  final Goal goal;
+  final Map<String, dynamic> fields;
+
+  const UpdateGoalFieldsAction({required this.goal, required this.fields});
+
+  @override
+  execute(AppState currentState) {
+    final Goal updatedGoal = Goal.fromJson({
+      ...goal.toJson(),
+      ...fields,
+    });
+    return currentState.copyWith(
+      goals: currentState.goals
+          .map((e) => e.id == goal.id ? updatedGoal : e)
+          .toList(),
+    );
+  }
+}
+
 class DeleteGoalAction implements ReducerActionBase {
   final Goal goal;
 
@@ -154,10 +174,30 @@ class UpdateCurrentEditorObjectFields implements ReducerActionBase {
 
   @override
   execute(AppState currentState) {
-    final Map<String, dynamic> updatedFields = {
-      ...currentState.currentEditorObject.toJson(),
-      ...fields,
-    };
-    return currentState.copyWith(currentEditorObject: converter(updatedFields));
+    final obj = currentState.currentEditorObject.toJson();
+    for (final key in fields.keys) {
+      if (key.contains('.')) {
+        final keys = key.split('.');
+        dynamic current = obj;
+        for (int i = 0; i < keys.length - 1; i++) {
+          if (int.tryParse(keys[i]) != null) {
+            final index = int.parse(keys[i]);
+            current = current[index];
+          } else {
+            current = current[keys[i]];
+          }
+        }
+        final lastKey = keys.last;
+        if (int.tryParse(lastKey) != null) {
+          final index = int.parse(lastKey);
+          current[index] = fields[key];
+        } else {
+          current[lastKey] = fields[key];
+        }
+      } else {
+        obj[key] = fields[key];
+      }
+    }
+    return currentState.copyWith(currentEditorObject: converter(obj));
   }
 }
