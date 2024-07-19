@@ -163,6 +163,7 @@ const getUserFirebaseTokens = async (ids) => {
 
 const getPendingFriends = async (userId) =>
   await getFriends(userId, {
+    requester: { $ne: userId },
     status: 'pending',
     deletedOn: { $eq: null }
   })
