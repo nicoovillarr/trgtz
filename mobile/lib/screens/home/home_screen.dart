@@ -29,7 +29,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
   @override
   void initState() {
     _fragments = [
-      NotificationsFragment(enimtAction: _processProfileAction),
+      NotificationsFragment(enimtAction: _processAlertsAction),
       DashboardFragment(enimtAction: _processProfileAction),
       ProfileFragment(enimtAction: _processProfileAction),
     ];
@@ -173,6 +173,18 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
       case logout:
         Security.logOut().then((_) => Navigator.of(context)
             .pushNamedAndRemoveUntil('/login', (route) => false));
+        break;
+
+      default:
+        debugPrint('Unknown action: $name');
+        break;
+    }
+  }
+
+  void _processAlertsAction(String name, {dynamic data}) {
+    switch (name) {
+      case goFriends:
+        Navigator.of(context).pushNamed('/friends');
         break;
 
       default:
