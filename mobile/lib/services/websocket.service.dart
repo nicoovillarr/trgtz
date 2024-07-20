@@ -3,8 +3,9 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:trgtz/app.dart';
 import 'package:trgtz/constants.dart';
-import 'package:trgtz/main.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -94,7 +95,7 @@ class WebSocketService {
     if (_channel == null) {
       Completer<void> completer = Completer<void>();
 
-      final uri = Uri.parse(endpoint);
+      final uri = Uri.parse(dotenv.env["ENDPOINT"].toString());
       final hostname = uri.host;
       final url = 'ws://$hostname:8080';
       _channel = WebSocketChannel.connect(Uri.parse(url));
@@ -232,7 +233,7 @@ class WebSocketService {
   }
 
   void restart() {
-    BuildContext context = navigator.currentContext!;
+    BuildContext context = navigatorKey.currentContext!;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Connection lost. Reconnecting...'),
