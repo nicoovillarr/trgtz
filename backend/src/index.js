@@ -1,4 +1,4 @@
-const app = require('./config/app')
+const app = require('./app')
 const websocket = require('./config/websocket')
 const db = require('./config/database')
 
