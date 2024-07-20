@@ -1,6 +1,7 @@
 const NODE_ENV = process.env.NODE_ENV || 'development'
+const isLocal = !process.env.VERCEL
 require('dotenv').config({
-  path: `${NODE_ENV == 'live' ? '' : '.' + NODE_ENV}.env`
+  path: `${isLocal ? '.' + NODE_ENV : ''}.env`
 })
 
 const compression = require('compression')
