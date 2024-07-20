@@ -22,7 +22,9 @@ const String broadcastTypeFriendRequest = 'FRIEND_REQUEST';
 const String broadcastTypeFriendAccepted = 'FRIEND_REQUEST_ACCEPTED';
 const String broadcastTypeFriendDeleted = 'FRIEND_DELETED';
 
-const String broadcastTypeGoalUpdate = 'GOAL_UPDATE';
+const String broadcastTypeGoalUpdate = 'GOAL_UPDATED';
+const String broadcastTypeGoalSetMilestones = 'GOAL_SET_MILESTONES';
+const String broadcastTypeGoalDelete = 'GOAL_DELETED';
 
 const String broadcastChannelTypeAlerts = 'ALERTS';
 const String broadcastTypeNewAlert = 'NEW_ALERT';

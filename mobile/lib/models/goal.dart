@@ -29,9 +29,8 @@ class Goal extends ModelBase {
       title: json['title'],
       description: json['description'],
       year: json['year'],
-      milestones: (milestones)
-          .map((milestone) => Milestone.fromJson(milestone))
-          .toList(),
+      milestones:
+          milestones.map((milestone) => Milestone.fromJson(milestone)).toList(),
       createdOn: ModelBase.tryParseDateTime('createdOn', json)!,
       completedOn: ModelBase.tryParseDateTime('completedOn', json),
       deletedOn: ModelBase.tryParseDateTime('deletedOn', json),
