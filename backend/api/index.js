@@ -1,2 +1,2 @@
-const app = require('../src/config/app')
+const app = require('../src/app')
 module.exports = app
