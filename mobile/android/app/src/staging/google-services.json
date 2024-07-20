@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "974339063072",
+    "project_id": "marppa-trgtz-stg",
+    "storage_bucket": "marppa-trgtz-stg.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:974339063072:android:f4c1b21a83fea78f9fab45",
+        "android_client_info": {
+          "package_name": "com.marppa.trgtz.stg"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDlpdgnY577cMCh0xAAjnVE-zeJzx3mteE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
