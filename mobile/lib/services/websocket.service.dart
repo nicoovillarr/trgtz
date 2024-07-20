@@ -160,12 +160,14 @@ class WebSocketService {
   }
 
   void unsubscribe(String channelType, String documentId) {
-    final sub = _channelsSubscribed.firstWhere(
-        (element) =>
+    final sub = _channelsSubscribed
+        .where((element) =>
             element.channelType == channelType &&
-            element.documentId == documentId,
-        orElse: () =>
-            throw StateError('Not subscribed to $channelType/$documentId'));
+            element.documentId == documentId)
+        .firstOrNull;
+    if (sub == null) {
+      return;
+    }
 
     sub.cancel();
 
