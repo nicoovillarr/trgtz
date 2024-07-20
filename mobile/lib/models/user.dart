@@ -21,4 +21,12 @@ class User extends ModelBase {
         'firstName': firstName,
         'email': email,
       };
+
+  User deepCopy() {
+    return User(
+      id: id,
+      firstName: firstName,
+      email: email,
+    );
+  }
 }

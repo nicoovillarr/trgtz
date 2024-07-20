@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trgtz/constants.dart';
+import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:redux/redux.dart';
 
@@ -25,6 +26,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   ScreenState _state = ScreenState.loading;
   OverlayEntry? _overlayEntry;
   String? _userId;
+  final Map<String, String> channelsSubscribed = {};
 
   final Map<String, StreamSubscription> _subscriptions = {};
 
@@ -45,12 +47,24 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   @override
   void dispose() {
     _disposeSubscriptions();
+    _disposeChannelsSubscriptions();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    Widget? body = _state == ScreenState.loading
+        ? const Center(
+            child: CircularProgressIndicator(),
+          )
+        : this.body(context);
+    if (body != null && onRefresh != null) {
+      body = RefreshIndicator(
+        onRefresh: onRefresh!,
+        child: body,
+      );
+    }
     return Stack(children: [
       Scaffold(
         appBar: useAppBar && _state != ScreenState.loading
@@ -75,7 +89,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
               SizedBox(
                 height: size.height,
                 width: size.width,
-                child: body(context) ?? const SizedBox.shrink(),
+                child: body ?? const SizedBox.shrink(),
               ),
           ],
         ),
@@ -86,6 +100,13 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   Widget? body(BuildContext context) => null;
 
   void customInitState() {}
+
+  void subscribeToChannel(String channelType, String documentId,
+      Function(WebSocketMessage) onMessage) {
+    channelsSubscribed[channelType] = documentId;
+    WebSocketService.getInstance()
+        .subscribe(channelType, documentId, onMessage);
+  }
 
   void initSubscriptions() {
     addSubscription(
@@ -287,6 +308,8 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
 
   BottomNavigationBar? get bottomNavigationBar => null;
 
+  RefreshCallback? get onRefresh => null;
+
   void addSubscription(String name, StreamSubscription subscription) {
     _subscriptions[name] = subscription;
   }
@@ -294,6 +317,12 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   void _disposeSubscriptions() {
     _subscriptions.forEach((key, value) {
       value.cancel();
+    });
+  }
+
+  void _disposeChannelsSubscriptions() {
+    channelsSubscribed.forEach((key, value) {
+      WebSocketService.getInstance().unsubscribe(key, value);
     });
   }
 

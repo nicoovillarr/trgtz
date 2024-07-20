@@ -29,9 +29,8 @@ class Goal extends ModelBase {
       title: json['title'],
       description: json['description'],
       year: json['year'],
-      milestones: (milestones)
-          .map((milestone) => Milestone.fromJson(milestone))
-          .toList(),
+      milestones:
+          milestones.map((milestone) => Milestone.fromJson(milestone)).toList(),
       createdOn: ModelBase.tryParseDateTime('createdOn', json)!,
       completedOn: ModelBase.tryParseDateTime('completedOn', json),
       deletedOn: ModelBase.tryParseDateTime('deletedOn', json),
@@ -46,6 +45,8 @@ class Goal extends ModelBase {
         'createdOn': createdOn.toString(),
         'completedOn': completedOn?.toString(),
         'deletedOn': deletedOn?.toString(),
+        'milestones':
+            milestones.map((milestone) => milestone.toJson()).toList(),
       };
 
   List<Milestone> getMilestonesSublist({int count = 3}) {
@@ -69,5 +70,18 @@ class Goal extends ModelBase {
     }
 
     return milestones.sublist(startIndex, endIndex);
+  }
+
+  Goal deepCopy() {
+    return Goal(
+      id: id,
+      title: title,
+      description: description,
+      year: year,
+      milestones: milestones.map((milestone) => milestone.deepCopy()).toList(),
+      createdOn: createdOn,
+      completedOn: completedOn,
+      deletedOn: deletedOn,
+    );
   }
 }

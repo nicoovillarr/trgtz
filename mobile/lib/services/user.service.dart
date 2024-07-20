@@ -72,4 +72,26 @@ class UserService {
       throw AppException(response.content);
     }
   }
+
+  Future<List<Friendship>> getPendingFriendRequests() async {
+    ApiResponse response = await _userApiService.getPendingFriendRequests();
+    if (response.status) {
+      return (response.content as List)
+          .map((e) => Friendship.fromJson(e))
+          .toList();
+    } else {
+      throw AppException(response.content);
+    }
+  }
+
+  Future<List<Friendship>> getFriends() async {
+    ApiResponse response = await _userApiService.getFriends();
+    if (response.status) {
+      return (response.content as List)
+          .map((e) => Friendship.fromJson(e))
+          .toList();
+    } else {
+      throw AppException(response.content);
+    }
+  }
 }

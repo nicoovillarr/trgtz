@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
+import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/friends/services/index.dart';
+
 import 'package:trgtz/store/index.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -17,6 +19,42 @@ class FriendsListScreen extends StatefulWidget {
 }
 
 class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
+  bool _shouldRefresh = false;
+
+  @override
+  Future afterFirstBuild(BuildContext context) async {
+    _refresh();
+  }
+
+  @override
+  void initSubscriptions() {
+    subscribeToChannel(
+      broadcastChannelTypeFriends,
+      store.state.user!.id,
+      (message) {
+        switch (message.type) {
+          case broadcastTypeFriendRequest:
+            store.dispatch(const AddPendingFriendRequestAction());
+            setState(() {});
+            break;
+
+          case broadcastTypeFriendAccepted:
+            if (store.state.friends?.isEmpty ?? true) {
+              _refresh();
+            } else {
+              setState(() => _shouldRefresh = true);
+            }
+            break;
+
+          case broadcastTypeFriendDeleted:
+            store.dispatch(DeleteFriend(friendId: message.data));
+            setState(() {});
+            break;
+        }
+      },
+    );
+  }
+
   @override
   Widget body(BuildContext context) =>
       StoreConnector<AppState, List<Friendship>>(
@@ -31,14 +69,6 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
                   .toList()),
             _buildPendingRequestModal(
               context,
-              friends
-                  .where(
-                    (f) =>
-                        f.status == 'pending' &&
-                        f.deletedOn == null &&
-                        f.requester != userId,
-                  )
-                  .toList(),
             ),
           ],
         ),
@@ -91,54 +121,55 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
         },
       );
 
-  Widget _buildPendingRequestModal(
-          BuildContext context, List<Friendship> prendingRequests) =>
-      AnimatedPositioned(
-        duration: const Duration(milliseconds: 300),
-        bottom: prendingRequests.isNotEmpty ? 16 : -1000,
-        left: 16,
-        right: 16,
-        child: Material(
-          elevation: 4,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(
-                color: Theme.of(context).shadowColor.withOpacity(0.5),
-              ),
-            ),
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'You have ${prendingRequests.length} friend requests pending.',
-                  ),
+  Widget _buildPendingRequestModal(BuildContext context) =>
+      StoreConnector<AppState, int>(
+        converter: (store) => store.state.pendingFriendRequests ?? 0,
+        builder: (context, pendingFriendRequests) => AnimatedPositioned(
+          duration: const Duration(milliseconds: 400),
+          bottom: pendingFriendRequests > 0 ? 16 : -1000,
+          left: 16,
+          right: 16,
+          child: Material(
+            elevation: 4,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(
+                  color: Theme.of(context).shadowColor.withOpacity(0.5),
                 ),
-                Container(
-                  clipBehavior: Clip.hardEdge,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(6.0),
+              ),
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'You have $pendingFriendRequests friend requests pending.',
+                    ),
                   ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () =>
-                          _showFriendRequests(context, prendingRequests),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          'Check',
-                          style: TextStyle(
-                            color: Theme.of(context).primaryColor,
-                            fontWeight: FontWeight.bold,
+                  Container(
+                    clipBehavior: Clip.hardEdge,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6.0),
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => _showFriendRequests(context),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            'Check',
+                            style: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                )
-              ],
+                  )
+                ],
+              ),
             ),
           ),
         ),
@@ -160,6 +191,9 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
           onPressed: _showSearchDialog,
         ),
       ];
+
+  @override
+  bool get useRefreshIndicator => true;
 
   void _showContextMenu(
       BuildContext context, GlobalKey iconKey, Friendship friend) async {
@@ -260,61 +294,79 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
     );
   }
 
-  void _showFriendRequests(BuildContext context, List<Friendship> requests) {
-    simpleBottomSheet(
-      title: 'Friend requests',
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height * 0.85,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              for (int i = 0; i < requests.length; i++)
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(requests[i].friendDetails.firstName),
-                          Text(
-                            timeago.format(
-                              requests[i].createdOn,
+  void _showFriendRequests(BuildContext context) {
+    ModuleService.getPendingFriendRequests().then((requests) {
+      simpleBottomSheet(
+        title: 'Friend requests',
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height * 0.85,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                for (int i = 0; i < requests.length; i++)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(requests[i].friendDetails.firstName),
+                            Text(
+                              timeago.format(
+                                requests[i].createdOn,
+                              ),
+                              style: const TextStyle(
+                                color: Colors.black45,
+                              ),
                             ),
-                            style: const TextStyle(
-                              color: Colors.black45,
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      onPressed: () => _answerFriendRequest(
-                        requests[i].requester,
-                        true,
+                      IconButton(
+                        onPressed: () => _answerFriendRequest(
+                          requests[i].requester,
+                          true,
+                        ),
+                        icon: const Icon(Icons.check),
                       ),
-                      icon: const Icon(Icons.check),
-                    ),
-                    IconButton(
-                      onPressed: () => _answerFriendRequest(
-                        requests[i].requester,
-                        false,
+                      IconButton(
+                        onPressed: () => _answerFriendRequest(
+                          requests[i].requester,
+                          false,
+                        ),
+                        icon: const Icon(Icons.close),
                       ),
-                      icon: const Icon(Icons.close),
-                    ),
-                  ],
-                ),
-            ],
+                    ],
+                  ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   void _answerFriendRequest(String requesterId, bool answer) async {
     setIsLoading(true);
     await ModuleService.answerFriendRequest(requesterId, answer);
+    setIsLoading(false);
+  }
+
+  Future _refresh() async {
+    setIsLoading(true);
+    await Future.wait([
+      ModuleService.getFriends(),
+      ModuleService.getPendingFriendRequests(),
+    ]).then((value) {
+      StoreProvider.of<AppState>(context).dispatch(
+        SetFriendsAction(friends: value[0]),
+      );
+      store.dispatch(
+        SetPendingFriendRequestsAction(count: value[1].length),
+      );
+    });
     setIsLoading(false);
   }
 }

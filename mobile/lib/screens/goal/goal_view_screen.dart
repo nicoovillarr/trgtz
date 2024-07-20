@@ -20,6 +20,7 @@ class GoalViewScreen extends StatefulWidget {
 }
 
 class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
+  late final String goalId;
   late ConfettiController _centerController;
 
   @override
@@ -30,11 +31,52 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
 
   @override
   Future afterFirstBuild(BuildContext context) async {
-    String goalId = ModalRoute.of(context)!.settings.arguments as String;
+    goalId = ModalRoute.of(context)!.settings.arguments as String;
     setIsLoading(true);
     ModuleService.getGoal(goalId).then((goal) {
       store.dispatch(SetCurrentEditorObjectAction(obj: goal));
+      store.dispatch(UpdateGoalAction(goal: goal));
       setIsLoading(false);
+      setState(() {});
+    });
+
+    subscribeToChannel('GOAL', goalId, (message) {
+      switch (message.type) {
+        case broadcastTypeGoalUpdate:
+          store.dispatch(
+            UpdateCurrentEditorObjectFields(
+              fields: message.data,
+              converter: Goal.fromJson,
+            ),
+          );
+          store.dispatch(
+            UpdateGoalFieldsAction(
+              goal: store.state.goals
+                  .firstWhere((element) => element.id == goalId),
+              fields: message.data,
+            ),
+          );
+          break;
+
+        case broadcastTypeGoalSetMilestones:
+          Map<String, dynamic> changes = {
+            'milestones': message.data,
+          };
+          store.dispatch(
+            UpdateCurrentEditorObjectFields(
+              fields: changes,
+              converter: Goal.fromJson,
+            ),
+          );
+          break;
+
+        case broadcastTypeGoalDelete:
+          Navigator.of(context)
+              .popUntil((route) => route.settings.name == '/home');
+          showSnackBar('Goal deleted by another user.');
+          break;
+      }
+
       setState(() {});
     });
   }
@@ -314,7 +356,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
     required String field,
     String? newValue = '',
   }) {
-    Goal editedGoal = goal;
+    Goal editedGoal = goal.deepCopy();
     setter(String? v) {
       switch (field) {
         case 'title':
@@ -332,7 +374,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
     setter(newValue);
 
     setIsLoading(true);
-    ModuleService.updateGoal(store, goal).then((_) {
+    ModuleService.updateGoal(store, editedGoal).then((_) {
       setIsLoading(false);
       showSnackBar('Goal updated successfully!');
     });
@@ -421,9 +463,9 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
       return;
     }
 
-    milestone.completedOn =
-        milestone.completedOn == null ? DateTime.now() : null;
-    ModuleService.updateMilestone(store, entity!, milestone).then((_) {
+    Milestone copy = milestone.deepCopy();
+    copy.completedOn = milestone.completedOn == null ? DateTime.now() : null;
+    ModuleService.updateMilestone(store, entity!, copy).then((_) {
       if (entity!.milestones.every((element) => element.completedOn != null) &&
           entity!.completedOn != null) {
         showSnackBar('Goal completed!');
@@ -439,7 +481,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
   String? get title => entity?.title;
 
   @override
-  Goal? get entity => store.state.currentEditorObject;
+  Goal? get entity => store.state.currentEditorObject as Goal?;
 
   @override
   FloatingActionButton? get fab => entity != null &&

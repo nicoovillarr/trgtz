@@ -129,8 +129,19 @@ const tick = (req, res) => {
   }
 }
 
+const logout = async (req, res) => {
+  try {
+    await sessionService.deleteSession(req.token)
+    res.status(204).end()
+  } catch (error) {
+    res.status(500).json(error)
+    console.error('Error logging out: ', error)
+  }
+}
+
 module.exports = {
   signup,
   login,
-  tick
+  tick,
+  logout
 }
