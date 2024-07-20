@@ -1,6 +1,5 @@
 const User = require('../models/user.model')
 const Session = require('../models/session.model')
-const mongoose = require('mongoose')
 const {
   sendUserChannelMessage,
   sendFriendsChannelMessage
