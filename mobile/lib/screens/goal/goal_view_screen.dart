@@ -5,7 +5,6 @@ import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
-import 'package:trgtz/models/milestone.dart';
 import 'package:trgtz/screens/goal/services/index.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:trgtz/utils.dart';
@@ -39,6 +38,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
       setIsLoading(false);
       setState(() {});
     });
+
     subscribeToChannel('GOAL', goalId, (message) {
       switch (message.type) {
         case broadcastTypeGoalUpdate:
@@ -55,9 +55,28 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
               fields: message.data,
             ),
           );
-          setState(() {});
+          break;
+
+        case broadcastTypeGoalSetMilestones:
+          Map<String, dynamic> changes = {
+            'milestones': message.data,
+          };
+          store.dispatch(
+            UpdateCurrentEditorObjectFields(
+              fields: changes,
+              converter: Goal.fromJson,
+            ),
+          );
+          break;
+
+        case broadcastTypeGoalDelete:
+          Navigator.of(context)
+              .popUntil((route) => route.settings.name == '/home');
+          showSnackBar('Goal deleted by another user.');
           break;
       }
+
+      setState(() {});
     });
   }
 
