@@ -21,7 +21,8 @@ const addAlert = async (sent_by, sent_to, type) => {
   const alert = new Alert({
     sent_by,
     sent_to,
-    type
+    type,
+    createdOn: new Date()
   })
 
   await alert.save()
