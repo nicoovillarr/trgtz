@@ -76,6 +76,27 @@ android {
             signingConfig signingConfigs.release
         }
     }
+
+    flavorDimensions "default"
+    productFlavors {
+        live {
+            dimension "default"
+            resValue "string", "app_name", "trgtz"
+            applicationIdSuffix ""
+        }
+
+        staging {
+            dimension "default"
+            resValue "string", "app_name", "trgtz stg"
+            applicationIdSuffix ".stg"
+        }
+
+        development {
+            dimension "default"
+            resValue "string", "app_name", "trgtz dev"
+            applicationIdSuffix ".dev"
+        }
+    }
 }
 
 flutter {
