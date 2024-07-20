@@ -1,5 +1,6 @@
 const Goal = require('../models/goal.model')
 const User = require('../models/user.model')
+const { sendGoalChannelMessage } = require('../config/websocket')
 
 const getGoals = async (userId) => await Goal.find({ user: userId })
 
@@ -32,6 +33,13 @@ const setMilestones = async (id, user, milestones) => {
     goal.completedOn = new Date()
   }
   await goal.save()
+
+  sendGoalChannelMessage(
+    id,
+    'GOAL_SET_MILESTONES',
+    goal.milestones.map((milestone) => milestone.toJSON())
+  )
+
   return goal
 }
 
@@ -46,6 +54,13 @@ const deleteMilestone = async (id, user, milestoneId) => {
     (milestone) => milestone._id != milestoneId
   )
   await goal.save()
+
+  sendGoalChannelMessage(
+    id,
+    'GOAL_SET_MILESTONES',
+    goal.milestones.map((milestone) => milestone.toJSON())
+  )
+
   return goal
 }
 
@@ -66,6 +81,13 @@ const updateMilestone = async (id, user, milestoneId, data) => {
       : null
 
   await goal.save()
+
+  sendGoalChannelMessage(
+    id,
+    'GOAL_SET_MILESTONES',
+    goal.milestones.map((milestone) => milestone.toJSON())
+  )
+
   return goal
 }
 
@@ -75,12 +97,21 @@ const updateGoal = async (id, user, data) => {
   const goal = await Goal.findOne({ _id: id, user })
   if (goal == null) return null
 
-  const { title, description, year, completedOn } = data
-  goal.title = title
-  goal.description = description
-  goal.year = year
-  goal.completedOn = completedOn
+  const editableFields = ['title', 'description', 'year', 'completedOn']
+  for (const key of Object.keys(data).filter((t) =>
+    editableFields.includes(t)
+  )) {
+    goal[key] = data[key]
+  }
+
   await goal.save()
+  sendGoalChannelMessage(
+    id,
+    'GOAL_UPDATED',
+    Object.keys(data)
+      .filter((t) => editableFields.includes(t))
+      .reduce((acc, curr) => ({ ...acc, [curr]: data[curr] }), {})
+  )
   return goal
 }
 
@@ -89,6 +120,9 @@ const deleteGoal = async (id, user) => {
   if (goal == null) return null
   goal.deletedOn = new Date()
   await goal.save()
+
+  sendGoalChannelMessage(id, 'GOAL_DELETED', null)
+
   return goal
 }
 

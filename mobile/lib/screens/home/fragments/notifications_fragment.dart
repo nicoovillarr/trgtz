@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:trgtz/utils.dart';
 import 'package:timeago/timeago.dart' as timeago;
+
+const String goFriends = 'GO_FRIENDS';
 
 class NotificationsFragment extends BaseFragment {
   const NotificationsFragment({super.key, required super.enimtAction});
@@ -28,9 +31,23 @@ class _NotificationsFragmentState
       );
 
   Widget _buildNotificationRow(Alert alert) => ListTile(
-        onTap: () {},
+        onTap: () {
+          if (alert.type.startsWith('friend_')) {
+            widget.enimtAction(goFriends);
+          }
+        },
         title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            if (!alert.seen)
+              Container(
+                margin: const EdgeInsets.only(left: 5, right: 5),
+                padding: const EdgeInsets.all(3),
+                decoration: const BoxDecoration(
+                  color: accentColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
             Expanded(
               child: Text(
                 alert.sentBy.firstName,

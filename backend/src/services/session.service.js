@@ -54,8 +54,19 @@ const updateFirebaseToken = async (token, firebaseToken) => {
   await session.save()
 }
 
+const getSession = async (token) =>
+  await Session.findOne({ token, expiredOn: { $eq: null } })
+
+const deleteSession = async (token) => {
+  const session = await Session.findOne({ token })
+  session.expiredOn = new Date()
+  await session.save()
+}
+
 module.exports = {
   createJWT,
   updateSession,
-  updateFirebaseToken
+  updateFirebaseToken,
+  getSession,
+  deleteSession
 }

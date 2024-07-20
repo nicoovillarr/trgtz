@@ -9,3 +9,23 @@ const String loremIpsum =
 const Color mainColor = Color(0xFF00242C);
 const Color secondaryColor = Color(0xFFCDF6FF);
 const Color accentColor = Color(0xFFED5076);
+
+// Broadcast message types
+const String broadcastTypeSubscribeChannel = 'SUBSCRIBE_CHANNEL';
+const String broadcastTypeUnsubscribeChannel = 'UNSUBSCRIBE_CHANNEL';
+const String broadcastTypeAuthSuccess = 'AUTH_SUCCESS';
+
+const String broadcastChannelTypeUser = 'USER';
+const String broadcastTypeUserUpdate = 'USER_UPDATE';
+
+const String broadcastChannelTypeFriends = 'FRIENDS';
+const String broadcastTypeFriendRequest = 'FRIEND_REQUEST';
+const String broadcastTypeFriendAccepted = 'FRIEND_REQUEST_ACCEPTED';
+const String broadcastTypeFriendDeleted = 'FRIEND_DELETED';
+
+const String broadcastTypeGoalUpdate = 'GOAL_UPDATED';
+const String broadcastTypeGoalSetMilestones = 'GOAL_SET_MILESTONES';
+const String broadcastTypeGoalDelete = 'GOAL_DELETED';
+
+const String broadcastChannelTypeAlerts = 'ALERTS';
+const String broadcastTypeNewAlert = 'NEW_ALERT';

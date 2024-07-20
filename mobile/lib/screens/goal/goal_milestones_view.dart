@@ -30,7 +30,7 @@ class _GoalMilestonesViewState
     addSubscription(
       'goal',
       store.onChange
-          .map((event) => event.currentEditorObject as Goal?)
+          .map((event) => event.currentEditorObject as Goal)
           .listen((obj) {
         setState(() => entity = obj);
       }),

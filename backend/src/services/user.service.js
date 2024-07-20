@@ -1,7 +1,10 @@
 const User = require('../models/user.model')
 const Session = require('../models/session.model')
-const mongoose = require('mongoose')
-const { viewUsers } = require('../config/views')
+const {
+  sendUserChannelMessage,
+  sendFriendsChannelMessage
+} = require('../config/websocket')
+const { viewUsers, viewFriends } = require('../config/views')
 
 const getUsers = async () => await User.find()
 
@@ -18,6 +21,13 @@ const patchUser = async (id, updates) => {
     user[key] = updates[key]
   }
   await user.save()
+  sendUserChannelMessage(
+    id,
+    'USER_UPDATED',
+    Object.keys(updates)
+      .filter((t) => editableFields.includes(t))
+      .reduce((acc, curr) => ({ ...acc, [curr]: updates[curr] }), {})
+  )
 }
 
 const updatePassword = async (user, newHash) => {
@@ -38,6 +48,8 @@ const sendFriendRequest = async (requesterId, recipientId) => {
   })
   await requester.save()
   await recipient.save()
+
+  sendFriendsChannelMessage(recipientId, 'FRIEND_REQUEST', requesterId)
 }
 
 const userExist = async (id) => (await User.countDocuments({ _id: id })) > 0
@@ -84,52 +96,25 @@ const answerFriendRequest = async (recipientId, requesterId, answer) => {
 
   await requester.save()
   await recipient.save()
+
+  if (answer) {
+    sendFriendsChannelMessage(
+      recipientId,
+      'FRIEND_REQUEST_ACCEPTED',
+      requesterId
+    )
+    sendFriendsChannelMessage(
+      requesterId,
+      'FRIEND_REQUEST_ACCEPTED',
+      recipientId
+    )
+  }
+
   return true
 }
 
-const getFriends = async (userId) => {
-  const db = mongoose.connection.db
-  const coll = db.collection('users')
-  const agg = [
-    {
-      $match: {
-        _id: userId
-      }
-    },
-    {
-      $unwind: {
-        path: '$friends',
-        preserveNullAndEmptyArrays: true
-      }
-    },
-    {
-      $match: {
-        'friends.status': 'accepted',
-        'friends.deletedOn': { $eq: null }
-      }
-    },
-    {
-      $addFields: {
-        otherUserID: {
-          $cond: {
-            if: { $ne: ['$friends.requester', '$_id'] },
-            then: '$friends.requester',
-            else: '$friends.recipient'
-          }
-        }
-      }
-    },
-    {
-      $project: {
-        _id: 1,
-        otherUserID: 1
-      }
-    }
-  ]
-
-  const cursor = coll.aggregate(agg)
-  const result = await cursor.toArray().then((res) => res)
-  return result.map((f) => f.otherUserID)
+const getFriends = async (userId, filters = {}) => {
+  return await viewFriends.find({ _id: userId, ...filters })
 }
 
 const getMinUserInfo = async (ids) => {
@@ -166,12 +151,25 @@ const deleteFriend = async (me, friend) => {
   })
   await meUser.save()
   await friendUser.save()
+
+  sendFriendsChannelMessage(me, 'FRIEND_DELETED', friend)
 }
 
 const getUserFirebaseTokens = async (ids) => {
-  const users = await Session.find({ userId: { $in: ids } })
+  const users = await Session.find({
+    userId: { $in: ids },
+    device: { $ne: null },
+    expiredOn: { $eq: null }
+  })
   return users.map((user) => user.device.firebaseToken)
 }
+
+const getPendingFriends = async (userId) =>
+  await getFriends(userId, {
+    requester: { $ne: userId },
+    status: 'pending',
+    deletedOn: { $eq: null }
+  })
 
 module.exports = {
   getUsers,
@@ -185,5 +183,6 @@ module.exports = {
   getFriends,
   getMinUserInfo,
   deleteFriend,
-  getUserFirebaseTokens
+  getUserFirebaseTokens,
+  getPendingFriends
 }

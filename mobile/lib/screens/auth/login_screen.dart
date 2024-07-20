@@ -220,6 +220,9 @@ class _LoginScreenState extends BaseScreen<LoginScreen> {
 
             await LocalStorage.saveUserID(u.id);
 
+            final ws = WebSocketService.getInstance();
+            await ws.init();
+
             Logger.logLogin().then((_) {
               Navigator.of(context).popAndPushNamed('/home');
               ScaffoldMessenger.of(context).showSnackBar(

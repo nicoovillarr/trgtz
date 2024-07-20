@@ -56,6 +56,26 @@ class UpdateGoalAction implements ReducerActionBase {
   }
 }
 
+class UpdateGoalFieldsAction implements ReducerActionBase {
+  final Goal goal;
+  final Map<String, dynamic> fields;
+
+  const UpdateGoalFieldsAction({required this.goal, required this.fields});
+
+  @override
+  execute(AppState currentState) {
+    final Goal updatedGoal = Goal.fromJson({
+      ...goal.toJson(),
+      ...fields,
+    });
+    return currentState.copyWith(
+      goals: currentState.goals
+          .map((e) => e.id == goal.id ? updatedGoal : e)
+          .toList(),
+    );
+  }
+}
+
 class DeleteGoalAction implements ReducerActionBase {
   final Goal goal;
 
@@ -122,5 +142,129 @@ class SetFriendsAction implements ReducerActionBase {
   @override
   execute(AppState currentState) {
     return currentState.copyWith(friends: friends);
+  }
+}
+
+class UpdateUserFields implements ReducerActionBase {
+  final Map<String, dynamic> fields;
+
+  const UpdateUserFields({required this.fields});
+
+  @override
+  execute(AppState currentState) {
+    final User user = currentState.user!;
+    final Map<String, dynamic> updatedFields = {
+      ...user.toJson(),
+      ...fields,
+    };
+
+    final User updatedUser = User.fromJson(updatedFields);
+    return currentState.copyWith(user: updatedUser);
+  }
+}
+
+class UpdateCurrentEditorObjectFields implements ReducerActionBase {
+  final Map<String, dynamic> fields;
+  final dynamic Function(Map<String, dynamic>) converter;
+
+  const UpdateCurrentEditorObjectFields({
+    required this.fields,
+    required this.converter,
+  });
+
+  @override
+  execute(AppState currentState) {
+    final obj = currentState.currentEditorObject.toJson();
+    for (final key in fields.keys) {
+      if (key.contains('.')) {
+        final keys = key.split('.');
+        dynamic current = obj;
+        for (int i = 0; i < keys.length - 1; i++) {
+          if (int.tryParse(keys[i]) != null) {
+            final index = int.parse(keys[i]);
+            current = current[index];
+          } else {
+            current = current[keys[i]];
+          }
+        }
+        final lastKey = keys.last;
+        if (int.tryParse(lastKey) != null) {
+          final index = int.parse(lastKey);
+          current[index] = fields[key];
+        } else {
+          current[lastKey] = fields[key];
+        }
+      } else {
+        obj[key] = fields[key];
+      }
+    }
+    return currentState.copyWith(currentEditorObject: converter(obj));
+  }
+}
+
+class SetPendingFriendRequestsAction implements ReducerActionBase {
+  final int count;
+
+  const SetPendingFriendRequestsAction({required this.count});
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(pendingFriendRequests: count);
+  }
+}
+
+class AddPendingFriendRequestAction implements ReducerActionBase {
+  const AddPendingFriendRequestAction();
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(
+      pendingFriendRequests: (currentState.pendingFriendRequests ?? 0) + 1,
+    );
+  }
+}
+
+class AddFriendAction implements ReducerActionBase {
+  final Friendship newFriend;
+  const AddFriendAction({required this.newFriend});
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(
+      friends: [
+        ...currentState.friends!,
+        newFriend,
+      ],
+    );
+  }
+}
+
+class DeleteFriend implements ReducerActionBase {
+  final String friendId;
+  const DeleteFriend({required this.friendId});
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(
+      friends: currentState.friends!
+          .where((element) => element.otherUserId != friendId)
+          .toList(),
+    );
+  }
+}
+
+class AddAlertAction implements ReducerActionBase {
+  final Alert alert;
+
+  const AddAlertAction({required this.alert});
+
+  @override
+  execute(AppState currentState) {
+    return currentState.copyWith(
+      alerts: [
+        alert,
+        ...?currentState.alerts,
+      ],
+    );
   }
 }

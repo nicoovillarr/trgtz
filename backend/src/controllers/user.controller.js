@@ -138,11 +138,38 @@ const deleteFriend = async (req, res) => {
   }
 }
 
+const getFriends = async (req, res) => {
+  try {
+    const _id = req.user
+    const friends = await userService.getFriends(_id, {
+      status: 'accepted',
+      deletedOn: { $eq: null }
+    })
+    res.status(200).json(friends)
+  } catch (error) {
+    res.status(500).json(error)
+    console.error('Error getting friends: ', error)
+  }
+}
+
+const getPendingFriends = async (req, res) => {
+  try {
+    const _id = req.user
+    const pendingFriends = await userService.getPendingFriends(_id)
+    res.status(200).json(pendingFriends)
+  } catch (error) {
+    res.status(500).json(error)
+    console.error('Error getting pending friends: ', error)
+  }
+}
+
 module.exports = {
   getMe,
   patchUser,
   updatePassword,
   sendFriendRequest,
   answerFriendRequest,
-  deleteFriend
+  deleteFriend,
+  getFriends,
+  getPendingFriends
 }

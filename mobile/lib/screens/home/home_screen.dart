@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/home/fragments/index.dart';
 import 'package:trgtz/screens/home/services/index.dart';
+import 'package:trgtz/security.dart';
+import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:redux/redux.dart';
 import 'package:trgtz/utils.dart';
@@ -26,11 +29,35 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
   @override
   void initState() {
     _fragments = [
-      NotificationsFragment(enimtAction: _processProfileAction),
+      NotificationsFragment(enimtAction: _processAlertsAction),
       DashboardFragment(enimtAction: _processProfileAction),
       ProfileFragment(enimtAction: _processProfileAction),
     ];
+
     super.initState();
+  }
+
+  @override
+  Future afterFirstBuild(BuildContext context) async {
+    subscribeToChannel(broadcastChannelTypeUser, store.state.user!.id,
+        (message) {
+      switch (message.type) {
+        case broadcastTypeUserUpdate:
+          store.dispatch(UpdateUserFields(fields: message.data));
+          setState(() {});
+          break;
+      }
+    });
+
+    subscribeToChannel(broadcastChannelTypeAlerts, store.state.user!.id,
+        (message) {
+      switch (message.type) {
+        case broadcastTypeNewAlert:
+          store.dispatch(AddAlertAction(alert: Alert.fromJson(message.data)));
+          setState(() {});
+          break;
+      }
+    });
   }
 
   @override
@@ -120,6 +147,15 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
   @override
   List<Widget> get actions => [];
 
+  @override
+  RefreshCallback get onRefresh => () async {
+        Map<String, dynamic> user = await UserService().getMe();
+        store.dispatch(SetUserAction(user: user['user']));
+        store.dispatch(SetGoalsAction(goals: user['goals']));
+        store.dispatch(SetFriendsAction(friends: user['friends']));
+        store.dispatch(SetAlertsAction(alerts: user['alerts']));
+      };
+
   void _processProfileAction(String name, {dynamic data}) {
     switch (name) {
       case editUserFirstName:
@@ -132,6 +168,23 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
 
       case editUserPassword:
         _openPasswordEditor();
+        break;
+
+      case logout:
+        Security.logOut().then((_) => Navigator.of(context)
+            .pushNamedAndRemoveUntil('/login', (route) => false));
+        break;
+
+      default:
+        debugPrint('Unknown action: $name');
+        break;
+    }
+  }
+
+  void _processAlertsAction(String name, {dynamic data}) {
+    switch (name) {
+      case goFriends:
+        Navigator.of(context).pushNamed('/friends');
         break;
 
       default:
@@ -155,7 +208,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         onSave: (s) {
           setIsLoading(true);
           Store<AppState> store = StoreProvider.of(context);
-          User user = store.state.user!;
+          User user = store.state.user!.deepCopy();
           user.firstName = s!;
           ModuleService.updateUser(user, store)
               .then((_) => setIsLoading(false));
@@ -180,7 +233,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         onSave: (s) {
           setIsLoading(true);
           Store<AppState> store = StoreProvider.of(context);
-          User user = store.state.user!;
+          User user = store.state.user!.deepCopy();
           user.email = s!;
           ModuleService.updateUser(user, store)
               .then((_) => setIsLoading(false));
