@@ -1,4 +1,7 @@
-require('dotenv').config()
+const NODE_ENV = process.env.NODE_ENV || 'development'
+require('dotenv').config({
+  path: `${NODE_ENV == 'live' ? '' : '.' + NODE_ENV}.env`
+})
 
 const compression = require('compression')
 const express = require('express')
@@ -14,9 +17,12 @@ app.use(info)
 app.use('/', require('../routes'))
 
 const admin = require('firebase-admin')
-const privateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
-const serviceAccount = Object.assign(require('./firebase-admin.json'), {
-  private_key: privateKey
+const config = require('./firebase-admin.json')[NODE_ENV]
+const serviceAccount = Object.assign(config, {
+  private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+  client_id: process.env.FIREBASE_CLIENT_ID,
+  client_email: process.env.FIREBASE_CLIENT_EMAIL
 })
 
 admin.initializeApp({

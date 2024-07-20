@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:trgtz/constants.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:trgtz/services/index.dart';
@@ -75,7 +75,7 @@ class ApiBaseService {
     int? statusCode;
     try {
       final url =
-          '$endpoint/${'$controller/$action$query'.replaceAll(RegExp(r'/+'), '/')}';
+          '${dotenv.env["ENDPOINT"]}/${'$controller/$action$query'.replaceAll(RegExp(r'/+'), '/')}';
       final response = await callMethod(Uri.parse(url), params)
           .timeout(const Duration(seconds: 50));
       statusCode = response.statusCode;
