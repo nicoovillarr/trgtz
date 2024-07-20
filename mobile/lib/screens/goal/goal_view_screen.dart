@@ -35,6 +35,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
     setIsLoading(true);
     ModuleService.getGoal(goalId).then((goal) {
       store.dispatch(SetCurrentEditorObjectAction(obj: goal));
+      store.dispatch(UpdateGoalAction(goal: goal));
       setIsLoading(false);
       setState(() {});
     });
