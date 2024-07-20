@@ -104,25 +104,8 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   void subscribeToChannel(String channelType, String documentId,
       Function(WebSocketMessage) onMessage) {
     channelsSubscribed[channelType] = documentId;
-    WebSocketService.getInstance().sendMessage(
-      WebSocketMessage(
-        type: broadcastTypeSubscribeChannel,
-        data: {
-          'channelType': channelType,
-          'documentId': documentId,
-        },
-      ),
-    );
-
     WebSocketService.getInstance()
-        .messages!
-        .where((event) =>
-            event.channelType == channelType && event.documentId == documentId)
-        .listen((message) {
-      if (mounted) {
-        onMessage(message);
-      }
-    });
+        .subscribe(channelType, documentId, onMessage);
   }
 
   void initSubscriptions() {
@@ -339,15 +322,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
 
   void _disposeChannelsSubscriptions() {
     channelsSubscribed.forEach((key, value) {
-      WebSocketService.getInstance().sendMessage(
-        WebSocketMessage(
-          type: broadcastTypeUnsubscribeChannel,
-          data: {
-            'channelType': key,
-            'documentId': value,
-          },
-        ),
-      );
+      WebSocketService.getInstance().unsubscribe(key, value);
     });
   }
 

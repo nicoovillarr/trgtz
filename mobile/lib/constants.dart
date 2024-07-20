@@ -13,6 +13,7 @@ const Color accentColor = Color(0xFFED5076);
 // Broadcast message types
 const String broadcastTypeSubscribeChannel = 'SUBSCRIBE_CHANNEL';
 const String broadcastTypeUnsubscribeChannel = 'UNSUBSCRIBE_CHANNEL';
+const String broadcastTypeAuthSuccess = 'AUTH_SUCCESS';
 
 const String broadcastChannelTypeUser = 'USER';
 const String broadcastTypeUserUpdate = 'USER_UPDATE';

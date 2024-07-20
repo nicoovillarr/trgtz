@@ -35,6 +35,12 @@ const init = () => {
           }
           clients[userId].set(session._id, ws)
 
+          ws.send(JSON.stringify({ type: 'AUTH_SUCCESS' }), (error) => {
+            if (error) {
+              console.error('Error sending AUTH_SUCCESS:', error)
+            }
+          })
+
           console.log(`${userId} authenticated and connected to websocket...`)
         } else {
           const { channelType, documentId } = data
