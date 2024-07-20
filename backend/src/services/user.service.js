@@ -157,7 +157,11 @@ const deleteFriend = async (me, friend) => {
 }
 
 const getUserFirebaseTokens = async (ids) => {
-  const users = await Session.find({ userId: { $in: ids } })
+  const users = await Session.find({
+    userId: { $in: ids },
+    device: { $ne: null },
+    expiredOn: { $eq: null }
+  })
   return users.map((user) => user.device.firebaseToken)
 }
 

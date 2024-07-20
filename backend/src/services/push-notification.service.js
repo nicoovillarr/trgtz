@@ -5,6 +5,8 @@ const Session = require('../models/session.model')
 
 const sendNotification = async (userId, tokens, title, body) => {
   try {
+    if (tokens == null || tokens.length === 0) return
+
     tokens = tokens.reduce((acc, val) => {
       if (acc.includes(val)) return acc
       else acc.push(val)
