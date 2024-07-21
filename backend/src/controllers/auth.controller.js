@@ -56,7 +56,7 @@ const signup = async (req, res) => {
       model,
       isVirtual,
       serialNumber,
-      req.ip
+      req.custom.ip
     )
     res.status(201).json({
       token
@@ -108,7 +108,7 @@ const login = async (req, res) => {
         model,
         isVirtual,
         serialNumber,
-        req.ip
+        req.custom.ip
       )
       res.status(200).json({
         token
