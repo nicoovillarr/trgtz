@@ -20,7 +20,7 @@ const protect = async (req, res, next) => {
     })
     if (!sessionExists) return res.status(401).json({ message: 'Unauthorized' })
 
-    await sessionService.updateSession(token, req.ip)
+    await sessionService.updateSession(token, req.custom.ip)
 
     req.user = decoded.id
     req.token = token
