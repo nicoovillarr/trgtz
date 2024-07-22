@@ -55,11 +55,14 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
                   _buildListItem(
                     onTap: () => widget.enimtAction(editUserFirstName),
                     field: 'Name',
-                    icon: Icons.keyboard_arrow_right,
                   ),
                   _buildListItem(
                     onTap: () => widget.enimtAction(editUserEmail),
                     field: 'Email',
+                  ),
+                  _buildListItem(
+                    onTap: () {},
+                    field: 'Notifications',
                     icon: Icons.keyboard_arrow_right,
                   ),
                 ],
@@ -70,7 +73,6 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
                   _buildListItem(
                     onTap: () => widget.enimtAction(editUserPassword),
                     field: 'Password',
-                    icon: Icons.keyboard_arrow_right,
                   ),
                 ],
               ),
@@ -107,9 +109,7 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
                 ),
               ),
             ),
-          Card(
-            elevation: 2,
-            clipBehavior: Clip.hardEdge,
+          TCard(
             child: Column(
               children: [
                 for (int i = 0; i < children.length; i++) children[i],
@@ -119,7 +119,7 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
         ],
       );
 
-  InkWell _buildListItem({
+  Widget _buildListItem({
     required String field,
     required Function() onTap,
     IconData? icon,
@@ -142,9 +142,12 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
               ),
             ),
             if (icon != null)
-              IconButton(
-                onPressed: onTap,
-                icon: Icon(
+              Padding(
+                padding: const EdgeInsets.only(
+                  right: 16.0,
+                  left: 4.0,
+                ),
+                child: Icon(
                   icon,
                   color: foregroundColor,
                 ),

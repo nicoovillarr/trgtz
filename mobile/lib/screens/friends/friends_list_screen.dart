@@ -19,8 +19,6 @@ class FriendsListScreen extends StatefulWidget {
 }
 
 class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
-  bool _shouldRefresh = false;
-
   @override
   Future afterFirstBuild(BuildContext context) async {
     _refresh();
@@ -41,8 +39,6 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
           case broadcastTypeFriendAccepted:
             if (store.state.friends?.isEmpty ?? true) {
               _refresh();
-            } else {
-              setState(() => _shouldRefresh = true);
             }
             break;
 
@@ -85,14 +81,26 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8.0),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
+            Material(
+              borderRadius: BorderRadius.circular(4.0),
+              clipBehavior: Clip.hardEdge,
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => _showQRCodeDialog(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8.0,
+                    horizontal: 16.0,
+                  ),
+                  child: const Text(
+                    'Share code',
+                    style: TextStyle(
+                      color: textButtonColor,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ),
-              onPressed: () => _showQRCodeDialog(context),
-              child: const Text('Share code'),
             ),
           ],
         ),
@@ -191,9 +199,6 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
           onPressed: _showSearchDialog,
         ),
       ];
-
-  @override
-  bool get useRefreshIndicator => true;
 
   void _showContextMenu(
       BuildContext context, GlobalKey iconKey, Friendship friend) async {

@@ -76,8 +76,9 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
                       )
                     : null,
                 title: title != null ? Text(title!) : null,
-                elevation: 1,
+                elevation: 0,
                 actions: actions,
+                backgroundColor: Colors.white,
               )
             : null,
         floatingActionButton: _state != ScreenState.loading ? fab : null,
@@ -139,6 +140,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
       isScrollControlled: true,
       showDragHandle: true,
       enableDrag: true,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(16.0),
@@ -290,7 +292,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
 
   void dismissKeyboard() => FocusScope.of(context).unfocus();
 
-  Color get backgroundColor => Colors.white;
+  Color get backgroundColor => const Color(0xFFF5F5F5);
 
   Store<AppState> get store => StoreProvider.of<AppState>(context);
 

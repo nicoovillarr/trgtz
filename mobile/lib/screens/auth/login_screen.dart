@@ -11,7 +11,6 @@ import 'package:trgtz/screens/auth/widgets/index.dart';
 import 'package:trgtz/security.dart';
 import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
-import 'package:trgtz/store/local_storage.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
