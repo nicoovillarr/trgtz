@@ -171,6 +171,16 @@ const getPendingFriends = async (userId) =>
     deletedOn: { $eq: null }
   })
 
+const setAvatarImage = async (id, image) => {
+  const user = await User.findById(id)
+  user.avatar = image._id
+  await user.save()
+
+  sendUserChannelMessage(id, 'USER_UPDATE', {
+    avatar: image
+  })
+}
+
 module.exports = {
   getUsers,
   getUserInfo,
@@ -184,5 +194,6 @@ module.exports = {
   getMinUserInfo,
   deleteFriend,
   getUserFirebaseTokens,
-  getPendingFriends
+  getPendingFriends,
+  setAvatarImage
 }
