@@ -28,7 +28,7 @@ void showErrorDialog(GlobalKey<NavigatorState> navigator, Object error) {
 void mainCommon(
     {required String flavor, required FirebaseOptions options}) async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.$flavor.env');
+  await dotenv.load(fileName: '.env.$flavor');
   await Firebase.initializeApp(options: options);
   await FirebaseHelperService.init();
   AppState initialState = AppState(

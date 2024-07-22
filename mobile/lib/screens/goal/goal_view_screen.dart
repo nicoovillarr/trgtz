@@ -261,11 +261,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
     final int completed =
         goal.milestones.where((m) => m.completedOn != null).length;
     final int total = goal.milestones.length;
-    return Card(
-      elevation: 2.0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4.0),
-      ),
+    return TCard(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SeparatedColumn(

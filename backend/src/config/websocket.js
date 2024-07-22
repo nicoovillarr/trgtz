@@ -95,9 +95,7 @@ const init = () => {
     })
   })
 
-  console.log(
-    `Websocket server started on port ${process.env.WS_PORT || 8080}...`
-  )
+  console.log(`Websocket server started`)
 }
 
 const sendUserChannelMessage = (userId, type, data) =>
