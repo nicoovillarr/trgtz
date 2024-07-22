@@ -6,6 +6,7 @@ import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/store/index.dart';
 
+const String setProfileImage = 'SET_PROFILE_IMAGE';
 const String editUserFirstName = 'EDIT_USER_FIRST_NAME';
 const String editUserEmail = 'EDIT_USER_EMAIL';
 const String editUserPassword = 'EDIT_USER_PASSWORD';
@@ -23,13 +24,16 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
 
   @override
   Widget build(BuildContext context) {
-    return StoreConnector<AppState, AppState>(
-      converter: (store) => store.state,
-      builder: (context, state) => state.user != null
+    return StoreConnector<AppState, Map<String, dynamic>>(
+      converter: (store) => {
+        "user": store.state.user,
+        "friends": store.state.friends,
+      },
+      builder: (context, state) => state["user"] != null
           ? _buildBody(
               context,
-              state.user!,
-              state.friends
+              state["user"]!,
+              state["friends"]
                       ?.where((element) =>
                           element.status == 'accepted' &&
                           element.deletedOn == null)
@@ -160,21 +164,41 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
       Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: _imgSize,
-            width: _imgSize,
-            clipBehavior: Clip.hardEdge,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-              border: Border.all(
-                color: Theme.of(context).shadowColor.withOpacity(0.25),
-                width: 2.0,
+          Stack(
+            children: [
+              SizedBox(
+                height: _imgSize,
+                width: _imgSize,
+                child: ProfileImage(
+                  user: user,
+                ),
               ),
-            ),
-            child: InkWell(
-              onTap: () {},
-              child: const Placeholder(),
-            ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  height: 40.0,
+                  width: 40.0,
+                  decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 4.0,
+                          offset: Offset(0, 2.0),
+                        )
+                      ]),
+                  child: IconButton(
+                    onPressed: () => widget.enimtAction(setProfileImage),
+                    icon: const Icon(
+                      Icons.edit,
+                      size: 16.0,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(width: 16.0),
           Expanded(

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:trgtz/api/index.dart';
 import 'package:trgtz/models/index.dart';
 
@@ -36,4 +38,7 @@ class UserApiService extends ApiBaseService {
   Future<ApiResponse> getPendingFriendRequests() => get('/friend/pending');
 
   Future<ApiResponse> getFriends() => get('/friend');
+
+  Future<ApiResponse> setProfileImage(File image) =>
+      uploadImage('profile-image', image);
 }

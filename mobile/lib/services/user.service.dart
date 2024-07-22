@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:trgtz/api/index.dart';
 import 'package:trgtz/core/exceptions/index.dart';
 import 'package:trgtz/models/index.dart';
@@ -91,6 +93,13 @@ class UserService {
           .map((e) => Friendship.fromJson(e))
           .toList();
     } else {
+      throw AppException(response.content);
+    }
+  }
+
+  Future setProfileImage(File image) async {
+    ApiResponse response = await _userApiService.setProfileImage(image);
+    if (!response.status) {
       throw AppException(response.content);
     }
   }

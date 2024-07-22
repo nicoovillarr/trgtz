@@ -2,6 +2,7 @@ const userService = require('../services/user.service')
 const authService = require('../services/auth.service')
 const alertService = require('../services/alert.service')
 const pushNotificationService = require('../services/push-notification.service')
+const imageService = require('../services/image.service')
 
 const getMe = async (req, res) => {
   try {
@@ -163,6 +164,18 @@ const getPendingFriends = async (req, res) => {
   }
 }
 
+const setProfileImage = async (req, res) => {
+  try {
+    const _id = req.user
+    const image = await imageService.uploadImage(req, res, _id)
+    await userService.setAvatarImage(_id, image)
+    res.status(204).json(image)
+  } catch (error) {
+    res.status(500).json(error)
+    console.error('Error setting profile image: ', error)
+  }
+}
+
 module.exports = {
   getMe,
   patchUser,
@@ -171,5 +184,6 @@ module.exports = {
   answerFriendRequest,
   deleteFriend,
   getFriends,
-  getPendingFriends
+  getPendingFriends,
+  setProfileImage
 }

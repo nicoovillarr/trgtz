@@ -6,3 +6,4 @@ export './progress_bar.dart';
 export 'm_button.dart';
 export './error_dialog.dart';
 export './t_card.dart';
+export './profile_image.dart';

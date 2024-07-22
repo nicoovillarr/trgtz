@@ -114,11 +114,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
             title: Text(friends[index].friendDetails.firstName),
             subtitle:
                 Text('Since ${timeago.format(friends[index].updatedOn!)}'),
-            leading: const CircleAvatar(
-              backgroundImage: NetworkImage(
-                'https://static.vecteezy.com/system/resources/previews/004/509/264/non_2x/profile-placeholder-default-female-avatar-vector.jpg',
-              ),
-            ),
+            leading: ProfileImage(user: friends[index].friendDetails),
             trailing: IconButton(
               key: iconKey,
               icon: const Icon(Icons.more_vert),
