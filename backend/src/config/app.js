@@ -1,14 +1,16 @@
+// src/config/app.js
 const NODE_ENV = process.env.NODE_ENV || 'development'
 const isLocal = !process.env.VERCEL
 require('dotenv').config({
-  path: `${isLocal ? '.' + NODE_ENV : ''}.env`
+  path: `.env${isLocal ? '.' + NODE_ENV : ''}`
 })
 
 const compression = require('compression')
 const express = require('express')
-const app = express()
 const cors = require('cors')
 const info = require('../middlewares/info.middleware')
+
+const app = express()
 
 app.use(compression())
 app.use(cors())
@@ -31,9 +33,10 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 })
 
-const websocket = require('./websocket')
 const db = require('./database')
-db.init()
-websocket.init(app)
+db.init().then(() => {
+  const ws = require('./websocket')
+  ws.init()
+})
 
 module.exports = app
