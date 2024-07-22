@@ -1,5 +1,4 @@
 const WebSocket = require('ws')
-const wss = new WebSocket.Server({ port: 8080 })
 
 const sessionService = require('../services/session.service')
 
@@ -13,6 +12,8 @@ const channels = {
 const clients = {}
 
 const init = () => {
+  const wss = new WebSocket.Server({ port: process.env.WS_PORT || 8080 })
+
   wss.on('connection', (ws) => {
     let userId
     ws.on('message', async (message) => {
@@ -93,6 +94,10 @@ const init = () => {
       console.log('A client disconnected from websocket...')
     })
   })
+
+  console.log(
+    `Websocket server started on port ${process.env.WS_PORT || 8080}...`
+  )
 }
 
 const sendUserChannelMessage = (userId, type, data) =>
