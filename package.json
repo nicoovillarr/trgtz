@@ -1,0 +1,11 @@
+{
+  "name": "trgtz",
+  "version": "0.1.0",
+  "description": "I set out to create a mobile app from scratch, and guess what... now you can set goals for yourself too! 📱🚀",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Marppa SAS",
+  "license": "ISC"
+}
