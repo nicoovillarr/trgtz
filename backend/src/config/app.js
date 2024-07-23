@@ -1,8 +1,8 @@
 // src/config/app.js
 const NODE_ENV = process.env.NODE_ENV || 'development'
-const isLocal = !process.env.VERCEL
+const path = require('path')
 require('dotenv').config({
-  path: `.env${isLocal ? '.' + NODE_ENV : ''}`
+  path: path.join(__dirname, `../../.env.${NODE_ENV}`)
 })
 
 const compression = require('compression')
