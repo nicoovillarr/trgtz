@@ -82,13 +82,11 @@ android {
         live {
             dimension "default"
             resValue "string", "app_name", "trgtz"
-            applicationIdSuffix ""
         }
 
         staging {
             dimension "default"
             resValue "string", "app_name", "trgtz stg"
-            applicationIdSuffix ".stg"
         }
 
         development {
