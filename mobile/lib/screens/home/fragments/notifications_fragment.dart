@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
+import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:trgtz/utils.dart';
@@ -18,9 +19,6 @@ class NotificationsFragment extends BaseFragment {
 
 class _NotificationsFragmentState
     extends BaseFragmentState<NotificationsFragment> {
-  @override
-  void customInitState() {}
-
   @override
   Widget build(BuildContext context) => StoreConnector<AppState, List<Alert>>(
         converter: (store) => store.state.alerts ?? [],
@@ -64,8 +62,8 @@ class _NotificationsFragmentState
           ],
         ),
         subtitle: Text(Utils.getAlertMessage(alert.type)),
-        leading: CircleAvatar(
-          child: Text(alert.sentBy.firstName[0]),
+        leading: ProfileImage(
+          user: alert.sentBy,
         ),
       );
 }

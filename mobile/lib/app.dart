@@ -39,6 +39,12 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
+          floatingActionButtonTheme: FloatingActionButtonThemeData(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(80.0),
+            ),
+          ),
         ),
         initialRoute: initialRoute,
         routes: {

@@ -95,10 +95,8 @@ class WebSocketService {
     if (_channel == null) {
       Completer<void> completer = Completer<void>();
 
-      final uri = Uri.parse(dotenv.env["ENDPOINT"].toString());
-      final hostname = uri.host;
-      final url = 'ws://$hostname:8080';
-      _channel = WebSocketChannel.connect(Uri.parse(url));
+      final endpoint = Uri.parse(dotenv.env["WS_ENDPOINT"].toString());
+      _channel = WebSocketChannel.connect(endpoint);
 
       final token = await LocalStorage.getToken();
       sendMessage(WebSocketMessage(type: 'AUTH', data: {'token': token}));

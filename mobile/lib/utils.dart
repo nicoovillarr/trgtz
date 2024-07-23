@@ -34,7 +34,7 @@ class Utils {
   static List<Goal> getToDoGoals(List<Goal> source) =>
       source.where((element) => element.completedOn == null).toList();
 
-  static List<Goal> sortGoals(List<Goal> source) {
+  static List<Goal> sortGoals(List<Goal> source, {bool ascending = false}) {
     List<Goal> goals = source.toList();
     goals.sort((a, b) {
       if (a.completedOn == null && b.completedOn != null) {
@@ -47,7 +47,7 @@ class Utils {
         return b.completedOn!.compareTo(a.completedOn!);
       }
     });
-    return goals;
+    return ascending ? goals.reversed.toList() : goals;
   }
 
   static String sanitize(String input) =>

@@ -24,6 +24,10 @@ const userSchema = new Schema(
       type: String,
       required: true
     },
+    avatar: {
+      type: Schema.Types.ObjectId,
+      ref: 'Image'
+    },
     goals: [
       {
         type: Schema.Types.ObjectId,

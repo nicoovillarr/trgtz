@@ -6,6 +6,7 @@ const userController = require('../controllers/user.controller')
 
 app.get('/', protect, userController.getMe)
 app.patch('/', protect, userController.patchUser)
+app.post('/profile-image', protect, userController.setProfileImage)
 app.patch('/change-password', protect, userController.updatePassword)
 app.post('/friend', protect, userController.sendFriendRequest)
 app.get('/friend', protect, userController.getFriends)
