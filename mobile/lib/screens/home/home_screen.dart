@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
@@ -25,6 +28,8 @@ class HomeScreen extends StatefulWidget {
 class HomeScreenState extends BaseScreen<HomeScreen> {
   int _currentIndex = 1;
   late List<Widget> _fragments;
+
+  final picker = ImagePicker();
 
   @override
   void initState() {
@@ -158,6 +163,10 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
 
   void _processProfileAction(String name, {dynamic data}) {
     switch (name) {
+      case setProfileImage:
+        _openImagePicker();
+        break;
+
       case editUserFirstName:
         _openNameEditor();
         break;
@@ -311,5 +320,18 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _openImagePicker() async {
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      File? file = File(pickedFile.path);
+      if (await file.exists()) {
+        setIsLoading(true);
+        await ModuleService.setProfileImage(file);
+        setIsLoading(false);
+      }
+    }
   }
 }

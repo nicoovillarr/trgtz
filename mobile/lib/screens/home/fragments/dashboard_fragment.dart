@@ -1,9 +1,11 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/index.dart';
+import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/home/widgets/index.dart';
 import 'package:trgtz/store/index.dart';
@@ -17,6 +19,7 @@ class DashboardFragment extends BaseFragment {
 }
 
 class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
+  bool sortAscending = false;
   late DateTime endYear;
 
   @override
@@ -28,7 +31,8 @@ class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
   Widget build(BuildContext context) => SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
+          child: SeparatedColumn(
+            spacing: 24.0,
             children: _buildRows(),
           ),
         ),
@@ -37,25 +41,29 @@ class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
   List<Widget> _buildRows() => [
         _buildProgressBar(DateTime.now()),
         _buildStatsAndSelector(),
+        _buildAdsContainer(),
         _buildGoalsListView(),
       ];
 
-  Widget _buildProgressBar(DateTime date) => Column(children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Text(
+  Widget _buildProgressBar(DateTime date) => Column(
+        children: [
+          Text(
             Utils.dateToFullString(date),
             style: const TextStyle(
               fontWeight: FontWeight.w300,
               fontSize: 18,
             ),
           ),
-        ),
-        ProgressBar(
+          const SizedBox(
+            height: 8.0,
+          ),
+          ProgressBar(
             percentage:
-                _getDateMiliseconds(date) / _getDateMiliseconds(endYear)),
-        const SizedBox(height: 16.0),
-      ]);
+                _getDateMiliseconds(date) / _getDateMiliseconds(endYear),
+            addShadow: true,
+          ),
+        ],
+      );
 
   Widget _buildStatsAndSelector() => Row(
         children: [
@@ -67,10 +75,7 @@ class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
   Widget _buildPieCard() => SizedBox(
         width: 120,
         height: 120,
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4.0),
-          ),
+        child: TCard(
           child: StoreConnector<AppState, List<Goal>>(
             converter: (store) => store.state.goals
                 .where((g) =>
@@ -112,10 +117,7 @@ class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
   Widget _buildYearSelectorCard() => Flexible(
         child: SizedBox(
           height: 120,
-          child: Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4.0),
-            ),
+          child: TCard(
             child: StoreConnector<AppState, DateTime>(
               builder: (ctx, date) => SizedBox(
                 width: double.infinity,
@@ -147,6 +149,24 @@ class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
         ),
       );
 
+  Widget _buildAdsContainer() => Container(
+        height: 100,
+        decoration: const BoxDecoration(
+          color: Colors.grey,
+          borderRadius: BorderRadius.all(
+            Radius.circular(8.0),
+          ),
+        ),
+        child: const Center(
+          child: Text(
+            'Ads',
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
+        ),
+      );
+
   Widget _buildArrowButton(Function() onPressed, bool right) => TextButton(
         onPressed: onPressed,
         style: TextButton.styleFrom(
@@ -164,24 +184,69 @@ class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
         builder: (ctx, state) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 8.0),
-            Text(
-              'Your goals for ${state.date.year}...',
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFF808080),
-              ),
+            Row(
+              children: [
+                Text(
+                  'Your goals for ${state.date.year}...',
+                  style: const TextStyle(
+                    color: Color(0xFF808080),
+                  ),
+                ),
+                const Spacer(),
+                TextButton(
+                  onPressed: () =>
+                      setState(() => sortAscending = !sortAscending),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8.0, vertical: 4.0),
+                    minimumSize: Size.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4.0),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      RichText(
+                        text: TextSpan(
+                          text: 'Sort by: ',
+                          children: const [
+                            TextSpan(
+                              text: 'status',
+                              style: TextStyle(
+                                fontWeight: FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                          style: const TextStyle(
+                            color: textButtonColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          recognizer: TapGestureRecognizer()..onTap = () {},
+                        ),
+                      ),
+                      AnimatedRotation(
+                        duration: const Duration(milliseconds: 150),
+                        turns: sortAscending ? 0 : -0.5,
+                        curve: Curves.easeInOut,
+                        child: const Icon(
+                          Icons.keyboard_arrow_down,
+                          color: textButtonColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              clipBehavior: Clip.antiAlias,
+            TCard(
               child: GoalsListView(
-                goals: state.goals
-                    .where(
-                        (g) => g.year == state.date.year && g.deletedOn == null)
-                    .toList(),
+                goals: Utils.sortGoals(
+                  state.goals
+                      .where((g) =>
+                          g.year == state.date.year && g.deletedOn == null)
+                      .toList(),
+                  ascending: sortAscending,
+                ),
               ),
             ),
           ],

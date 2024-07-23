@@ -4,7 +4,7 @@ import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/home/services/index.dart';
 import 'package:trgtz/store/actions.dart';
 import 'package:trgtz/store/app_state.dart';
-import 'package:trgtz/utils.dart';
+
 import 'package:redux/redux.dart';
 
 class GoalsListView extends StatefulWidget {
@@ -19,8 +19,6 @@ class GoalsListView extends StatefulWidget {
 }
 
 class _GoalsListViewState extends State<GoalsListView> {
-  List<Goal> goals = [];
-
   late final Store<AppState> store;
 
   @override
@@ -33,38 +31,34 @@ class _GoalsListViewState extends State<GoalsListView> {
 
   @override
   Widget build(BuildContext context) {
-    goals = Utils.sortGoals(widget.goals);
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: goals.length,
-      itemBuilder: (ctx, idx) => ListTile(
-        onTap: () =>
-            Navigator.of(ctx).pushNamed('/goal', arguments: goals[idx].id),
-        onLongPress: () => _showDeleteDialog(ctx, goals[idx]),
-        title: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                goals[idx].title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (goals[idx].description != null)
-                Text(
-                  goals[idx].description!,
+      itemCount: widget.goals.length,
+      itemBuilder: (ctx, idx) => AnimatedOpacity(
+        duration: const Duration(milliseconds: 400),
+        opacity: widget.goals[idx].completedOn != null ? 0.5 : 1,
+        child: ListTile(
+          onTap: () => Navigator.of(ctx)
+              .pushNamed('/goal', arguments: widget.goals[idx].id),
+          onLongPress: () => _showDeleteDialog(ctx, widget.goals[idx]),
+          subtitle: widget.goals[idx].description != null
+              ? Text(
+                  widget.goals[idx].description!,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 12,
                     color: Color(0xff606060),
                   ),
-                ),
-            ],
+                )
+              : null,
+          title: Text(
+            widget.goals[idx].title,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),

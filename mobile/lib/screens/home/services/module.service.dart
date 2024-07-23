@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:redux/redux.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/services/index.dart';
@@ -25,4 +27,7 @@ class ModuleService {
     store.dispatch(SetUserAction(user: response['user']));
     store.dispatch(SetGoalsAction(goals: response['goals']));
   }
+
+  static Future setProfileImage(File image) async =>
+      await _userService.setProfileImage(image);
 }

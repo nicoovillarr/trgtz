@@ -1,2 +1,3 @@
-const app = require('../src/app')
+// api/index.js
+const app = require('../src/config/app')
 module.exports = app

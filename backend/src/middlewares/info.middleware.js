@@ -3,7 +3,8 @@ const info = async (req, res, next) => {
     req.headers['x-forwarded-for']?.split(',').shift() ||
     req.socket?.remoteAddress
 
-  req.ip = parseIp(req)
+  req.custom = {}
+  req.custom.ip = parseIp(req)
 
   next()
 }
