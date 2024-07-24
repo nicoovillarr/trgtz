@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:trgtz/models/goal.dart';
 import 'package:trgtz/store/local_storage.dart';
@@ -72,5 +76,47 @@ class Utils {
       default:
         return message;
     }
+  }
+
+  static Future preloadFonts(List<String> fontFamilies) async {
+    final fontsReady =
+        _systemFontsStream(fontsToLoad: fontFamilies.length).last;
+    GoogleFonts.asMap().forEach((key, value) {
+      if (fontFamilies.any((element) => element == key)) {
+        value();
+      }
+    });
+
+    await fontsReady;
+  }
+
+  static Stream<int> _systemFontsStream({int? fontsToLoad}) {
+    late StreamController<int> controller;
+    var loadedFonts = 0;
+
+    void onSystemFontsLoaded() {
+      loadedFonts++;
+      controller.add(loadedFonts);
+      if (loadedFonts == fontsToLoad) {
+        controller.close();
+      }
+    }
+
+    void addListener() {
+      PaintingBinding.instance.systemFonts.addListener(onSystemFontsLoaded);
+    }
+
+    void removeListener() {
+      PaintingBinding.instance.systemFonts.removeListener(onSystemFontsLoaded);
+    }
+
+    controller = StreamController<int>(
+      onListen: addListener,
+      onPause: removeListener,
+      onResume: addListener,
+      onCancel: removeListener,
+    );
+
+    return controller.stream;
   }
 }
