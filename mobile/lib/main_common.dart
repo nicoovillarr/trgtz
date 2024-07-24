@@ -25,9 +25,13 @@ void showErrorDialog(GlobalKey<NavigatorState> navigator, Object error) {
           ErrorDialog(innerException: error is AppException ? error : null)));
 }
 
-void mainCommon(
-    {required String flavor, required FirebaseOptions options}) async {
-  WidgetsFlutterBinding.ensureInitialized();
+void mainCommon({
+  required String flavor,
+  required FirebaseOptions options,
+}) async {
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
   await dotenv.load(fileName: '.env.$flavor');
   await Firebase.initializeApp(options: options);
   await FirebaseHelperService.init();
@@ -49,8 +53,6 @@ void mainCommon(
     final ws = WebSocketService.getInstance();
     await ws.init();
   }
-
-  FlutterNativeSplash.remove();
 
   FlutterError.onError = (errorDetails) {
     FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
