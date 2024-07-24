@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 import 'package:trgtz/constants.dart';
+import 'package:trgtz/screens/profile/index.dart';
 import 'package:trgtz/store/index.dart';
 
 import 'package:trgtz/screens/auth/index.dart';
@@ -54,6 +55,7 @@ class MyApp extends StatelessWidget {
           '/goal': (context) => const GoalViewScreen(),
           '/goal/milestones': (context) => const GoalMilestonesView(),
           '/friends': (context) => const FriendsListScreen(),
+          '/profile/app-info': (context) => const ProfileAppInfoScreen(),
         },
       ),
     );
