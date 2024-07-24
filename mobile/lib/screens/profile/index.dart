@@ -1,1 +1,1 @@
-export './profile_screen.dart';
+export './app_info_screen.dart';

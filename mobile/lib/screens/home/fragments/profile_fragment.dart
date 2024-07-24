@@ -81,6 +81,17 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
                 ],
               ),
               _buildOptionsList(
+                title: 'About',
+                children: [
+                  _buildListItem(
+                    onTap: () =>
+                        Navigator.of(context).pushNamed('/profile/app-info'),
+                    field: 'Application',
+                    icon: Icons.keyboard_arrow_right,
+                  ),
+                ],
+              ),
+              _buildOptionsList(
                 children: [
                   _buildListItem(
                     onTap: () => widget.enimtAction(logout),
