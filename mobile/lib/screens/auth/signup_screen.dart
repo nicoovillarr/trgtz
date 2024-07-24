@@ -114,7 +114,7 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
               size: 160,
             ),
             _simpleButton(
-              onPressed: () => Navigator.of(context).popAndPushNamed('/login'),
+              onPressed: () => Navigator.of(context).pop(),
               border: false,
               children: [
                 Text.rich(

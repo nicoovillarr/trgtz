@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:trgtz/constants.dart';
@@ -33,6 +34,10 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
 
   @override
   void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FlutterNativeSplash.remove();
+    });
+
     _fragments = [
       NotificationsFragment(enimtAction: _processAlertsAction),
       DashboardFragment(enimtAction: _processProfileAction),

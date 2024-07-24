@@ -58,6 +58,7 @@ dependencies:
   web_socket_channel: ^3.0.1
   flutter_dotenv: ^5.1.0
   image_picker: ^1.1.2
+  flutter_animate: ^4.5.0
 
 dev_dependencies:
   flutter_test:
@@ -115,7 +116,14 @@ flutter:
   # see https://flutter.dev/custom-fonts/#from-packages
 
 flutter_native_splash:
+  color: "#C3C3C3"
+  image: assets/test (2).png
   android: true
   ios: true
 
-  color: "#00242C"
+  android_12:
+    image: assets/test (2).png
+    android: true
+    ios: true
+    icon_background_color: "#F5F5F5"
+    color: "#FFFFFF"
