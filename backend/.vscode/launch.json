@@ -1,0 +1,38 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "nodemon",
+            "runtimeExecutable": "${workspaceFolder}/node_modules/nodemon/bin/nodemon.js",
+            "program": "${workspaceFolder}/src/index.js",
+            "restart": true,
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "env": {
+                "NODE_ENV": "${input:env}"
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "env",
+            "type": "pickString",
+            "description": "Select the environment:",
+            "options": [
+                {
+                    "label": "development",
+                    "value": "development"
+                },
+                {
+                    "label": "staging",
+                    "value": "staging"
+                }
+            ]
+        }
+    ]
+}
