@@ -141,7 +141,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.notifications),
-            label: 'Notifications',
+            label: 'Alerts',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
