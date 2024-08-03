@@ -27,24 +27,27 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
     return StoreConnector<AppState, Map<String, dynamic>>(
       converter: (store) => {
         "user": store.state.user,
-        "friends": store.state.friends,
+        "friendsCount": store.state.friends
+                ?.where((element) =>
+                    element.status == 'accepted' && element.deletedOn == null)
+                .length ??
+            0,
+        "goalsCount": store.state.goals
+            .where((element) =>
+                element.deletedOn == null &&
+                element.completedOn == null &&
+                element.year == DateTime.now().year)
+            .length,
       },
       builder: (context, state) => state["user"] != null
-          ? _buildBody(
-              context,
-              state["user"]!,
-              state["friends"]
-                      ?.where((element) =>
-                          element.status == 'accepted' &&
-                          element.deletedOn == null)
-                      .length ??
-                  0)
+          ? _buildBody(context, state["user"]!, state["friendsCount"],
+              state["goalsCount"])
           : _buildNoUserMsg(),
     );
   }
 
   SingleChildScrollView _buildBody(
-          BuildContext context, User user, int friendsCount) =>
+          BuildContext context, User user, int friendsCount, int goalsCount) =>
       SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -52,7 +55,7 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
             spacing: 16.0,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildInfoBaner(context, user, friendsCount),
+              _buildInfoBaner(context, user, friendsCount, goalsCount),
               _buildOptionsList(
                 title: 'Configuration',
                 children: [
@@ -171,7 +174,8 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
         ),
       );
 
-  Widget _buildInfoBaner(BuildContext context, User user, int friendsCount) =>
+  Widget _buildInfoBaner(
+          BuildContext context, User user, int friendsCount, int goalsCount) =>
       Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -240,7 +244,7 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
                       const SizedBox(width: 8.0),
                       _buildInfoStat(
                         title: 'Goals',
-                        value: 3.toString(),
+                        value: goalsCount.toString(),
                         onTap: () {
                           // TODO: Show goals statistics
                         },
