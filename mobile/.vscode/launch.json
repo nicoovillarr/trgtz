@@ -8,6 +8,7 @@
       "name": "Flutter Dev",
       "request": "launch",
       "type": "dart",
+      "flutterMode": "debug",
       "program": "lib/main_${input:flavor}.dart",
       "args": ["--flavor", "${input:flavor}", "--target", "lib/main_${input:flavor}.dart"]
     }
