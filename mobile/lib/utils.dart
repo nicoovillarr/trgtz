@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:trgtz/models/goal.dart';
+import 'package:trgtz/models/index.dart';
+import 'package:trgtz/store/index.dart';
 import 'package:trgtz/store/local_storage.dart';
 
 class Utils {
@@ -61,18 +63,18 @@ class Utils {
 
   static bool validateEmail(String input) => input.contains('@');
 
-  static String getAlertMessage(String message) {
+  static String getAlertMessage(User sentBy, String message) {
     switch (message) {
       case 'friend_requested':
-        return 'Wants to be your friend';
+        return '${sentBy.firstName} wants to be your friend';
       case 'friend_accepted':
-        return 'Accepted your friend request';
+        return '${sentBy.firstName} and you are now friends';
       case 'goal_created':
-        return 'Created a new goal';
+        return '${sentBy.firstName} reated a new goal';
       case 'goal_completed':
-        return 'Completed a goal';
+        return '${sentBy.firstName} completed a goal';
       case 'milestone_completed':
-        return 'Completed a milestone';
+        return '${sentBy.firstName} completed a milestone';
       default:
         return message;
     }
