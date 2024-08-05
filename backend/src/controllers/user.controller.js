@@ -103,6 +103,7 @@ const answerFriendRequest = async (req, res) => {
     if (answer) {
       await alertService.deleteAlert(requesterId, _id, 'friend_requested')
       await alertService.addAlert(_id, requesterId, 'friend_accepted')
+      await alertService.addAlert(requesterId, _id, 'friend_accepted')
 
       const recipientToken = await userService.getUserFirebaseTokens([
         requesterId
