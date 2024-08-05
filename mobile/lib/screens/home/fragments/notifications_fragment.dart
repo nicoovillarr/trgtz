@@ -61,7 +61,7 @@ class _NotificationsFragmentState
             ),
           ],
         ),
-        subtitle: Text(Utils.getAlertMessage(alert.type)),
+        subtitle: Text(Utils.getAlertMessage(alert.sentBy, alert.type)),
         leading: ProfileImage(
           user: alert.sentBy,
         ),
