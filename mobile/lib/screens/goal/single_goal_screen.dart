@@ -1,25 +1,24 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_redux/flutter_redux.dart';
+import 'package:provider/provider.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
-import 'package:trgtz/screens/goal/services/index.dart';
-import 'package:trgtz/store/index.dart';
+import 'package:trgtz/screens/goal/providers/index.dart';
 import 'package:trgtz/utils.dart';
 import 'package:confetti/confetti.dart';
 
 import 'dart:math';
 
-class GoalViewScreen extends StatefulWidget {
-  const GoalViewScreen({super.key});
+class SingleGoalScreen extends StatefulWidget {
+  const SingleGoalScreen({super.key});
 
   @override
-  State<GoalViewScreen> createState() => _GoalViewScreenState();
+  State<SingleGoalScreen> createState() => _SingleGoalScreenState();
 }
 
-class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
+class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
   late final String goalId;
   late ConfettiController _centerController;
 
@@ -31,43 +30,27 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
 
   @override
   Future afterFirstBuild(BuildContext context) async {
-    goalId = ModalRoute.of(context)!.settings.arguments as String;
     setIsLoading(true);
-    ModuleService.getGoal(goalId).then((goal) {
-      store.dispatch(SetCurrentEditorObjectAction(obj: goal));
-      store.dispatch(UpdateGoalAction(goal: goal));
-      setIsLoading(false);
-      setState(() {});
-    });
+    final viewModel = await context
+        .read<SingleGoalProvider>()
+        .populate(ModalRoute.of(context)!.settings.arguments as String);
+    setIsLoading(false);
 
-    subscribeToChannel('GOAL', goalId, (message) {
+    if (!viewModel.model!.goal.canEdit) {
+      return;
+    }
+
+    subscribeToChannel('GOAL', viewModel.model!.goal.id, (message) {
       switch (message.type) {
         case broadcastTypeGoalUpdate:
-          store.dispatch(
-            UpdateCurrentEditorObjectFields(
-              fields: message.data,
-              converter: Goal.fromJson,
-            ),
-          );
-          store.dispatch(
-            UpdateGoalFieldsAction(
-              goal: store.state.goals
-                  .firstWhere((element) => element.id == goalId),
-              fields: message.data,
-            ),
-          );
+          viewModel.updateGoalField(message.data);
           break;
 
         case broadcastTypeGoalSetMilestones:
           Map<String, dynamic> changes = {
             'milestones': message.data,
           };
-          store.dispatch(
-            UpdateCurrentEditorObjectFields(
-              fields: changes,
-              converter: Goal.fromJson,
-            ),
-          );
+          viewModel.updateGoalField(changes);
           break;
 
         case broadcastTypeGoalDelete:
@@ -84,9 +67,9 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
   @override
   Widget body(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return StoreConnector<AppState, Goal?>(
-      converter: (store) => store.state.currentEditorObject as Goal?,
-      builder: (ctx, goal) {
+    return Selector<SingleGoalProvider, Goal?>(
+      selector: (context, viewModel) => viewModel.model?.goal,
+      builder: (ctx, goal, child) {
         if (goal == null) {
           return const Center(
             child: Text('Goal not found'),
@@ -115,7 +98,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
 
   @override
   List<Widget> get actions => [
-        if (entity != null)
+        if (viewModel.model != null && viewModel.model!.goal.canEdit)
           CustomPopUpMenuButton(
             items: [
               MenuItem(
@@ -124,14 +107,14 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
                   title: 'Change title',
                   child: TextEditModal(
                     placeholder: 'I wanna...',
-                    initialValue: entity!.title,
+                    initialValue: viewModel.model!.goal.title,
                     maxLength: 50,
                     maxLines: 1,
                     validate: (title) => title != null && title.isNotEmpty
                         ? null
                         : 'Title cannot be empty',
                     onSave: (s) => _onSaveField(
-                      goal: entity!,
+                      goal: viewModel.model!.goal,
                       field: 'title',
                       newValue: Utils.sanitize(s ?? ''),
                     ),
@@ -140,8 +123,8 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
               ),
               MenuItem(
                 title: 'Milestones',
-                onTap: () => Navigator.of(context)
-                    .pushNamed('/goal/milestones', arguments: entity!.id),
+                onTap: () => Navigator.of(context).pushNamed('/goal/milestones',
+                    arguments: viewModel.model!.goal.id),
               ),
               MenuItem(
                 title: 'Delete',
@@ -157,8 +140,9 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildDesc(size, goal),
-            if (goal.milestones.isEmpty) _buildNewMilestoneButton(goal),
-            if (goal.milestones.isNotEmpty) _buildMilestonesSummary(goal),
+            if (goal.milestones.isEmpty && goal.canEdit)
+              _buildNewMilestoneButton(goal),
+            if (goal.milestones.isNotEmpty) _buildMilestonesSummary(goal)
           ],
         ),
       );
@@ -210,11 +194,13 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
   Widget _buildDesc(Size size, Goal goal) => Material(
         color: const Color.fromARGB(0, 65, 37, 37),
         child: InkWell(
-          onTap: () => _showDescriptionModal(size, goal),
+          onTap: () => goal.canEdit ? _showDescriptionModal(size, goal) : null,
           borderRadius: BorderRadius.circular(4.0),
+          highlightColor: Colors.transparent,
+          splashColor: Colors.transparent,
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: goal.description != null
+            child: goal.description != null && goal.description!.isNotEmpty
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -224,9 +210,30 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
                           color: Color(0xFF003E4B),
                         ),
                       ),
-                      const Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                      if (goal.canEdit)
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Icon(
+                              Icons.edit,
+                              color: Color(0xFF003E4B),
+                              size: 16.0,
+                            ),
+                          ],
+                        )
+                    ],
+                  )
+                : goal.canEdit
+                    ? const Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
+                          Text(
+                            'Add description',
+                            style: TextStyle(
+                              color: Color(0xFF003E4B),
+                            ),
+                          ),
+                          SizedBox(width: 8.0),
                           Icon(
                             Icons.edit,
                             color: Color(0xFF003E4B),
@@ -234,25 +241,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
                           ),
                         ],
                       )
-                    ],
-                  )
-                : const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Add description',
-                        style: TextStyle(
-                          color: Color(0xFF003E4B),
-                        ),
-                      ),
-                      SizedBox(width: 8.0),
-                      Icon(
-                        Icons.edit,
-                        color: Color(0xFF003E4B),
-                        size: 16.0,
-                      ),
-                    ],
-                  ),
+                    : const Text('This goal has no description'),
           ),
         ),
       );
@@ -307,16 +296,25 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4.0),
                         ),
-                        title: Text(
-                          milestone.title,
-                          style: const TextStyle(fontSize: 14),
+                        title: Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: goal.canEdit ? 0.0 : 16.0),
+                          child: Text(
+                            milestone.title,
+                            style: const TextStyle(fontSize: 14),
+                          ),
                         ),
-                        leading: Checkbox(
-                          value: milestone.completedOn != null,
-                          activeColor: mainColor,
-                          onChanged: (_) => _onMilestoneCompleted(milestone),
-                        ),
-                        onTap: () => _onMilestoneCompleted(milestone),
+                        leading: goal.canEdit
+                            ? Checkbox(
+                                value: milestone.completedOn != null,
+                                activeColor: mainColor,
+                                onChanged: (_) =>
+                                    _onMilestoneCompleted(milestone),
+                              )
+                            : null,
+                        onTap: () => goal.canEdit
+                            ? _onMilestoneCompleted(milestone)
+                            : null,
                       ),
                     ],
                   ),
@@ -370,7 +368,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
     setter(newValue);
 
     setIsLoading(true);
-    ModuleService.updateGoal(store, editedGoal).then((_) {
+    viewModel.updateGoal(editedGoal).then((_) {
       setIsLoading(false);
       showSnackBar('Goal updated successfully!');
     });
@@ -392,12 +390,13 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
       );
 
   void _onDeleteGoal() {
-    if (entity == null) return;
+    if (viewModel.model?.goal == null) return;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete goal'),
-        content: Text('Are you sure you want to delete \'${entity!.title}\'?'),
+        content: Text(
+            'Are you sure you want to delete \'${viewModel.model?.goal.title}\'?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -425,7 +424,7 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
 
   void _deleteGoal() {
     setIsLoading(true);
-    ModuleService.deleteGoal(store, entity!).then(
+    viewModel.deleteGoal().then(
       (_) {
         setIsLoading(false);
         Navigator.of(context)
@@ -436,12 +435,13 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
   }
 
   void _onMilestoneCompleted(Milestone milestone) {
-    final int currentIndex = entity!.milestones.indexOf(milestone);
-    final bool hasIncompleteMilestones = entity!.milestones
+    final int currentIndex =
+        viewModel.model!.goal.milestones.indexOf(milestone);
+    final bool hasIncompleteMilestones = viewModel.model!.goal.milestones
         .sublist(0, currentIndex)
         .any((m) => m.completedOn == null);
 
-    final bool hasCompletedMilestones = entity!.milestones
+    final bool hasCompletedMilestones = viewModel.model!.goal.milestones
         .sublist(currentIndex + 1)
         .any((m) => m.completedOn != null);
 
@@ -461,9 +461,10 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
 
     Milestone copy = milestone.deepCopy();
     copy.completedOn = milestone.completedOn == null ? DateTime.now() : null;
-    ModuleService.updateMilestone(store, entity!, copy).then((_) {
-      if (entity!.milestones.every((element) => element.completedOn != null) &&
-          entity!.completedOn != null) {
+    viewModel.updateMilestone(viewModel.model!.goal, copy).then((_) {
+      if (viewModel.model!.goal.milestones
+              .every((element) => element.completedOn != null) &&
+          viewModel.model!.goal.completedOn != null) {
         showSnackBar('Goal completed!');
         _centerController.play();
         Future.delayed(const Duration(milliseconds: 10), () {
@@ -474,20 +475,19 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
   }
 
   @override
-  String? get title => entity?.title;
+  String? get title => viewModel.model?.goal.title;
 
   @override
-  Goal? get entity => store.state.currentEditorObject as Goal?;
-
-  @override
-  FloatingActionButton? get fab => entity != null &&
-          entity!.completedOn == null &&
-          entity!.deletedOn == null &&
-          (entity!.milestones.isEmpty ||
-              entity!.milestones.every((m) => m.completedOn != null))
+  FloatingActionButton? get fab => viewModel.model?.goal != null &&
+          viewModel.model!.goal.completedOn == null &&
+          viewModel.model!.goal.deletedOn == null &&
+          viewModel.model!.goal.canEdit &&
+          (viewModel.model!.goal.milestones.isEmpty ||
+              viewModel.model!.goal.milestones
+                  .every((m) => m.completedOn != null))
       ? FloatingActionButton.extended(
           onPressed: () async {
-            ModuleService.completeGoal(store, entity!).then((_) {
+            viewModel.completeGoal().then((_) {
               setState(() {});
               _centerController.play();
               Future.delayed(const Duration(milliseconds: 10), () {
@@ -500,8 +500,8 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
                   action: SnackBarAction(
                     label: 'Undo',
                     onPressed: () {
-                      ModuleService.updateGoal(
-                              store, entity!..completedOn = null)
+                      viewModel
+                          .updateGoal(viewModel.model!.goal..completedOn = null)
                           .then((value) => setState(() {}));
                     },
                   ),
@@ -512,4 +512,6 @@ class _GoalViewScreenState extends BaseEditorScreen<GoalViewScreen, Goal> {
           label: const Text('Complete'),
         )
       : null;
+
+  SingleGoalProvider get viewModel => context.read<SingleGoalProvider>();
 }

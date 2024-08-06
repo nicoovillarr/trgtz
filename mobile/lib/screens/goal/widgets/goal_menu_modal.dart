@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_redux/flutter_redux.dart';
+import 'package:provider/provider.dart';
 import 'package:trgtz/models/goal.dart';
-import 'package:trgtz/screens/goal/services/index.dart';
-import 'package:trgtz/store/index.dart';
+import 'package:trgtz/screens/goal/providers/index.dart';
 
 class GoalMenuAction {
   late IconData icon;
@@ -46,8 +45,9 @@ class GoalMenuModal extends StatelessWidget {
                     ),
                   ),
                   TextButton(
-                    onPressed: () => ModuleService.deleteGoal(
-                            StoreProvider.of<AppState>(context), goal)
+                    onPressed: () => context
+                        .read<SingleGoalProvider>()
+                        .deleteGoal()
                         .then((_) => Navigator.of(context)
                             .popUntil((route) => route.settings.name == '/')),
                     child: const Text(
