@@ -30,39 +30,19 @@ class Security {
     await LocalStorage.saveToken(null);
   }
 
-  static Future<bool> internalLogIn() async {
+  static Future<String?> internalLogIn() async {
     final authApiService = AuthApiService();
     String? token = await LocalStorage.getToken();
     if (token != null) {
       final tickResponse = await authApiService.tick(token);
       if (tickResponse.status) {
-        return true;
+        return tickResponse.content['_id'];
       } else {
         await LocalStorage.clear();
-        // String? email, pass;
-        // try {
-        //   email = await LocalStorage.getEmail();
-        //   pass = await LocalStorage.getPass();
-        // } catch (_) {}
-        // if (email != null && pass != null) {
-        // final deviceInfo =
-        //     await DeviceInformationService.of(context).getDeviceInfo();
-        // final loginResponse =
-        //     await authApiService.login(email, pass, deviceInfo);
-        // String? token = loginResponse.content.containsKey('token')
-        //     ? loginResponse.content['token'].toString()
-        //     : null;
-        // if (loginResponse.status && token != null) {
-        //   LocalStorage.saveToken(token);
-        //   return true;
-        // } else {
-        //   await LocalStorage.clear();
-        // }
-        // }
       }
     }
 
-    return false;
+    return null;
   }
 
   static Future logOut() async {
