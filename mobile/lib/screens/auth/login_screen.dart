@@ -147,6 +147,7 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
                 key: _emailKey,
                 placeholder: 'you@mail.com',
                 maxLines: 1,
+                initialValue: 'nvillar@marppa.com',
               ),
             ),
             _buildFormField(
@@ -156,6 +157,7 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
                 placeholder: '•••••••',
                 isPassword: true,
                 maxLines: 1,
+                initialValue: '1234',
               ),
             ),
             _buildFormField(child: _buildLoginButton()),
@@ -246,11 +248,13 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
               await DeviceInformationService.of(context).getDeviceInfo();
           ModuleService()
               .login(email, password, deviceInfo)
-              .then((token) async {
+              .then((response) async {
             setIsLoading(false);
-            await Security.saveCredentials(email, password, token);
+            await Security.saveCredentials(
+                email, password, response['token'].toString());
 
-            final me = await ModuleService().getMe();
+            final me = await ModuleService()
+                .getUserProfile(response['_id'].toString());
             User u = me['user'];
             store.dispatch(SetUserAction(user: u));
             store.dispatch(SetGoalsAction(goals: me['goals']));

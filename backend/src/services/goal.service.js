@@ -2,7 +2,11 @@ const Goal = require('../models/goal.model')
 const User = require('../models/user.model')
 const { sendGoalChannelMessage } = require('../config/websocket')
 
-const getGoals = async (userId) => await Goal.find({ user: userId })
+const getGoals = async (userId, year) => await Goal.find({
+  user: userId,
+  year: year != null ? year : { $ne: null },
+  deletedOn: { $eq: null }
+})
 
 const createMultipleGoals = async (user_id, goals) => {
   const createdGoals = []

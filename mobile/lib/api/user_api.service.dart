@@ -8,8 +8,6 @@ class UserApiService extends ApiBaseService {
     controller = 'users';
   }
 
-  Future<ApiResponse> getMe() async => await get('');
-
   Future<ApiResponse> patchUser(User user) async =>
       await patch('', user.toJson());
 
@@ -35,10 +33,22 @@ class UserApiService extends ApiBaseService {
   Future<ApiResponse> addFriend(String code) =>
       post('/friend', {'recipientId': code});
 
-  Future<ApiResponse> getPendingFriendRequests() => get('/friend/pending');
-
-  Future<ApiResponse> getFriends() => get('/friend');
+  Future<ApiResponse> getPendingFriendRequests(String userId) => get(
+        '/$userId/friends',
+        params: {
+          'status': 'pending',
+        },
+      );
 
   Future<ApiResponse> setProfileImage(File image) =>
       uploadImage('profile-image', image);
+
+  Future<ApiResponse> getUserGoals(String userId, {int? year}) =>
+      get('/$userId/goals', params: {
+        'year': year?.toString(),
+      });
+
+  Future<ApiResponse> getUserFriends(String userId) => get('/$userId/friends');
+
+  Future<ApiResponse> getProfile(String userId) => get('/$userId');
 }

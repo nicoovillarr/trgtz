@@ -179,12 +179,14 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
               await DeviceInformationService(context: context).getDeviceInfo();
           ModuleService()
               .signup(firstName, email, password, deviceInfo)
-              .then((token) async {
+              .then((response) async {
             setIsLoading(false);
 
-            await Security.saveCredentials(email, password, token);
+            await Security.saveCredentials(
+                email, password, response['token'].toString());
 
-            final Map<String, dynamic> me = await ModuleService().getMe();
+            final Map<String, dynamic> me = await ModuleService()
+                .getUserProfile(response['_id'].toString());
             User u = me['user'];
             store.dispatch(SetUserAction(user: u));
             store.dispatch(SetGoalsAction(goals: me['goals']));

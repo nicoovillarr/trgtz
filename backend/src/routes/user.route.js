@@ -4,7 +4,6 @@ const protect = require('../middlewares/auth.middleware')
 
 const userController = require('../controllers/user.controller')
 
-app.get('/', protect, userController.getMe)
 app.patch('/', protect, userController.patchUser)
 app.post('/profile-image', protect, userController.setProfileImage)
 app.patch('/change-password', protect, userController.updatePassword)
@@ -13,5 +12,9 @@ app.get('/friend', protect, userController.getFriends)
 app.put('/friend', protect, userController.answerFriendRequest)
 app.delete('/friend/:otherUser', protect, userController.deleteFriend)
 app.get('/friend/pending', protect, userController.getPendingFriends)
+
+app.get('/:user', protect, userController.getUserProfile)
+app.get('/:user/goals', protect, userController.getUserGoals)
+app.get('/:user/friends', protect, userController.getUserFriends)
 
 module.exports = app
