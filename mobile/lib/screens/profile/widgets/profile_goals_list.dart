@@ -17,16 +17,17 @@ class ProfileGoalsList extends StatelessWidget {
   Widget build(BuildContext context) => SingleChildScrollView(
         scrollDirection: direction,
         child: direction == Axis.horizontal
-            ? _buildHorizontalList()
-            : _buildVerticalList(),
+            ? _buildHorizontalList(context)
+            : _buildVerticalList(context),
       );
 
-  Widget _buildHorizontalList() => Column(
+  Widget _buildHorizontalList(BuildContext context) => Column(
         children: [
           Row(
             children: [
               for (int i = 0; i < goals.length; i++)
                 _buildGoalCard(
+                  context,
                   goals[i],
                   constraints: const BoxConstraints(
                     minWidth: 120,
@@ -38,13 +39,16 @@ class ProfileGoalsList extends StatelessWidget {
         ],
       );
 
-  Widget _buildVerticalList() => Column(
+  Widget _buildVerticalList(BuildContext context) => Column(
         children: [
-          for (int i = 0; i < goals.length; i++) _buildGoalCard(goals[i]),
+          for (int i = 0; i < goals.length; i++)
+            _buildGoalCard(context, goals[i]),
         ],
       );
 
-  Widget _buildGoalCard(Goal goal, {BoxConstraints? constraints}) => Padding(
+  Widget _buildGoalCard(BuildContext context, Goal goal,
+          {BoxConstraints? constraints}) =>
+      Padding(
         padding: const EdgeInsets.all(8.0),
         child: Opacity(
           opacity: goal.completedOn != null ? 0.5 : 1,
@@ -53,7 +57,10 @@ class ProfileGoalsList extends StatelessWidget {
             elevation: 5,
             clipBehavior: Clip.hardEdge,
             child: InkWell(
-              onTap: () {},
+              onTap: () => Navigator.of(context).pushNamed(
+                '/goal',
+                arguments: goal.id,
+              ),
               child: Container(
                 constraints: constraints,
                 child: ListTile(

@@ -95,7 +95,7 @@ const updateMilestone = async (id, user, milestoneId, data) => {
   return goal
 }
 
-const getSingleGoal = async (id, user) => await Goal.findOne({ _id: id, user })
+const getSingleGoal = async (id) => await Goal.findOne({ _id: id })
 
 const updateGoal = async (id, user, data) => {
   const goal = await Goal.findOne({ _id: id, user })
