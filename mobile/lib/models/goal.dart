@@ -5,6 +5,7 @@ class Goal extends ModelBase {
   String title;
   String? description;
   int year;
+  bool canEdit;
   List<Milestone> milestones;
   DateTime createdOn;
   DateTime? completedOn;
@@ -15,6 +16,7 @@ class Goal extends ModelBase {
     required this.title,
     required this.year,
     required this.createdOn,
+    this.canEdit = false,
     this.milestones = const [],
     this.description,
     this.completedOn,
@@ -29,6 +31,7 @@ class Goal extends ModelBase {
       title: json['title'],
       description: json['description'],
       year: json['year'],
+      canEdit: json['canEdit'] ?? false,
       milestones:
           milestones.map((milestone) => Milestone.fromJson(milestone)).toList(),
       createdOn: ModelBase.tryParseDateTime('createdOn', json)!,
@@ -42,6 +45,7 @@ class Goal extends ModelBase {
         'title': title,
         'description': description,
         'year': year,
+        'canEdit': canEdit,
         'createdOn': createdOn.toString(),
         'completedOn': completedOn?.toString(),
         'deletedOn': deletedOn?.toString(),
@@ -78,6 +82,7 @@ class Goal extends ModelBase {
       title: title,
       description: description,
       year: year,
+      canEdit: canEdit,
       milestones: milestones.map((milestone) => milestone.deepCopy()).toList(),
       createdOn: createdOn,
       completedOn: completedOn,

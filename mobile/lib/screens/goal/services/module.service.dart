@@ -1,37 +1,26 @@
-import 'package:redux/redux.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/services/index.dart';
-import 'package:trgtz/store/index.dart';
 
 class ModuleService {
   static final GoalService _goalService = GoalService();
 
-  static Future<Goal> getGoal(String id) => _goalService.getGoalById(id);
+  Future<Goal> getGoal(String id) => _goalService.getGoalById(id);
 
-  static Future completeGoal(Store<AppState> store, Goal goal) {
+  Future completeGoal(Goal goal) {
     Goal copy = goal.deepCopy();
     copy.completedOn = DateTime.now();
-    return updateGoal(store, copy)
-        .then((value) => store.dispatch(UpdateGoalAction(goal: goal)));
+    return updateGoal(copy);
   }
 
-  static Future updateGoal(Store<AppState> store, Goal goal) {
+  Future updateGoal(Goal goal) {
     return _goalService.updateGoal(goal);
   }
 
-  static Future deleteGoal(Store<AppState> store, Goal goal) {
-    return _goalService
-        .deleteGoal(goal.id)
-        .then((_) => store.dispatch(DeleteGoalAction(goal: goal)));
-  }
+  Future deleteGoal(Goal goal) => _goalService.deleteGoal(goal.id);
 
-  static Future setMilestones(
-      Store<AppState> store, Goal goal, List<Milestone> milestones) {
-    return _goalService.setMilestones(goal, milestones);
-  }
+  Future<Goal> setMilestones(Goal goal, List<Milestone> milestones) =>
+      _goalService.setMilestones(goal, milestones);
 
-  static Future updateMilestone(
-      Store<AppState> store, Goal goal, Milestone milestone) {
-    return _goalService.updateMilestone(goal, milestone);
-  }
+  Future updateMilestone(Goal goal, Milestone milestone) =>
+      _goalService.updateMilestone(goal, milestone);
 }
