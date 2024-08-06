@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -36,7 +38,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
 
   @override
   void initSubscriptions() {
-    if (itsMe) {
+    if (!itsMe) {
       return;
     }
 
@@ -44,18 +46,19 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
       broadcastChannelTypeFriends,
       store.state.user!.id,
       (message) {
+        final viewModel = context.read<FriendsListScreenProvider>();
         switch (message.type) {
           case broadcastTypeFriendRequest:
-            store.dispatch(const AddPendingFriendRequestAction());
+            viewModel.addPendingFriendRequest();
             setState(() {});
             break;
 
           case broadcastTypeFriendAccepted:
-            if (store.state.friends?.isEmpty ?? true) {}
+            viewModel.fetchFriends(userId).then((_) => setState(() {}));
             break;
 
           case broadcastTypeFriendDeleted:
-            store.dispatch(DeleteFriend(friendId: message.data));
+            viewModel.deleteFriend(message.data);
             setState(() {});
             break;
         }
@@ -150,9 +153,10 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
       );
 
   Widget _buildPendingRequestModal(BuildContext context) =>
-      StoreConnector<AppState, int>(
-        converter: (store) => store.state.pendingFriendRequests ?? 0,
-        builder: (context, pendingFriendRequests) => AnimatedPositioned(
+      Selector<FriendsListScreenProvider, int>(
+        selector: (context, provider) =>
+            provider.model?.pendingFriendRequestsCount ?? 0,
+        builder: (context, pendingFriendRequests, child) => AnimatedPositioned(
           duration: const Duration(milliseconds: 400),
           bottom: pendingFriendRequests > 0 ? 16 : -1000,
           left: 16,
@@ -322,7 +326,10 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
   }
 
   void _showFriendRequests(BuildContext context) {
-    ModuleService().getPendingFriendRequests(userId).then((requests) {
+    context
+        .read<FriendsListScreenProvider>()
+        .fetchPendingFriendRequests(userId)
+        .then((requests) {
       simpleBottomSheet(
         title: 'Friend requests',
         child: SizedBox(
@@ -375,9 +382,11 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
     });
   }
 
-  void _answerFriendRequest(String requesterId, bool answer) async {
+  void _answerFriendRequest(String requesterId, bool answer) {
     setIsLoading(true);
-    await ModuleService.answerFriendRequest(requesterId, answer);
-    setIsLoading(false);
+    ModuleService.answerFriendRequest(requesterId, answer).then((_) {
+      context.read<FriendsListScreenProvider>().substractPendingFriendRequest();
+      setIsLoading(false);
+    });
   }
 }

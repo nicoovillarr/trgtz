@@ -68,6 +68,10 @@ class _ProfileImageState extends State<ProfileImage> {
   }
 
   void _loadImage() {
+    if (!mounted) {
+      return;
+    }
+
     setState(() {
       _isImageLoaded = false;
       _hasError = false;

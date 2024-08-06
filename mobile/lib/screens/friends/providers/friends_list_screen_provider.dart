@@ -5,16 +5,25 @@ import 'package:trgtz/screens/friends/services/index.dart';
 class FriendsListScreenModel {
   final List<Friendship> _friends;
   final List<Friendship> _pendingFriends;
+  int _pendingFriendRequestsCount;
 
   FriendsListScreenModel({
     required List<Friendship> friends,
     required List<Friendship> pendingFriends,
+    required int pendingFriendRequestsCount,
   })  : _friends = friends,
-        _pendingFriends = pendingFriends;
+        _pendingFriends = pendingFriends,
+        _pendingFriendRequestsCount = pendingFriendRequestsCount;
 
   List<Friendship> get friends => _friends;
 
   List<Friendship> get pendingFriends => _pendingFriends;
+
+  int get pendingFriendRequestsCount => _pendingFriendRequestsCount;
+
+  set pendingFriendRequestsCount(int value) {
+    _pendingFriendRequestsCount = value;
+  }
 }
 
 class FriendsListScreenProvider extends ChangeNotifier {
@@ -26,12 +35,52 @@ class FriendsListScreenProvider extends ChangeNotifier {
   Future populate(String userId, bool itsMe) async {
     List<Friendship> obj = await _moduleService.getFriends(userId);
     List<Friendship> pendingFriends = [];
-    if (itsMe)
+    if (itsMe) {
       pendingFriends = await _moduleService.getPendingFriendRequests(userId);
+    }
     _model = FriendsListScreenModel(
       friends: obj,
       pendingFriends: pendingFriends,
+      pendingFriendRequestsCount: pendingFriends.length,
     );
+    notifyListeners();
+  }
+
+  Future<List<Friendship>> fetchPendingFriendRequests(String userId) async {
+    List<Friendship> obj =
+        await _moduleService.getPendingFriendRequests(userId);
+    _model = FriendsListScreenModel(
+      friends: _model?.friends ?? [],
+      pendingFriends: obj,
+      pendingFriendRequestsCount: obj.length,
+    );
+    notifyListeners();
+
+    return obj;
+  }
+
+  Future fetchFriends(String userId) async {
+    List<Friendship> obj = await _moduleService.getFriends(userId);
+    _model = FriendsListScreenModel(
+      friends: obj,
+      pendingFriends: _model?.pendingFriends ?? [],
+      pendingFriendRequestsCount: _model?.pendingFriendRequestsCount ?? 0,
+    );
+    notifyListeners();
+  }
+
+  void addPendingFriendRequest() {
+    _model?.pendingFriendRequestsCount++;
+    notifyListeners();
+  }
+
+  void substractPendingFriendRequest() {
+    _model?.pendingFriendRequestsCount--;
+    notifyListeners();
+  }
+
+  void deleteFriend(String friendId) {
+    _model?.friends.removeWhere((element) => element.otherUserId == friendId);
     notifyListeners();
   }
 }
