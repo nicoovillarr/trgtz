@@ -18,7 +18,7 @@ class ApiBaseService {
   ApiBaseService();
 
   @protected
-  Future<ApiResponse> get(String action, {Map<String, String>? params}) async {
+  Future<ApiResponse> get(String action, {Map<String, String?>? params}) async {
     return _call('GET', action, params);
   }
 
@@ -66,9 +66,9 @@ class ApiBaseService {
     switch (method) {
       case 'GET':
         callMethod = _getApiCallImpl;
-        if (params != null && params is Map<String, String>) {
+        if (params != null && params is Map<String, String?>) {
           query =
-              '?${params.keys.map((key) => '$key=${params[key]}').join('&')}';
+              '?${params.keys.where((key) => params[key] != null).map((key) => '$key=${params[key]}').join('&')}';
         }
         break;
       case 'POST':

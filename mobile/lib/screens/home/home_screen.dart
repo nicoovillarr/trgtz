@@ -159,7 +159,8 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
 
   @override
   RefreshCallback get onRefresh => () async {
-        Map<String, dynamic> user = await UserService().getMe();
+        Map<String, dynamic> user =
+            await UserService().getProfile(store.state.user!.id);
         store.dispatch(SetUserAction(user: user['user']));
         store.dispatch(SetGoalsAction(goals: user['goals']));
         store.dispatch(SetFriendsAction(friends: user['friends']));

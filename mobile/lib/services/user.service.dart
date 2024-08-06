@@ -7,8 +7,8 @@ import 'package:trgtz/models/index.dart';
 class UserService {
   final UserApiService _userApiService = UserApiService();
 
-  Future<Map<String, dynamic>> getMe() async {
-    ApiResponse response = await _userApiService.getMe();
+  Future getProfile(String userId) async {
+    ApiResponse response = await _userApiService.getProfile(userId);
     if (response.status) {
       final dynamic content = response.content;
       Map<String, dynamic> result = {};
@@ -18,30 +18,27 @@ class UserService {
       result['friends'] = (content['friends'] as List)
           .map((e) => Friendship.fromJson(e))
           .toList();
-      result['alerts'] =
-          (content['alerts'] as List).map((e) => Alert.fromJson(e)).toList();
+      if (content.containsKey('alerts')) {
+        result['alerts'] =
+            (content['alerts'] as List).map((e) => Alert.fromJson(e)).toList();
+      }
       return result;
     } else {
       throw AppException(response.content);
     }
   }
 
-  Future<Map<String, dynamic>> patchUser(User user) async {
+  Future patchUser(User user) async {
     ApiResponse response = await _userApiService.patchUser(user);
-    if (response.status) {
-      return getMe();
-    } else {
+    if (!response.status) {
       throw AppException(response.content);
     }
   }
 
-  Future<Map<String, dynamic>> changePassword(
-      String oldPassword, String newPassword) async {
+  Future changePassword(String oldPassword, String newPassword) async {
     ApiResponse response =
         await _userApiService.changePassword(oldPassword, newPassword);
-    if (response.status) {
-      return getMe();
-    } else {
+    if (!response.status) {
       throw AppException(response.content);
     }
   }
@@ -75,8 +72,9 @@ class UserService {
     }
   }
 
-  Future<List<Friendship>> getPendingFriendRequests() async {
-    ApiResponse response = await _userApiService.getPendingFriendRequests();
+  Future<List<Friendship>> getPendingFriendRequests(String userId) async {
+    ApiResponse response =
+        await _userApiService.getPendingFriendRequests(userId);
     if (response.status) {
       return (response.content as List)
           .map((e) => Friendship.fromJson(e))
@@ -86,8 +84,8 @@ class UserService {
     }
   }
 
-  Future<List<Friendship>> getFriends() async {
-    ApiResponse response = await _userApiService.getFriends();
+  Future<List<Friendship>> getFriends(String userId) async {
+    ApiResponse response = await _userApiService.getUserFriends(userId);
     if (response.status) {
       return (response.content as List)
           .map((e) => Friendship.fromJson(e))
@@ -100,6 +98,26 @@ class UserService {
   Future setProfileImage(File image) async {
     ApiResponse response = await _userApiService.setProfileImage(image);
     if (!response.status) {
+      throw AppException(response.content);
+    }
+  }
+
+  Future getUserGoals(String userId) async {
+    ApiResponse response = await _userApiService.getUserGoals(userId);
+    if (response.status) {
+      return (response.content as List).map((e) => Goal.fromJson(e)).toList();
+    } else {
+      throw AppException(response.content);
+    }
+  }
+
+  Future getUserFriends(String userId) async {
+    ApiResponse response = await _userApiService.getUserFriends(userId);
+    if (response.status) {
+      return (response.content as List)
+          .map((e) => Friendship.fromJson(e))
+          .toList();
+    } else {
       throw AppException(response.content);
     }
   }
