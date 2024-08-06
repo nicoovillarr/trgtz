@@ -3,15 +3,33 @@ const authService = require('../services/auth.service')
 const alertService = require('../services/alert.service')
 const pushNotificationService = require('../services/push-notification.service')
 const imageService = require('../services/image.service')
+const goalService = require('../services/goal.service')
 
-const getMe = async (req, res) => {
+const getUserProfile = async (req, res) => {
   try {
-    const user = await userService.getUserInfo(req.user)
-    await alertService.markAlertsAsSeen(req.user)
-    res.status(200).json(user)
+    const me = req.user
+    const { user } = req.params
+
+    if (me != user && !(await userService.hasAccess(me, user))) {
+      res.status(403).end()
+      return
+    }
+
+    const userInfo = await userService.getUserInfo(user)
+    const json = userInfo.toJSON()
+    if (me == user) {
+      await alertService.markAlertsAsSeen(user)
+    } else {
+      json.goals = json.goals.filter(g => g.deletedOn == null)
+      delete json.alerts
+      delete json.sessions
+      delete json.firebaseTokens
+    }
+
+    res.status(200).json(json)
   } catch (error) {
     res.status(500).json(error)
-    console.error('Error getting users: ', error)
+    console.error('Error getting user: ', error)
   }
 }
 
@@ -178,8 +196,49 @@ const setProfileImage = async (req, res) => {
   }
 }
 
+const getUserGoals = async (req, res) => {
+  try {
+    const me = req.user
+    const { user } = req.params
+
+    if (me != user && !(await userService.hasAccess(me, user))) {
+      res.status(403).end()
+      return
+    }
+
+    const { year } = req.query
+    const goals = await goalService.getGoals(user, year)
+    res.status(200).json(goals)
+  } catch (error) {
+    res.status(500).json(error)
+    console.error('Error getting goals: ', error)
+  }
+}
+
+const getUserFriends = async (req, res) => {
+  try {
+    const me = req.user
+    const { user } = req.params
+    const { status } = req.query
+
+    if (me != user && (!(await userService.hasAccess(me, user)) || status != null && status != '' && status != 'accepted')) {
+      res.status(403).end()
+      return
+    }
+
+    const friends = await userService.getFriends(user, {
+      status: status ?? 'accepted',
+      deletedOn: { $eq: null }
+    })
+    res.status(200).json(friends)
+  } catch (error) {
+    res.status(500).json(error)
+    console.error('Error getting friends: ', error)
+  }
+}
+
 module.exports = {
-  getMe,
+  getUserProfile,
   patchUser,
   updatePassword,
   sendFriendRequest,
@@ -187,5 +246,7 @@ module.exports = {
   deleteFriend,
   getFriends,
   getPendingFriends,
-  setProfileImage
+  setProfileImage,
+  getUserGoals,
+  getUserFriends
 }

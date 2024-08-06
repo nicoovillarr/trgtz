@@ -181,6 +181,16 @@ const setAvatarImage = async (id, image) => {
   })
 }
 
+const hasAccess = async (me, other) => {
+  const user = await User.findById(me)
+  return user.friends.find(
+    (friend) =>
+      ((friend.requester == me && friend.recipient == other) ||
+        (friend.requester == other && friend.recipient == me)) &&
+      friend.status == 'accepted' && friend.deletedOn == null
+  )
+}
+
 module.exports = {
   getUsers,
   getUserInfo,
@@ -195,5 +205,6 @@ module.exports = {
   deleteFriend,
   getUserFirebaseTokens,
   getPendingFriends,
-  setAvatarImage
+  setAvatarImage,
+  hasAccess
 }

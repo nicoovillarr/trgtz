@@ -11,8 +11,7 @@ const createMultipleGoals = async (req, res) => {
     await pushNotificationService.sendNotificationToFriends(
       user,
       'Goals created',
-      `\$name created ${
-        createdGoals.length > 1 ? 'some new goals' : 'a new goal'
+      `\$name created ${createdGoals.length > 1 ? 'some new goals' : 'a new goal'
       }!`
     )
     await res.status(200).json(createdGoals.map((goal) => goal.toJSON()))
