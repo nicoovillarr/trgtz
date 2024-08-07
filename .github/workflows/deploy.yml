@@ -92,12 +92,12 @@ jobs:
 
           echo "Selected Flavor: ${{ env.ENV_NAME }}"
 
-          echo "ENDPOINT=$ENDPOINT" > .env.${{ env.ENV_NAME }}"
-          echo "WS_ENDPOINT=$WS_ENDPOINT" >> .env.${{ env.ENV_NAME }}"
+          echo "ENDPOINT=$ENDPOINT" > .env.${{ env.ENV_NAME }}
+          echo "WS_ENDPOINT=$WS_ENDPOINT" >> .env.${{ env.ENV_NAME }}
 
           flutter clean
           flutter pub get
-          flutter build appbundle --release --flavor ${{ env.ENV_NAME }}" -t lib/main_${{ env.ENV_NAME }}".dart
+          flutter build appbundle --release --flavor ${{ env.ENV_NAME }} -t lib/main_${{ env.ENV_NAME }}.dart
         shell: bash
         env:
           ENDPOINT: ${{ vars.ENDPOINT }}
