@@ -1,9 +1,10 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/index.dart';
 import 'package:trgtz/models/index.dart';
-import 'package:trgtz/screens/goal/services/index.dart';
-import 'package:trgtz/store/index.dart';
+import 'package:trgtz/screens/goal/providers/index.dart';
 
 class GoalMilestonesView extends StatefulWidget {
   const GoalMilestonesView({super.key});
@@ -16,117 +17,117 @@ class _GoalMilestonesViewState
     extends BaseEditorScreen<GoalMilestonesView, Goal> {
   @override
   Future afterFirstBuild(BuildContext context) async {
-    String goalId = ModalRoute.of(context)!.settings.arguments as String;
+    setIsLoading(true);
+    await context
+        .read<SingleGoalProvider>()
+        .populate(ModalRoute.of(context)!.settings.arguments as String);
     setIsLoading(false);
-    ModuleService.getGoal(goalId).then((goal) {
-      store.dispatch(SetCurrentEditorObjectAction(obj: goal));
-      setIsLoading(false);
-      setState(() {});
-    });
-  }
-
-  @override
-  void initSubscriptions() {
-    addSubscription(
-      'goal',
-      store.onChange
-          .map((event) => event.currentEditorObject as Goal)
-          .listen((obj) {
-        setState(() => entity = obj);
-      }),
-    );
-    super.initSubscriptions();
   }
 
   @override
   Widget body(BuildContext context) {
-    return entity != null
-        ? ReorderableListView(
-            onReorder: reorder,
-            footer: entity?.milestones.isNotEmpty ?? false
-                ? const Padding(
-                    padding: EdgeInsets.only(top: 8.0),
-                    child: Text.rich(
-                      TextSpan(
-                        text: 'Drag & drop to reorder.',
-                        children: [TextSpan(text: '\nSwipe right to delete.')],
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                      textAlign: TextAlign.center,
+    if (viewModel.model != null) {
+      return Selector<SingleGoalProvider, List<Milestone>>(
+        selector: (context, provider) => provider.model?.goal.milestones ?? [],
+        builder: (context, milestones, child) => ReorderableListView(
+          buildDefaultDragHandles: viewModel.model?.goal.canEdit ?? false,
+          onReorder: reorder,
+          footer: canEdit && milestones.isNotEmpty
+              ? const Padding(
+                  padding: EdgeInsets.only(top: 8.0),
+                  child: Text.rich(
+                    TextSpan(
+                      text: 'Drag & drop to reorder.',
+                      children: [TextSpan(text: '\nSwipe right to delete.')],
+                      style: TextStyle(color: Colors.grey),
                     ),
-                  )
-                : null,
-            children: [
-              for (final milestone in entity!.milestones)
-                Dismissible(
-                  key: UniqueKey(),
-                  direction: DismissDirection.startToEnd,
-                  onDismissed: (direction) => delete(milestone),
-                  background: Container(
-                    color: Colors.red,
-                    child: const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: EdgeInsets.only(left: 16),
-                        child: Icon(Icons.delete, color: Colors.white),
-                      ),
-                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).cardColor,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.2),
-                            spreadRadius: 1,
-                            blurRadius: 2,
-                            offset: const Offset(0, 1),
-                          ),
-                        ]),
-                    child: Material(
-                      elevation: 2,
-                      child: ListTile(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        title: Text(milestone.title),
-                      ),
+                )
+              : null,
+          children: [
+            for (final milestone in milestones)
+              Dismissible(
+                key: UniqueKey(),
+                direction: DismissDirection.startToEnd,
+                onDismissed: (direction) => delete(milestone),
+                background: Container(
+                  color: Colors.red,
+                  child: const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 16),
+                      child: Icon(Icons.delete, color: Colors.white),
                     ),
                   ),
                 ),
-            ],
-          )
-        : const Center(child: Text('Goal not found'));
+                child: Container(
+                  decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.2),
+                          spreadRadius: 1,
+                          blurRadius: 2,
+                          offset: const Offset(0, 1),
+                        ),
+                      ]),
+                  child: Material(
+                    elevation: 2,
+                    child: ListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      title: Text(milestone.title),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    } else {
+      return const Center(child: Text('Goal not found'));
+    }
   }
 
   @override
-  List<Widget> get actions => [
-        IconButton(
-          icon: const Icon(Icons.add),
-          onPressed: () {
-            simpleBottomSheet(
-              title: 'Add milestone',
-              child: TextEditModal(
-                placeholder: 'Add milestone',
-                maxLength: 150,
-                maxLines: 3,
-                onSave: (s) => s != null ? add(s) : null,
-              ),
-            );
-          },
-        ),
-      ];
+  List<Widget> get actions => canEdit
+      ? [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              simpleBottomSheet(
+                title: 'Add milestone',
+                child: TextEditModal(
+                  placeholder: 'Add milestone',
+                  maxLength: 150,
+                  maxLines: 3,
+                  onSave: (title) => title != null && title.isNotEmpty
+                      ? viewModel.createMilestone(title)
+                      : null,
+                ),
+              );
+            },
+          ),
+        ]
+      : [];
 
   @override
   String? get title => 'Milestones';
+
+  SingleGoalProvider get viewModel => context.read<SingleGoalProvider>();
+
+  bool get canEdit => viewModel.model?.goal.canEdit ?? false;
 
   void reorder(int oldIndex, int newIndex, {bool force = false}) {
     if (oldIndex == newIndex) {
       return;
     }
 
-    if (entity!.milestones.any((element) => element.completedOn != null) &&
+    if (viewModel.model!.goal.milestones
+            .any((element) => element.completedOn != null) &&
         !force) {
       showMessage(
         'Wait!',
@@ -141,23 +142,19 @@ class _GoalMilestonesViewState
       return;
     }
 
+    setIsLoading(true);
+
     if (oldIndex < newIndex) {
       newIndex--;
     }
 
-    final milestones = entity!.milestones.toList();
+    final milestones = viewModel.model!.goal.milestones.toList();
     final milestone = milestones.removeAt(oldIndex);
     milestones.insert(newIndex, milestone);
     for (final m in milestones) {
       m.completedOn = null;
     }
-    ModuleService.setMilestones(store, entity!, milestones);
-  }
-
-  void add(String title) {
-    final milestones = entity!.milestones.toList();
-    milestones.add(Milestone.of(title: title));
-    ModuleService.setMilestones(store, entity!, milestones);
+    viewModel.setMilestones(milestones).then((_) => setIsLoading(false));
   }
 
   void delete(Milestone milestone, {bool force = false}) {
@@ -175,10 +172,10 @@ class _GoalMilestonesViewState
       return;
     }
 
-    final milestones = entity!.milestones.toList();
+    final milestones = viewModel.model!.goal.milestones.toList();
     milestones.remove(milestone);
     setIsLoading(true);
-    ModuleService.setMilestones(store, entity!, milestones).then((value) {
+    viewModel.setMilestones(milestones).then((value) {
       setIsLoading(false);
       setState(() {});
     });

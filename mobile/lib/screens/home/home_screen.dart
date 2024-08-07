@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
@@ -26,8 +30,14 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
   int _currentIndex = 1;
   late List<Widget> _fragments;
 
+  final picker = ImagePicker();
+
   @override
   void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FlutterNativeSplash.remove();
+    });
+
     _fragments = [
       NotificationsFragment(enimtAction: _processAlertsAction),
       DashboardFragment(enimtAction: _processProfileAction),
@@ -131,7 +141,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.notifications),
-            label: 'Notifications',
+            label: 'Alerts',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -149,7 +159,8 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
 
   @override
   RefreshCallback get onRefresh => () async {
-        Map<String, dynamic> user = await UserService().getMe();
+        Map<String, dynamic> user =
+            await UserService().getProfile(store.state.user!.id);
         store.dispatch(SetUserAction(user: user['user']));
         store.dispatch(SetGoalsAction(goals: user['goals']));
         store.dispatch(SetFriendsAction(friends: user['friends']));
@@ -158,6 +169,10 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
 
   void _processProfileAction(String name, {dynamic data}) {
     switch (name) {
+      case setProfileImage:
+        _openImagePicker();
+        break;
+
       case editUserFirstName:
         _openNameEditor();
         break;
@@ -311,5 +326,18 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _openImagePicker() async {
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      File? file = File(pickedFile.path);
+      if (await file.exists()) {
+        setIsLoading(true);
+        await ModuleService.setProfileImage(file);
+        setIsLoading(false);
+      }
+    }
   }
 }

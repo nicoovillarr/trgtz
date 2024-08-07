@@ -9,6 +9,7 @@ const String loremIpsum =
 const Color mainColor = Color(0xFF00242C);
 const Color secondaryColor = Color(0xFFCDF6FF);
 const Color accentColor = Color(0xFFED5076);
+const Color textButtonColor = Color(0xFF8F00FF);
 
 // Broadcast message types
 const String broadcastTypeSubscribeChannel = 'SUBSCRIBE_CHANNEL';

@@ -13,9 +13,9 @@ class ModuleService {
   static Future answerFriendRequest(String requesterId, bool answer) async =>
       await _userService.answerFriendRequest(requesterId, answer);
 
-  static Future<List<Friendship>> getPendingFriendRequests() async =>
-      await _userService.getPendingFriendRequests();
+  Future<List<Friendship>> getPendingFriendRequests(String userId) async =>
+      await _userService.getPendingFriendRequests(userId);
 
-  static Future<List<Friendship>> getFriends() async =>
-      await _userService.getFriends();
+  Future<List<Friendship>> getFriends(String userId) async =>
+      await _userService.getFriends(userId);
 }

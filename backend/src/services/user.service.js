@@ -171,6 +171,26 @@ const getPendingFriends = async (userId) =>
     deletedOn: { $eq: null }
   })
 
+const setAvatarImage = async (id, image) => {
+  const user = await User.findById(id)
+  user.avatar = image._id
+  await user.save()
+
+  sendUserChannelMessage(id, 'USER_UPDATE', {
+    avatar: image
+  })
+}
+
+const hasAccess = async (me, other) => {
+  const user = await User.findById(me)
+  return user.friends.find(
+    (friend) =>
+      ((friend.requester == me && friend.recipient == other) ||
+        (friend.requester == other && friend.recipient == me)) &&
+      friend.status == 'accepted' && friend.deletedOn == null
+  )
+}
+
 module.exports = {
   getUsers,
   getUserInfo,
@@ -184,5 +204,7 @@ module.exports = {
   getMinUserInfo,
   deleteFriend,
   getUserFirebaseTokens,
-  getPendingFriends
+  getPendingFriends,
+  setAvatarImage,
+  hasAccess
 }

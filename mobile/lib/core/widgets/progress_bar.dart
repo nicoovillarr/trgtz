@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 // ignore: must_be_immutable
 class ProgressBar extends StatelessWidget {
@@ -7,6 +6,7 @@ class ProgressBar extends StatelessWidget {
   final double percentage;
   final double cornerRadius;
   final bool showPercentage;
+  final bool addShadow;
 
   const ProgressBar({
     super.key,
@@ -14,6 +14,7 @@ class ProgressBar extends StatelessWidget {
     this.height = 32.0,
     this.cornerRadius = 24.0,
     this.showPercentage = true,
+    this.addShadow = false,
   });
 
   @override
@@ -27,6 +28,15 @@ class ProgressBar extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(cornerRadius)),
             color: const Color(0xFFBEBEBE),
+            boxShadow: [
+              if (addShadow)
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.35),
+                  offset: const Offset(0, 8),
+                  blurRadius: 8,
+                  spreadRadius: 0,
+                ),
+            ],
           ),
           clipBehavior: Clip.antiAlias,
           child: Stack(

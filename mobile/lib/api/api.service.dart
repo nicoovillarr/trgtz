@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -17,7 +18,7 @@ class ApiBaseService {
   ApiBaseService();
 
   @protected
-  Future<ApiResponse> get(String action, {Map<String, String>? params}) async {
+  Future<ApiResponse> get(String action, {Map<String, String?>? params}) async {
     return _call('GET', action, params);
   }
 
@@ -41,6 +42,21 @@ class ApiBaseService {
     return _call('DELETE', action, params);
   }
 
+  @protected
+  Future<ApiResponse> uploadImage(String action, File image) async {
+    var request = http.MultipartRequest('POST', _buildUri(action, ''));
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        'image',
+        image.path,
+        filename: 'image.jpg',
+      ),
+    );
+    request.headers.addAll(await _buildHeaders());
+    final response = await request.send();
+    return ApiResponse(content: 'asd', statusCode: response.statusCode);
+  }
+
   Future<ApiResponse> _call(
       String method, String action, dynamic params) async {
     assert(controller != '');
@@ -50,9 +66,9 @@ class ApiBaseService {
     switch (method) {
       case 'GET':
         callMethod = _getApiCallImpl;
-        if (params != null && params is Map<String, String>) {
+        if (params != null && params is Map<String, String?>) {
           query =
-              '?${params.keys.map((key) => '$key=${params[key]}').join('&')}';
+              '?${params.keys.where((key) => params[key] != null).map((key) => '$key=${params[key]}').join('&')}';
         }
         break;
       case 'POST':
@@ -74,9 +90,7 @@ class ApiBaseService {
     dynamic content;
     int? statusCode;
     try {
-      final url =
-          '${dotenv.env["ENDPOINT"]}/${'$controller/$action$query'.replaceAll(RegExp(r'/+'), '/')}';
-      final response = await callMethod(Uri.parse(url), params)
+      final response = await callMethod(_buildUri(action, query), params)
           .timeout(const Duration(seconds: 50));
       statusCode = response.statusCode;
       try {
@@ -146,6 +160,9 @@ class ApiBaseService {
     }
     return headers;
   }
+
+  Uri _buildUri(String action, String query) => Uri.parse(
+      '${dotenv.env["ENDPOINT"]}/${'$controller/$action$query'.replaceAll(RegExp(r'/+'), '/')}');
 }
 
 class ApiResponse {

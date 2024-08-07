@@ -1,6 +1,7 @@
 const goalService = require('../services/goal.service')
 const alertService = require('../services/alert.service')
 const pushNotificationService = require('../services/push-notification.service')
+const userService = require('../services/user.service')
 
 const createMultipleGoals = async (req, res) => {
   try {
@@ -19,6 +20,20 @@ const createMultipleGoals = async (req, res) => {
   } catch (error) {
     res.status(500).json(error)
     console.error('Error creating goals: ', error)
+  }
+}
+
+const createMilestone = async (req, res) => {
+  try {
+    const user = req.user
+    const { id } = req.params
+    const goal = await goalService.createMilestone(id, user, req.body)
+    if (goal == null)
+      res.status(400).json({ message: `Goal with id ${id} not found.` })
+    else res.status(200).json(goal)
+  } catch (error) {
+    res.status(500).json(error)
+    console.error(error)
   }
 }
 
@@ -71,6 +86,11 @@ const updateMilestone = async (req, res) => {
         wasMilestoneCompleted == false &&
         goal.milestones.find((m) => m._id == milestoneId).completedOn != null
       ) {
+        goal.events.push({
+          type: 'milestone_completed',
+          createdOn: new Date()
+        })
+        await goal.save()
         await alertService.sendAlertToFriends(user, 'milestone_completed')
         await pushNotificationService.sendNotificationToFriends(
           user,
@@ -109,7 +129,16 @@ const getSingleGoal = async (req, res) => {
     const goal = await goalService.getSingleGoal(id, user)
     if (goal == null)
       res.status(400).json({ message: `Goal with id ${id} not found.` })
-    else res.status(200).json(goal)
+    else {
+      const json = Object.assign({}, goal.toJSON(), {
+        canEdit: goal.user == user
+      })
+      if (json.user != user && !(await userService.hasAccess(goal.user, user)))
+        res
+          .status(403)
+          .json({ message: 'You do not have access to this goal.' })
+      else res.status(200).json(json)
+    }
   } catch (error) {
     res.status(500).json(error)
     console.error(error)
@@ -121,7 +150,7 @@ const updateGoal = async (req, res) => {
     const user = req.user
     const { id } = req.params
     const wasCompleted =
-      (await goalService.getSingleGoal(id, user).completedOn) != null
+      (await goalService.getSingleGoal(id).completedOn) != null
     const goal = await goalService.updateGoal(id, user, req.body)
     if (goal == null)
       res.status(400).json({ message: `Goal with id ${id} not found.` })
@@ -158,6 +187,7 @@ const deleteGoal = async (req, res) => {
 
 module.exports = {
   createMultipleGoals,
+  createMilestone,
   setMilestones,
   deleteMilestone,
   updateMilestone,

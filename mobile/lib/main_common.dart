@@ -5,9 +5,11 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:provider/provider.dart';
 import 'package:trgtz/app.dart';
 import 'package:trgtz/core/exceptions/index.dart';
 import 'package:trgtz/core/index.dart';
+import 'package:trgtz/screens/profile/providers/index.dart';
 import 'package:trgtz/security.dart';
 import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
@@ -25,10 +27,14 @@ void showErrorDialog(GlobalKey<NavigatorState> navigator, Object error) {
           ErrorDialog(innerException: error is AppException ? error : null)));
 }
 
-void mainCommon(
-    {required String flavor, required FirebaseOptions options}) async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.$flavor.env');
+void mainCommon({
+  required String flavor,
+  required FirebaseOptions options,
+}) async {
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
+  await dotenv.load(fileName: '.env.$flavor');
   await Firebase.initializeApp(options: options);
   await FirebaseHelperService.init();
   AppState initialState = AppState(
@@ -36,8 +42,9 @@ void mainCommon(
   );
 
   bool loggedIn = false;
-  if (await Security.internalLogIn()) {
-    Map<String, dynamic> user = await UserService().getMe();
+  String? userId = await Security.internalLogIn();
+  if (userId != null && userId.isNotEmpty) {
+    Map<String, dynamic> user = await UserService().getProfile(userId);
     initialState = initialState.copyWith(
       user: user['user'],
       goals: user['goals'],
@@ -50,8 +57,6 @@ void mainCommon(
     await ws.init();
   }
 
-  FlutterNativeSplash.remove();
-
   FlutterError.onError = (errorDetails) {
     FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
     showErrorDialog(navigatorKey, errorDetails.exception);
@@ -63,9 +68,16 @@ void mainCommon(
     return true;
   };
 
-  runApp(MyApp(
-    flavor: 'flavor',
-    initialState: initialState,
-    initialRoute: loggedIn ? '/home' : '/login',
-  ));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SingleProfileProvider()),
+      ],
+      child: MyApp(
+        flavor: 'flavor',
+        initialState: initialState,
+        initialRoute: loggedIn ? '/home' : '/login',
+      ),
+    ),
+  );
 }

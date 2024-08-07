@@ -60,9 +60,13 @@ const deleteAlerts = async (sent_by, sent_to) => {
   })
 }
 
+const deleteAlert = async (sent_by, sent_to, type) =>
+  await Alert.deleteOne({ sent_by, sent_to, type: type })
+
 module.exports = {
   sendAlertToFriends,
   addAlert,
   markAlertsAsSeen,
-  deleteAlerts
+  deleteAlerts,
+  deleteAlert
 }

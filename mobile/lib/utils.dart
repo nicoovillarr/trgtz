@@ -1,5 +1,11 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:trgtz/models/goal.dart';
+import 'package:trgtz/models/index.dart';
+import 'package:trgtz/store/index.dart';
 import 'package:trgtz/store/local_storage.dart';
 
 class Utils {
@@ -34,7 +40,7 @@ class Utils {
   static List<Goal> getToDoGoals(List<Goal> source) =>
       source.where((element) => element.completedOn == null).toList();
 
-  static List<Goal> sortGoals(List<Goal> source) {
+  static List<Goal> sortGoals(List<Goal> source, {bool ascending = false}) {
     List<Goal> goals = source.toList();
     goals.sort((a, b) {
       if (a.completedOn == null && b.completedOn != null) {
@@ -47,7 +53,7 @@ class Utils {
         return b.completedOn!.compareTo(a.completedOn!);
       }
     });
-    return goals;
+    return ascending ? goals.reversed.toList() : goals;
   }
 
   static String sanitize(String input) =>
@@ -57,20 +63,62 @@ class Utils {
 
   static bool validateEmail(String input) => input.contains('@');
 
-  static String getAlertMessage(String message) {
+  static String getAlertMessage(User sentBy, String message) {
     switch (message) {
       case 'friend_requested':
-        return 'Wants to be your friend';
+        return '${sentBy.firstName} wants to be your friend';
       case 'friend_accepted':
-        return 'Accepted your friend request';
+        return '${sentBy.firstName} and you are now friends';
       case 'goal_created':
-        return 'Created a new goal';
+        return '${sentBy.firstName} reated a new goal';
       case 'goal_completed':
-        return 'Completed a goal';
+        return '${sentBy.firstName} completed a goal';
       case 'milestone_completed':
-        return 'Completed a milestone';
+        return '${sentBy.firstName} completed a milestone';
       default:
         return message;
     }
+  }
+
+  static Future preloadFonts(List<String> fontFamilies) async {
+    final fontsReady =
+        _systemFontsStream(fontsToLoad: fontFamilies.length).last;
+    GoogleFonts.asMap().forEach((key, value) {
+      if (fontFamilies.any((element) => element == key)) {
+        value();
+      }
+    });
+
+    await fontsReady;
+  }
+
+  static Stream<int> _systemFontsStream({int? fontsToLoad}) {
+    late StreamController<int> controller;
+    var loadedFonts = 0;
+
+    void onSystemFontsLoaded() {
+      loadedFonts++;
+      controller.add(loadedFonts);
+      if (loadedFonts == fontsToLoad) {
+        controller.close();
+      }
+    }
+
+    void addListener() {
+      PaintingBinding.instance.systemFonts.addListener(onSystemFontsLoaded);
+    }
+
+    void removeListener() {
+      PaintingBinding.instance.systemFonts.removeListener(onSystemFontsLoaded);
+    }
+
+    controller = StreamController<int>(
+      onListen: addListener,
+      onPause: removeListener,
+      onResume: addListener,
+      onCancel: removeListener,
+    );
+
+    return controller.stream;
   }
 }
