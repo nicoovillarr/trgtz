@@ -18,6 +18,9 @@ class ModuleService {
 
   Future deleteGoal(Goal goal) => _goalService.deleteGoal(goal.id);
 
+  Future createMilestone(Goal goal, String title) =>
+      _goalService.createMilestone(goal, title);
+
   Future<Goal> setMilestones(Goal goal, List<Milestone> milestones) =>
       _goalService.setMilestones(goal, milestones);
 
