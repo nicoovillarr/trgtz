@@ -5,3 +5,4 @@ export './milestone.dart';
 export './friendship.dart';
 export './notification.dart';
 export './image.dart';
+export './event.dart';

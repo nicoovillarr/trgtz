@@ -104,7 +104,9 @@ class _GoalMilestonesViewState
                   placeholder: 'Add milestone',
                   maxLength: 150,
                   maxLines: 3,
-                  onSave: (s) => s != null ? add(s) : null,
+                  onSave: (title) => title != null && title.isNotEmpty
+                      ? viewModel.createMilestone(title)
+                      : null,
                 ),
               );
             },
@@ -153,12 +155,6 @@ class _GoalMilestonesViewState
       m.completedOn = null;
     }
     viewModel.setMilestones(milestones).then((_) => setIsLoading(false));
-  }
-
-  void add(String title) {
-    final milestones = viewModel.model!.goal.milestones.toList();
-    milestones.add(Milestone.of(title: title));
-    viewModel.setMilestones(milestones);
   }
 
   void delete(Milestone milestone, {bool force = false}) {

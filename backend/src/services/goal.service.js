@@ -2,11 +2,12 @@ const Goal = require('../models/goal.model')
 const User = require('../models/user.model')
 const { sendGoalChannelMessage } = require('../config/websocket')
 
-const getGoals = async (userId, year) => await Goal.find({
-  user: userId,
-  year: year != null ? year : { $ne: null },
-  deletedOn: { $eq: null }
-})
+const getGoals = async (userId, year) =>
+  await Goal.find({
+    user: userId,
+    year: year != null ? year : { $ne: null },
+    deletedOn: { $eq: null }
+  })
 
 const createMultipleGoals = async (user_id, goals) => {
   const createdGoals = []
@@ -19,6 +20,26 @@ const createMultipleGoals = async (user_id, goals) => {
   user.goals.push(...createdGoals.map((goal) => goal._id))
   await user.save()
   return createdGoals
+}
+
+const createMilestone = async (id, user, milestone) => {
+  const goal = await Goal.findOne({ _id: id, user })
+  if (goal == null) return null
+
+  goal.milestones.push({
+    title: milestone.title,
+    createdOn: new Date()
+  })
+
+  goal.events.push({
+    type: 'milestone_created',
+    createdOn: new Date()
+  })
+
+  await goal.save()
+
+  const newMilestone = goal.milestones[goal.milestones.length - 1]
+  return newMilestone
 }
 
 const setMilestones = async (id, user, milestones) => {
@@ -101,12 +122,24 @@ const updateGoal = async (id, user, data) => {
   const goal = await Goal.findOne({ _id: id, user })
   if (goal == null) return null
 
+  const eventType =
+    Object.keys(data).includes('completedOn') &&
+    data.completedOn != null &&
+    goal.completedOn == null
+      ? 'goal_completed'
+      : 'goal_updated'
+
   const editableFields = ['title', 'description', 'year', 'completedOn']
   for (const key of Object.keys(data).filter((t) =>
     editableFields.includes(t)
   )) {
     goal[key] = data[key]
   }
+
+  goal.events.push({
+    type: eventType,
+    createdOn: new Date()
+  })
 
   await goal.save()
   sendGoalChannelMessage(
@@ -135,7 +168,8 @@ const createGoal = async (user_id, title, description, year) => {
     user: user_id,
     title,
     description,
-    year
+    year,
+    events: [{ type: 'goal_created', createdOn: new Date() }]
   })
   await goal.save()
   return goal
@@ -149,6 +183,7 @@ const getMilestone = async (id, milestoneId) => {
 
 module.exports = {
   createMultipleGoals,
+  createMilestone,
   setMilestones,
   deleteMilestone,
   updateMilestone,
