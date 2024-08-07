@@ -4,20 +4,103 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Deployment environment'
+        description: "Deployment environment"
         required: true
-        default: 'staging'
+        default: "staging"
         type: choice
         options:
           - live
           - staging
+      pre-release:
+        description: "Mark as pre-release"
+        required: true
+        default: "true"
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
+
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Notify deployment
-        run: echo "Deployment to ${{ github.event.inputs.environment }} complete!"
+      - name: Get last tag version
+        id: get_version
+        run: |
+          # Fetch all tags
+          git fetch --tags
+          # Get the latest tag
+          last_tag=$(git describe --tags $(git rev-list --tags --max-count=1))
+          # Remove the v prefix and pre-release suffix
+          clean_version=$(echo $last_tag | sed -E 's/^v//; s/-.*//')
+          # Update package.json with the cleaned version
+          jq --arg version "$clean_version" '.version = $version' package.json > package.tmp.json && mv package.tmp.json package.json
+          echo "Cleaned version: $clean_version"
+        shell: bash
+
+      - name: Run standard-version
+        run: |
+          if [[ "${{ github.event.inputs.pre-release }}" == "true" && "${{ github.event.inputs.environment }}" == "staging" ]]; then
+            param="-p stg"
+          elif [[ "${{ github.event.inputs.pre-release }}" == "true" && "${{ github.event.inputs.environment }}" == "live" ]]; then
+            param="-p live"
+          elif [[ "${{ github.event.inputs.pre-release }}" == "true" ]]; then
+            param="-p"
+          else
+            param=""
+          fi
+          npx standard-version $param
+
+          git pull origin
+
+      - name: Set Android version
+        run: |
+          VERSION_FILE="./mobile/android/version.properties"
+
+          if [ -f "$VERSION_FILE" ]; then
+              VERSION_CODE=$(awk -F= '/VERSION_CODE/ {print $2}' "$VERSION_FILE")
+          else
+              VERSION_CODE=0
+          fi
+
+          VERSION_NAME=$(node -p "require('./package.json').version")
+          VERSION_CODE=$((VERSION_CODE + 1))
+
+          echo "VERSION_NAME=$VERSION_NAME" > $VERSION_FILE
+          echo "VERSION_CODE=$VERSION_CODE" >> $VERSION_FILE
+          cat $VERSION_FILE
+
+          echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Push changes
+        run: |
+          TAG_NAME=v$(node -p "require('./package.json').version")
+          COMMIT_MESSAGE=$(git log --pretty=format:%s -n 1)
+
+          echo "Deleting tag $TAG_NAME..."
+          git tag -d $TAG_NAME
+
+          git status
+
+          echo "Staging changes..."
+          git add .
+
+          echo "Committing changes..."
+          git commit --amend -m "$COMMIT_MESSAGE"
+
+          echo "Creating tag $TAG_NAME..."
+          git tag $TAG_NAME
+
+          git tag
+
+          echo "Pushing to origin"
+          git push --follow-tags origin main
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
