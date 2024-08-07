@@ -34,6 +34,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Personal Access Token
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
+
       - name: Set environment name
         id: set-env-name
         run: echo "ENV_NAME=${{ github.ref == 'refs/heads/main' && 'staging' || github.ref == 'refs/heads/live' && 'live' }}" >> $GITHUB_ENV
@@ -132,7 +138,7 @@ jobs:
           COMMIT_MESSAGE=$(git log --pretty=format:%s -n 1)
 
           git tag -d $TAG_NAME
-          git add .
+          git add mobile/android/key.properties
           git commit --amend -m "$COMMIT_MESSAGE"
           git tag $TAG_NAME
           git push origin $TAG_NAME
