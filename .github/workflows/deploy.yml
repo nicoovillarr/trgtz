@@ -73,7 +73,6 @@ jobs:
 
           echo "VERSION_NAME=$VERSION_NAME" > $VERSION_FILE
           echo "VERSION_CODE=$VERSION_CODE" >> $VERSION_FILE
-          cat $VERSION_FILE
 
           echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
         shell: bash
@@ -83,25 +82,10 @@ jobs:
           TAG_NAME=v$(node -p "require('./package.json').version")
           COMMIT_MESSAGE=$(git log --pretty=format:%s -n 1)
 
-          echo "Deleting tag $TAG_NAME..."
           git tag -d $TAG_NAME
-
-          git status
-
-          echo "Staging changes..."
           git add .
-
-          echo "Committing changes..."
           git commit --amend -m "$COMMIT_MESSAGE"
-
-          echo "Creating tag $TAG_NAME..."
           git tag $TAG_NAME
-
-          git status
-
-          git tag
-
-          echo "Pushing to origin"
           git push origin $TAG_NAME
           git push --follow-tags origin main
         shell: bash
