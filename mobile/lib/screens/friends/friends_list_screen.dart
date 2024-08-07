@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:provider/provider.dart';
 import 'package:redux/redux.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/index.dart';
 import 'package:trgtz/models/index.dart';
+import 'package:trgtz/screens/friends/providers/index.dart';
 import 'package:trgtz/screens/friends/services/index.dart';
+import 'package:trgtz/screens/profile/index.dart';
 
 import 'package:trgtz/store/index.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -19,35 +22,41 @@ class FriendsListScreen extends StatefulWidget {
 }
 
 class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
-  bool _shouldRefresh = false;
+  @override
+  late String userId;
+
+  bool get itsMe => userId == store.state.user!.id;
 
   @override
   Future afterFirstBuild(BuildContext context) async {
-    _refresh();
+    userId = ModalRoute.of(context)?.settings.arguments as String? ??
+        store.state.user!.id;
+    context.read<FriendsListScreenProvider>().populate(userId, itsMe);
   }
 
   @override
   void initSubscriptions() {
+    if (!itsMe) {
+      return;
+    }
+
     subscribeToChannel(
       broadcastChannelTypeFriends,
       store.state.user!.id,
       (message) {
+        final viewModel = context.read<FriendsListScreenProvider>();
         switch (message.type) {
           case broadcastTypeFriendRequest:
-            store.dispatch(const AddPendingFriendRequestAction());
+            viewModel.addPendingFriendRequest();
             setState(() {});
             break;
 
           case broadcastTypeFriendAccepted:
-            if (store.state.friends?.isEmpty ?? true) {
-              _refresh();
-            } else {
-              setState(() => _shouldRefresh = true);
-            }
+            viewModel.fetchFriends(userId).then((_) => setState(() {}));
             break;
 
           case broadcastTypeFriendDeleted:
-            store.dispatch(DeleteFriend(friendId: message.data));
+            viewModel.deleteFriend(message.data);
             setState(() {});
             break;
         }
@@ -57,21 +66,24 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
 
   @override
   Widget body(BuildContext context) =>
-      StoreConnector<AppState, List<Friendship>>(
-        converter: (store) => store.state.friends ?? [],
-        builder: (context, friends) => Stack(
-          children: [
-            if (friends.isEmpty) _buildNoFriendsMessage(),
-            if (friends.isNotEmpty)
-              _buildFriendsList(friends
-                  .where((element) =>
-                      element.status == 'accepted' && element.deletedOn == null)
-                  .toList()),
-            _buildPendingRequestModal(
-              context,
-            ),
-          ],
-        ),
+      Selector<FriendsListScreenProvider, List<Friendship>?>(
+        selector: (context, provider) => provider.model?.friends,
+        builder: (context, friends, child) => friends == null
+            ? const Center(child: CircularProgressIndicator())
+            : Stack(
+                children: [
+                  if (friends.isEmpty) _buildNoFriendsMessage(),
+                  if (friends.isNotEmpty)
+                    _buildFriendsList(friends
+                        .where((element) =>
+                            element.status == 'accepted' &&
+                            element.deletedOn == null)
+                        .toList()),
+                  _buildPendingRequestModal(
+                    context,
+                  ),
+                ],
+              ),
       );
 
   Widget _buildNoFriendsMessage() => Padding(
@@ -85,14 +97,26 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8.0),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
+            Material(
+              borderRadius: BorderRadius.circular(4.0),
+              clipBehavior: Clip.hardEdge,
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => _showQRCodeDialog(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8.0,
+                    horizontal: 16.0,
+                  ),
+                  child: const Text(
+                    'Share code',
+                    style: TextStyle(
+                      color: textButtonColor,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ),
-              onPressed: () => _showQRCodeDialog(context),
-              child: const Text('Share code'),
             ),
           ],
         ),
@@ -103,28 +127,34 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
         itemBuilder: (context, index) {
           final GlobalKey iconKey = GlobalKey();
           return ListTile(
+            onTap: () => simpleBottomSheet(
+              child: SingleProfileView(
+                user: friends[index].friendDetails,
+                me: store.state.user!.id,
+              ),
+              height: MediaQuery.of(context).size.height * 0.75,
+            ),
             title: Text(friends[index].friendDetails.firstName),
             subtitle:
                 Text('Since ${timeago.format(friends[index].updatedOn!)}'),
-            leading: const CircleAvatar(
-              backgroundImage: NetworkImage(
-                'https://static.vecteezy.com/system/resources/previews/004/509/264/non_2x/profile-placeholder-default-female-avatar-vector.jpg',
-              ),
-            ),
-            trailing: IconButton(
-              key: iconKey,
-              icon: const Icon(Icons.more_vert),
-              onPressed: () =>
-                  _showContextMenu(context, iconKey, friends[index]),
-            ),
+            leading: ProfileImage(user: friends[index].friendDetails),
+            trailing: itsMe
+                ? IconButton(
+                    key: iconKey,
+                    icon: const Icon(Icons.more_vert),
+                    onPressed: () =>
+                        _showContextMenu(context, iconKey, friends[index]),
+                  )
+                : null,
           );
         },
       );
 
   Widget _buildPendingRequestModal(BuildContext context) =>
-      StoreConnector<AppState, int>(
-        converter: (store) => store.state.pendingFriendRequests ?? 0,
-        builder: (context, pendingFriendRequests) => AnimatedPositioned(
+      Selector<FriendsListScreenProvider, int>(
+        selector: (context, provider) =>
+            provider.model?.pendingFriendRequestsCount ?? 0,
+        builder: (context, pendingFriendRequests, child) => AnimatedPositioned(
           duration: const Duration(milliseconds: 400),
           bottom: pendingFriendRequests > 0 ? 16 : -1000,
           left: 16,
@@ -179,21 +209,20 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
   String? get title => 'Friends';
 
   @override
-  List<Widget> get actions => [
-        IconButton(
-          icon: const Icon(Icons.qr_code),
-          tooltip: 'Share code',
-          onPressed: () => _showQRCodeDialog(context),
-        ),
-        IconButton(
-          icon: const Icon(Icons.search),
-          tooltip: 'Search',
-          onPressed: _showSearchDialog,
-        ),
-      ];
-
-  @override
-  bool get useRefreshIndicator => true;
+  List<Widget> get actions => itsMe
+      ? [
+          IconButton(
+            icon: const Icon(Icons.qr_code),
+            tooltip: 'Share code',
+            onPressed: () => _showQRCodeDialog(context),
+          ),
+          IconButton(
+            icon: const Icon(Icons.search),
+            tooltip: 'Search',
+            onPressed: _showSearchDialog,
+          ),
+        ]
+      : [];
 
   void _showContextMenu(
       BuildContext context, GlobalKey iconKey, Friendship friend) async {
@@ -295,7 +324,10 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
   }
 
   void _showFriendRequests(BuildContext context) {
-    ModuleService.getPendingFriendRequests().then((requests) {
+    context
+        .read<FriendsListScreenProvider>()
+        .fetchPendingFriendRequests(userId)
+        .then((requests) {
       simpleBottomSheet(
         title: 'Friend requests',
         child: SizedBox(
@@ -348,25 +380,11 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
     });
   }
 
-  void _answerFriendRequest(String requesterId, bool answer) async {
+  void _answerFriendRequest(String requesterId, bool answer) {
     setIsLoading(true);
-    await ModuleService.answerFriendRequest(requesterId, answer);
-    setIsLoading(false);
-  }
-
-  Future _refresh() async {
-    setIsLoading(true);
-    await Future.wait([
-      ModuleService.getFriends(),
-      ModuleService.getPendingFriendRequests(),
-    ]).then((value) {
-      StoreProvider.of<AppState>(context).dispatch(
-        SetFriendsAction(friends: value[0]),
-      );
-      store.dispatch(
-        SetPendingFriendRequestsAction(count: value[1].length),
-      );
+    ModuleService.answerFriendRequest(requesterId, answer).then((_) {
+      context.read<FriendsListScreenProvider>().substractPendingFriendRequest();
+      setIsLoading(false);
     });
-    setIsLoading(false);
   }
 }

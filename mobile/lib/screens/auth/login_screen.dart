@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:trgtz/constants.dart';
@@ -11,7 +13,7 @@ import 'package:trgtz/screens/auth/widgets/index.dart';
 import 'package:trgtz/security.dart';
 import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
-import 'package:trgtz/store/local_storage.dart';
+import 'package:trgtz/utils.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,10 +22,30 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends BaseScreen<LoginScreen> {
+class _LoginScreenState extends BaseScreen<LoginScreen>
+    with SingleTickerProviderStateMixin {
+  bool ready = false;
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final GlobalKey<TextEditState> _emailKey = GlobalKey<TextEditState>();
   final GlobalKey<TextEditState> _passwordKey = GlobalKey<TextEditState>();
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Utils.preloadFonts([
+        'Inter',
+        'Josefin Sans',
+      ]);
+      FlutterNativeSplash.remove();
+
+      setState(() {
+        ready = true;
+      });
+    });
+
+    super.initState();
+  }
 
   @override
   Widget body(BuildContext context) {
@@ -37,47 +59,56 @@ class _LoginScreenState extends BaseScreen<LoginScreen> {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildBanner(),
-            const SizedBox(height: 32.0),
-            _buildForm(),
-          ],
+          children: ready
+              ? [
+                  _buildBanner(),
+                  const SizedBox(height: 32.0),
+                  _buildForm(),
+                ]
+              : [],
         ),
       ),
     );
   }
 
-  Widget _buildBanner() => Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text.rich(
-            const TextSpan(
-              text: appName,
-              children: [
-                TextSpan(
-                  text: '.',
-                  style: TextStyle(
-                    height: 1,
-                    color: accentColor,
-                  ),
-                ),
-              ],
-            ),
-            style: GoogleFonts.josefinSans(
-              color: mainColor,
-              fontSize: 48,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            'Welcome!',
-            style: GoogleFonts.inter(
-              height: 1,
-              color: mainColor,
-              fontSize: 14,
-            ),
-          )
+  Widget _buildBanner() => Animate(
+        effects: const [
+          FadeEffect(),
+          SlideEffect(curve: Curves.easeOut),
         ],
+        delay: _delayDuration,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text.rich(
+              const TextSpan(
+                text: appName,
+                children: [
+                  TextSpan(
+                    text: '.',
+                    style: TextStyle(
+                      height: 1,
+                      color: accentColor,
+                    ),
+                  ),
+                ],
+              ),
+              style: GoogleFonts.josefinSans(
+                color: mainColor,
+                fontSize: 48,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              'Welcome!',
+              style: GoogleFonts.inter(
+                height: 1,
+                color: mainColor,
+                fontSize: 14,
+              ),
+            )
+          ],
+        ),
       );
 
   Widget _buildForm() => Form(
@@ -128,22 +159,25 @@ class _LoginScreenState extends BaseScreen<LoginScreen> {
               ),
             ),
             _buildFormField(child: _buildLoginButton()),
-            _buildFormField(
-              child: _simpleButton(
-                onPressed: () {},
-                border: false,
-                children: [
-                  const Text(
-                    'Forgot your password?',
-                  ),
-                ],
-              ),
+            _simpleButton(
+              onPressed: () {},
+              border: false,
+              children: [
+                const Text(
+                  'Forgot your password?',
+                ),
+              ],
+            ).animate(
+              effects: const [
+                FadeEffect(),
+              ],
+              delay: _delayDuration,
             ),
             const Separator(
               size: 160,
             ),
             _simpleButton(
-              onPressed: () => Navigator.of(context).popAndPushNamed('/signup'),
+              onPressed: () => Navigator.of(context).pushNamed('/signup'),
               border: false,
               children: [
                 Text.rich(
@@ -163,6 +197,11 @@ class _LoginScreenState extends BaseScreen<LoginScreen> {
                   style: GoogleFonts.inter(fontSize: 12, color: Colors.black),
                 ),
               ],
+            ).animate(
+              effects: const [
+                FadeEffect(),
+              ],
+              delay: _delayDuration,
             ),
           ],
         ),
@@ -207,11 +246,13 @@ class _LoginScreenState extends BaseScreen<LoginScreen> {
               await DeviceInformationService.of(context).getDeviceInfo();
           ModuleService()
               .login(email, password, deviceInfo)
-              .then((token) async {
+              .then((response) async {
             setIsLoading(false);
-            await Security.saveCredentials(email, password, token);
+            await Security.saveCredentials(
+                email, password, response['token'].toString());
 
-            final me = await ModuleService().getMe();
+            final me = await ModuleService()
+                .getUserProfile(response['_id'].toString());
             User u = me['user'];
             store.dispatch(SetUserAction(user: u));
             store.dispatch(SetGoalsAction(goals: me['goals']));
@@ -279,7 +320,17 @@ class _LoginScreenState extends BaseScreen<LoginScreen> {
             ],
           ),
         ],
+      ).animate(
+        effects: const [
+          FadeEffect(),
+          SlideEffect(curve: Curves.easeOut),
+        ],
+        delay: _delayDuration,
       );
+
+  int _animatedWidgetsCount = 0;
+  Duration get _delayDuration =>
+      Duration(milliseconds: 500 + 150 * _animatedWidgetsCount++);
 
   @override
   Color get backgroundColor => const Color(0xFFF5F5F5);

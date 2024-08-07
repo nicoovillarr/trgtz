@@ -6,7 +6,8 @@ const protect = require('../middlewares/auth.middleware')
 
 app.post('/', protect, goalController.createMultipleGoals)
 app.get('/', protect, goalController.getGoals)
-app.post('/:id/milestones', protect, goalController.setMilestones)
+app.post('/:id/milestones', protect, goalController.createMilestone)
+app.put('/:id/milestones', protect, goalController.setMilestones)
 app.put('/:id/milestones/:milestoneId', protect, goalController.updateMilestone)
 app.delete(
   '/:id/milestones/:milestoneId',

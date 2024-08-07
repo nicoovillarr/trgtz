@@ -1,11 +1,6 @@
-const app = require('./app')
-const websocket = require('./config/websocket')
-const db = require('./config/database')
+const app = require('./config/app')
 
-app.listen(process.env.PORT || 3000, async () => {
-  await db.init()
-  websocket.init(app)
-
+app.listen(process.env.PORT || 3000, () => {
   const NODE_ENV = process.env.NODE_ENV || 'development'
   console.log(`App started in ${NODE_ENV} mode!`)
 })

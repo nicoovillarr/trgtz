@@ -10,7 +10,6 @@ import 'package:trgtz/screens/auth/widgets/index.dart';
 import 'package:trgtz/security.dart';
 import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
-import 'package:trgtz/store/local_storage.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -115,7 +114,7 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
               size: 160,
             ),
             _simpleButton(
-              onPressed: () => Navigator.of(context).popAndPushNamed('/login'),
+              onPressed: () => Navigator.of(context).pop(),
               border: false,
               children: [
                 Text.rich(
@@ -180,12 +179,14 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
               await DeviceInformationService(context: context).getDeviceInfo();
           ModuleService()
               .signup(firstName, email, password, deviceInfo)
-              .then((token) async {
+              .then((response) async {
             setIsLoading(false);
 
-            await Security.saveCredentials(email, password, token);
+            await Security.saveCredentials(
+                email, password, response['token'].toString());
 
-            final Map<String, dynamic> me = await ModuleService().getMe();
+            final Map<String, dynamic> me = await ModuleService()
+                .getUserProfile(response['_id'].toString());
             User u = me['user'];
             store.dispatch(SetUserAction(user: u));
             store.dispatch(SetGoalsAction(goals: me['goals']));

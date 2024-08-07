@@ -1,8 +1,14 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:provider/provider.dart';
 import 'package:redux/redux.dart';
 import 'package:trgtz/constants.dart';
+import 'package:trgtz/screens/goal/providers/index.dart';
+import 'package:trgtz/screens/profile/index.dart';
 import 'package:trgtz/store/index.dart';
+import 'package:trgtz/screens/friends/providers/index.dart';
 
 import 'package:trgtz/screens/auth/index.dart';
 import 'package:trgtz/screens/home/index.dart';
@@ -29,27 +35,41 @@ class MyApp extends StatelessWidget {
 
   // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
-    return StoreProvider(
-      store: _store,
-      child: MaterialApp(
-        title: appName,
-        navigatorKey: navigatorKey,
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
+  Widget build(BuildContext context) => StoreProvider(
+        store: _store,
+        child: MaterialApp(
+          title: appName,
+          navigatorKey: navigatorKey,
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+            useMaterial3: true,
+            floatingActionButtonTheme: FloatingActionButtonThemeData(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(80.0),
+              ),
+            ),
+          ),
+          initialRoute: initialRoute,
+          routes: {
+            '/login': (context) => const LoginScreen(),
+            '/signup': (context) => const SignupScreen(),
+            '/home': (context) => const HomeScreen(),
+            '/goal': (context) => ChangeNotifierProvider(
+                  create: (context) => SingleGoalProvider(),
+                  child: const SingleGoalScreen(),
+                ),
+            '/goal/milestones': (context) => ChangeNotifierProvider(
+                  create: (_) => SingleGoalProvider(),
+                  child: const GoalMilestonesView(),
+                ),
+            '/friends': (context) => ChangeNotifierProvider(
+                  create: (context) => FriendsListScreenProvider(),
+                  child: const FriendsListScreen(),
+                ),
+            '/profile/app-info': (context) => const ProfileAppInfoScreen(),
+          },
         ),
-        initialRoute: initialRoute,
-        routes: {
-          '/login': (context) => const LoginScreen(),
-          '/signup': (context) => const SignupScreen(),
-          '/home': (context) => const HomeScreen(),
-          '/goal': (context) => const GoalViewScreen(),
-          '/goal/milestones': (context) => const GoalMilestonesView(),
-          '/friends': (context) => const FriendsListScreen(),
-        },
-      ),
-    );
-  }
+      );
 }

@@ -5,35 +5,42 @@ class Goal extends ModelBase {
   String title;
   String? description;
   int year;
+  bool canEdit;
   List<Milestone> milestones;
   DateTime createdOn;
   DateTime? completedOn;
   DateTime? deletedOn;
+  List<Event> events = [];
 
   Goal({
     required this.id,
     required this.title,
     required this.year,
     required this.createdOn,
+    this.canEdit = false,
     this.milestones = const [],
     this.description,
     this.completedOn,
     this.deletedOn,
+    this.events = const [],
   });
 
   factory Goal.fromJson(Map<String, dynamic> json) {
     final milestones =
         json.containsKey('milestones') ? json['milestones'] as List : [];
+    final events = json.containsKey('events') ? json['events'] as List : [];
     return Goal(
       id: json['_id'],
       title: json['title'],
       description: json['description'],
       year: json['year'],
+      canEdit: json['canEdit'] ?? false,
       milestones:
           milestones.map((milestone) => Milestone.fromJson(milestone)).toList(),
       createdOn: ModelBase.tryParseDateTime('createdOn', json)!,
       completedOn: ModelBase.tryParseDateTime('completedOn', json),
       deletedOn: ModelBase.tryParseDateTime('deletedOn', json),
+      events: events.map((event) => Event.fromJson(event)).toList(),
     );
   }
 
@@ -42,11 +49,13 @@ class Goal extends ModelBase {
         'title': title,
         'description': description,
         'year': year,
+        'canEdit': canEdit,
         'createdOn': createdOn.toString(),
         'completedOn': completedOn?.toString(),
         'deletedOn': deletedOn?.toString(),
         'milestones':
             milestones.map((milestone) => milestone.toJson()).toList(),
+        'events': events.map((event) => event.toJson()).toList(),
       };
 
   List<Milestone> getMilestonesSublist({int count = 3}) {
@@ -78,10 +87,12 @@ class Goal extends ModelBase {
       title: title,
       description: description,
       year: year,
+      canEdit: canEdit,
       milestones: milestones.map((milestone) => milestone.deepCopy()).toList(),
       createdOn: createdOn,
       completedOn: completedOn,
       deletedOn: deletedOn,
+      events: events.map((event) => event.deepCopy()).toList(),
     );
   }
 }

@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart'
 import 'package:firebase_core/firebase_core.dart';
 import 'package:trgtz/main_common.dart';
 
-void main() async {
+void main() {
   mainCommon(
     flavor: 'staging',
     options: StagingFirebaseOptions.currentPlatform,
@@ -47,11 +47,11 @@ class StagingFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDlpdgnY577cMCh0xAAjnVE-zeJzx3mteE',
-    appId: '1:974339063072:android:f4c1b21a83fea78f9fab45',
-    messagingSenderId: '974339063072',
-    projectId: 'marppa-trgtz-stg',
-    storageBucket: 'marppa-trgtz-stg.appspot.com',
+    apiKey: 'AIzaSyAG9wLo6xcCnlW3Cp-xIZ_MLyq-G8NcNFA',
+    appId: '1:872940828539:android:84d6705b053d7dfe23afde',
+    messagingSenderId: '872940828539',
+    projectId: 'marppa-trgtz',
+    storageBucket: 'marppa-trgtz.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
