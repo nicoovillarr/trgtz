@@ -19,9 +19,11 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
-    
+
+    if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/live' }}
+
     environment:
-      name: ${{ github.ref == 'refs/heads/main' && 'staging' || 'live' }}
+      name: ${{ github.ref == 'refs/heads/main' && 'staging' || github.ref == 'refs/heads/live' && 'live' }}
 
     permissions:
       contents: write
