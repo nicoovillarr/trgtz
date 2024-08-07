@@ -21,7 +21,7 @@ jobs:
     runs-on: self-hosted
     
     environment:
-      name: ${{ github.ref == 'refs/heads/main' && 'live' || 'staging' }}
+      name: ${{ github.ref == 'refs/heads/main' && 'staging' || 'live' }}
 
     permissions:
       contents: write
