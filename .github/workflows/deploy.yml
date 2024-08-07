@@ -34,12 +34,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Personal Access Token
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
-
       - name: Set environment name
         id: set-env-name
         run: echo "ENV_NAME=${{ github.ref == 'refs/heads/main' && 'staging' || github.ref == 'refs/heads/live' && 'live' }}" >> $GITHUB_ENV
@@ -142,7 +136,7 @@ jobs:
           git commit --amend -m "$COMMIT_MESSAGE"
           git tag $TAG_NAME
           git push origin $TAG_NAME
-          git push origin --force
+          git push origin
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
