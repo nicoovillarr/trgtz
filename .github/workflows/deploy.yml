@@ -86,12 +86,17 @@ jobs:
           touch .env.staging
           touch .env.live
 
-          echo "ENDPOINT=$ENDPOINT" > .env.${{ github.event.inputs.environment }}
-          echo "WS_ENDPOINT=$WS_ENDPOINT" >> .env.${{ github.event.inputs.environment }}]
+          FLAVOR="${{ github.event.inputs.environment }}"
+          FLAVOR="${FLAVOR,,}"
+
+          echo "Selected Flavor: $FLAVOR"
+
+          echo "ENDPOINT=$ENDPOINT" > .env.$FLAVOR
+          echo "WS_ENDPOINT=$WS_ENDPOINT" >> .env.$FLAVOR
 
           flutter clean
           flutter pub get
-          flutter build appbundle --flavor ${{ github.event.inputs.environment }} -t lib/main_${{ github.event.inputs.environment }}.dart
+          flutter build appbundle --flavor $FLAVOR -t lib/main_$FLAVOR.dart
         shell: bash
         env:
           ENDPOINT: ${{ vars.ENDPOINT }}
