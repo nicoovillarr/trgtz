@@ -97,9 +97,12 @@ jobs:
           echo "Creating tag $TAG_NAME..."
           git tag $TAG_NAME
 
+          git status
+
           git tag
 
           echo "Pushing to origin"
+          git push origin $TAG_NAME
           git push --follow-tags origin main
         shell: bash
         env:
