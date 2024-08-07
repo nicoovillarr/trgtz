@@ -9,12 +9,16 @@ on:
         default: "staging"
         type: choice
         options:
-          - live
-          - staging
+          - "live"
+          - "staging"
       pre-release:
         description: "Mark as pre-release"
         required: true
         default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
 
 jobs:
   deploy:
