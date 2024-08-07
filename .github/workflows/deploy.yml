@@ -86,7 +86,7 @@ jobs:
           touch .env.staging
           touch .env.live
 
-          echo "Selected Flavor: ${{ github.environment }}""
+          echo "Selected Flavor: ${{ github.environment }}"
 
           echo "ENDPOINT=$ENDPOINT" > .env.${{ github.environment }}"
           echo "WS_ENDPOINT=$WS_ENDPOINT" >> .env.${{ github.environment }}"
