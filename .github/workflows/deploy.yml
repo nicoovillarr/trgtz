@@ -86,14 +86,14 @@ jobs:
           touch .env.staging
           touch .env.live
 
-          echo "Selected Flavor: ${{ github.environment }}"
+          echo "Selected Flavor: ${{ github.environment.name }}"
 
-          echo "ENDPOINT=$ENDPOINT" > .env.${{ github.environment }}"
-          echo "WS_ENDPOINT=$WS_ENDPOINT" >> .env.${{ github.environment }}"
+          echo "ENDPOINT=$ENDPOINT" > .env.${{ github.environment.name }}"
+          echo "WS_ENDPOINT=$WS_ENDPOINT" >> .env.${{ github.environment.name }}"
 
           flutter clean
           flutter pub get
-          flutter build appbundle --release --flavor ${{ github.environment }}" -t lib/main_${{ github.environment }}".dart
+          flutter build appbundle --release --flavor ${{ github.environment.name }}" -t lib/main_${{ github.environment.name }}".dart
         shell: bash
         env:
           ENDPOINT: ${{ vars.ENDPOINT }}
@@ -103,7 +103,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: flutter-app-bundle
-          path: build/app/outputs/bundle/${{ github.environment }}Release/app-${{ github.environment }}-release.aab
+          path: build/app/outputs/bundle/${{ github.environment.name }}Release/app-${{ github.environment.name }}-release.aab
 
       - name: Push changes
         run: |
