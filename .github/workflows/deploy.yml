@@ -77,6 +77,25 @@ jobs:
           echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
         shell: bash
 
+      - name: Build Android bundle
+        run: |
+          cd mobile
+
+          touch .env.development
+          touch .env.staging
+          touch .env.live
+
+          echo "ENDPOINT=$ENDPOINT" > .env.${{ github.event.inputs.environment }}
+          echo "WS_ENDPOINT=$WS_ENDPOINT" >> .env.${{ github.event.inputs.environment }}
+
+          cat .env.${{ github.event.inputs.environment }}
+
+          flutter build appbundle --flavor ${{ github.event.inputs.environment }} -t lib/main_${{ github.event.inputs.environment }}.dart
+        shell: bash
+        env:
+          ENDPOINT: ${{ vars.ENDPOINT }}
+          WS_ENDPOINT: ${{ vars.WS_ENDPOINT }}
+
       - name: Push changes
         run: |
           TAG_NAME=v$(node -p "require('./package.json').version")
