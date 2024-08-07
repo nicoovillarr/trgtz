@@ -85,14 +85,17 @@ jobs:
       - name: Decode keystore
         run: echo ${{ secrets.GOOGLE_PLAY_KEY_STORE }} | base64 -d > mobile/keystore.jks
 
+      - name: Install keystore
+        run: |
+          echo ${{ secrets.GOOGLE_PLAY_KEY_STORE }} | base64 -d > mobile/keystore.jks
+          echo "storeFile=${{ github.workspace }}/mobile/keystore.jks" > mobile/android/key.properties
+          echo "storePassword=${{ secrets.GOOGLE_PLAY_KEY_STORE_PASSWORD }}" >> mobile/android/key.properties
+          echo "keyPassword=${{ secrets.GOOGLE_PLAY_KEY_PASSWORD }}" >> mobile/android/key.properties
+          echo "keyAlias=${{ secrets.GOOGLE_PLAY_KEY_ALIAS }}" >> mobile/android/key.properties
+
       - name: Build Android bundle
         run: |
           cd mobile
-
-          echo "storeFile=../keystore.jks" > android/key.properties
-          echo "storePassword=${{ secrets.GOOGLE_PLAY_KEY_STORE_PASSWORD }}" >> android/key.properties
-          echo "keyPassword=${{ secrets.GOOGLE_PLAY_KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.GOOGLE_PLAY_KEY_ALIAS }}" >> android/key.properties
           cat android/key.properties
 
           touch .env.development
