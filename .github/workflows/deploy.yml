@@ -79,6 +79,8 @@ jobs:
           echo "VERSION_NAME=$VERSION_NAME" > $VERSION_FILE
           echo "VERSION_CODE=$VERSION_CODE" >> $VERSION_FILE
 
+          cat $VERSION_FILE
+
           echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
         shell: bash
 
