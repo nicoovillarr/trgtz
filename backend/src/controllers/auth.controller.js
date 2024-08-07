@@ -22,7 +22,6 @@ const signup = async (req, res) => {
       serialNumber
     } = deviceInfo
     if (
-      !firebaseToken ||
       !type ||
       !version ||
       !manufacturer ||
@@ -37,14 +36,7 @@ const signup = async (req, res) => {
     const user = await authService.signup(
       firstName,
       email,
-      await authService.hashPassword(password),
-      firebaseToken,
-      type,
-      version,
-      manufacturer,
-      model,
-      isVirtual,
-      serialNumber
+      await authService.hashPassword(password)
     )
 
     const token = await sessionService.createJWT(
@@ -85,7 +77,6 @@ const login = async (req, res) => {
       serialNumber
     } = deviceInfo
     if (
-      !firebaseToken ||
       !type ||
       !version ||
       !manufacturer ||
@@ -124,10 +115,8 @@ const login = async (req, res) => {
 
 const tick = (req, res) => {
   try {
-    if (req.user === null)
-      res.status(401).json({ message: 'Unauthorized' })
-    else
-      res.status(201).json({ message: 'User ticked', _id: req.user })
+    if (req.user === null) res.status(401).json({ message: 'Unauthorized' })
+    else res.status(201).json({ message: 'User ticked', _id: req.user })
   } catch (error) {
     res.status(500).json(error)
     console.error('Error ticking goal: ', error)
