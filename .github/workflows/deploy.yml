@@ -34,6 +34,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set environment name
+        id: set-env-name
+        run: echo "ENV_NAME=${{ github.ref == 'refs/heads/main' && 'staging' || github.ref == 'refs/heads/live' && 'live' }}" >> $GITHUB_ENV
+
       - name: Get last tag version
         id: get_version
         run: |
@@ -86,14 +90,14 @@ jobs:
           touch .env.staging
           touch .env.live
 
-          echo "Selected Flavor: ${{ github.environment.name }}"
+          echo "Selected Flavor: ${{ env.ENV_NAME }}"
 
-          echo "ENDPOINT=$ENDPOINT" > .env.${{ github.environment.name }}"
-          echo "WS_ENDPOINT=$WS_ENDPOINT" >> .env.${{ github.environment.name }}"
+          echo "ENDPOINT=$ENDPOINT" > .env.${{ env.ENV_NAME }}"
+          echo "WS_ENDPOINT=$WS_ENDPOINT" >> .env.${{ env.ENV_NAME }}"
 
           flutter clean
           flutter pub get
-          flutter build appbundle --release --flavor ${{ github.environment.name }}" -t lib/main_${{ github.environment.name }}".dart
+          flutter build appbundle --release --flavor ${{ env.ENV_NAME }}" -t lib/main_${{ env.ENV_NAME }}".dart
         shell: bash
         env:
           ENDPOINT: ${{ vars.ENDPOINT }}
@@ -103,7 +107,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: flutter-app-bundle
-          path: build/app/outputs/bundle/${{ github.environment.name }}Release/app-${{ github.environment.name }}-release.aab
+          path: build/app/outputs/bundle/${{ env.ENV_NAME }}Release/app-${{ env.ENV_NAME }}-release.aab
 
       - name: Push changes
         run: |
