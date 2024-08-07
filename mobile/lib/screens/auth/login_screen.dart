@@ -147,7 +147,6 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
                 key: _emailKey,
                 placeholder: 'you@mail.com',
                 maxLines: 1,
-                initialValue: 'nvillar@marppa.com',
               ),
             ),
             _buildFormField(
@@ -157,7 +156,6 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
                 placeholder: '•••••••',
                 isPassword: true,
                 maxLines: 1,
-                initialValue: '1234',
               ),
             ),
             _buildFormField(child: _buildLoginButton()),
