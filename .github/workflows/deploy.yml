@@ -93,7 +93,7 @@ jobs:
           flutter build appbundle --flavor ${{ github.event.inputs.environment }} -t lib/main_${{ github.event.inputs.environment }}.dart
         shell: bash
         env:
-          ENDPOINT: ${{ vars.ENDPOINT }}
+          ENDPOINT: ${{ env.ENDPOINT }}
           WS_ENDPOINT: ${{ vars.WS_ENDPOINT }}
 
       - name: Push changes
