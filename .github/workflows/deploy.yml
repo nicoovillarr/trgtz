@@ -97,7 +97,7 @@ jobs:
 
           flutter clean
           flutter pub get
-          flutter build appbundle --release --flavor ${{ env.ENV_NAME }} -t lib/main_${{ env.ENV_NAME }}.dart
+          flutter build appbundle --release --flavor ${{ env.ENV_NAME }} -t lib/main_${{ env.ENV_NAME }}.dart --verbose
         shell: bash
         env:
           ENDPOINT: ${{ vars.ENDPOINT }}
