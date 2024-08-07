@@ -98,7 +98,6 @@ jobs:
       - name: Build Android bundle
         run: |
           cd mobile
-          cat android/key.properties
 
           touch .env.development
           touch .env.staging
@@ -111,7 +110,7 @@ jobs:
 
           flutter clean
           flutter pub get
-          flutter build appbundle --flavor ${{ env.ENV_NAME }} -t lib/main_${{ env.ENV_NAME }}.dart --verbose
+          flutter build appbundle --flavor ${{ env.ENV_NAME }} -t lib/main_${{ env.ENV_NAME }}.dart
 
           echo "Flavor: ${{ env.ENV_NAME }}"
           echo "Bundle saved in: ${{ github.workspace }}/mobile/build/app/outputs/bundle/${{ env.ENV_NAME }}Release/app-${{ env.ENV_NAME }}-release.aab"
