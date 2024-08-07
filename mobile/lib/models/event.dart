@@ -11,7 +11,8 @@ class Event extends ModelBase {
     required this.createdOn,
   });
 
-  String get displayText {
+  @override
+  String toString() {
     switch (type) {
       case 'goal_created':
         return 'Goal created';
