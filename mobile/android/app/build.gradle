@@ -21,6 +21,9 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+def flutterMinSdkVersion = localProperties.getProperty('flutter.minSdkVersion', '28').toInteger()
+def flutterTargetSdkVersion = localProperties.getProperty('flutter.targetSdkVersion', '34').toInteger()
+
 android {
     namespace "com.marppa.trgtz"
     compileSdkVersion flutter.compileSdkVersion
@@ -41,8 +44,9 @@ android {
 
     defaultConfig {
         applicationId "com.marppa.trgtz"
-        minSdkVersion 21
-        targetSdkVersion flutter.targetSdkVersion
+        
+        minSdkVersion flutterMinSdkVersion
+        targetSdkVersion flutterTargetSdkVersion
         
         def versionPropsFile = rootProject.file('version.properties')
         def versionProps = new Properties()
