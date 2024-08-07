@@ -12,13 +12,28 @@ const createMultipleGoals = async (req, res) => {
     await pushNotificationService.sendNotificationToFriends(
       user,
       'Goals created',
-      `\$name created ${createdGoals.length > 1 ? 'some new goals' : 'a new goal'
+      `\$name created ${
+        createdGoals.length > 1 ? 'some new goals' : 'a new goal'
       }!`
     )
     await res.status(200).json(createdGoals.map((goal) => goal.toJSON()))
   } catch (error) {
     res.status(500).json(error)
     console.error('Error creating goals: ', error)
+  }
+}
+
+const createMilestone = async (req, res) => {
+  try {
+    const user = req.user
+    const { id } = req.params
+    const goal = await goalService.createMilestone(id, user, req.body)
+    if (goal == null)
+      res.status(400).json({ message: `Goal with id ${id} not found.` })
+    else res.status(200).json(goal)
+  } catch (error) {
+    res.status(500).json(error)
+    console.error(error)
   }
 }
 
@@ -71,6 +86,11 @@ const updateMilestone = async (req, res) => {
         wasMilestoneCompleted == false &&
         goal.milestones.find((m) => m._id == milestoneId).completedOn != null
       ) {
+        goal.events.push({
+          type: 'milestone_completed',
+          createdOn: new Date()
+        })
+        await goal.save()
         await alertService.sendAlertToFriends(user, 'milestone_completed')
         await pushNotificationService.sendNotificationToFriends(
           user,
@@ -110,9 +130,13 @@ const getSingleGoal = async (req, res) => {
     if (goal == null)
       res.status(400).json({ message: `Goal with id ${id} not found.` })
     else {
-      const json = Object.assign({}, goal.toJSON(), { canEdit: goal.user == user })
+      const json = Object.assign({}, goal.toJSON(), {
+        canEdit: goal.user == user
+      })
       if (json.user != user && !(await userService.hasAccess(goal.user, user)))
-        res.status(403).json({ message: 'You do not have access to this goal.' })
+        res
+          .status(403)
+          .json({ message: 'You do not have access to this goal.' })
       else res.status(200).json(json)
     }
   } catch (error) {
@@ -163,6 +187,7 @@ const deleteGoal = async (req, res) => {
 
 module.exports = {
   createMultipleGoals,
+  createMilestone,
   setMilestones,
   deleteMilestone,
   updateMilestone,
