@@ -138,7 +138,7 @@ jobs:
           COMMIT_MESSAGE=$(git log --pretty=format:%s -n 1)
 
           git tag -d $TAG_NAME
-          git add mobile/android/key.properties
+          git add mobile/android/version.properties
           git commit --amend -m "$COMMIT_MESSAGE"
           git tag $TAG_NAME
           git push origin $TAG_NAME
