@@ -37,13 +37,9 @@ jobs:
       - name: Get last tag version
         id: get_version
         run: |
-          # Fetch all tags
           git fetch --tags
-          # Get the latest tag
-          last_tag=$(git describe --tags $(git rev-list --tags --max-count=1))
-          # Remove the v prefix and pre-release suffix
+          last_tag=$(git describe --tags $(git rev-list --tags --max-count=1))\
           clean_version=$(echo $last_tag | sed -E 's/^v//; s/-.*//')
-          # Update package.json with the cleaned version
           jq --arg version "$clean_version" '.version = $version' package.json > package.tmp.json && mv package.tmp.json package.json
           echo "Cleaned version: $clean_version"
         shell: bash
@@ -91,10 +87,10 @@ jobs:
           touch .env.live
 
           echo "ENDPOINT=$ENDPOINT" > .env.${{ github.event.inputs.environment }}
-          echo "WS_ENDPOINT=$WS_ENDPOINT" >> .env.${{ github.event.inputs.environment }}
+          echo "WS_ENDPOINT=$WS_ENDPOINT" >> .env.${{ github.event.inputs.environment }}]
 
-          cat .env.${{ github.event.inputs.environment }}
-
+          flutter clean
+          flutter pub get
           flutter build appbundle --flavor ${{ github.event.inputs.environment }} -t lib/main_${{ github.event.inputs.environment }}.dart
         shell: bash
         env:
