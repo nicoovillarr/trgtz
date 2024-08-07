@@ -528,10 +528,41 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
   Widget _buildEventHistory(Goal goal) => ListView.builder(
         physics: const NeverScrollableScrollPhysics(),
         itemBuilder: (context, index) => ListTile(
-          title: Text(goal.events[index].displayText),
-          trailing: Text(timeago.format(goal.events[index].createdOn)),
+          leading: Icon(
+            getEventIcon(goal.events[index]),
+            size: 18.0,
+          ),
+          title: Text(
+            goal.events[index].toString(),
+            style: const TextStyle(
+              fontSize: 14,
+            ),
+          ),
+          trailing: Text(
+            timeago.format(goal.events[index].createdOn),
+            style: const TextStyle(
+              fontSize: 10,
+            ),
+          ),
         ),
         itemCount: goal.events.length,
         shrinkWrap: true,
       );
+
+  IconData getEventIcon(Event e) {
+    switch (e.type) {
+      case 'goal_created':
+        return Icons.cloud;
+      case 'goal_updated':
+        return Icons.edit;
+      case 'goal_completed':
+        return Icons.flag;
+      case 'milestone_created':
+        return Icons.cloud;
+      case 'milestone_completed':
+        return Icons.check;
+      default:
+        return Icons.help;
+    }
+  }
 }
