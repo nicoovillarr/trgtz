@@ -19,6 +19,9 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
+    
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'staging' || 'live' }}
 
     permissions:
       contents: write
@@ -93,7 +96,7 @@ jobs:
           flutter build appbundle --flavor ${{ github.event.inputs.environment }} -t lib/main_${{ github.event.inputs.environment }}.dart
         shell: bash
         env:
-          ENDPOINT: ${{ env.ENDPOINT }}
+          ENDPOINT: ${{ vars.ENDPOINT }}
           WS_ENDPOINT: ${{ vars.WS_ENDPOINT }}
 
       - name: Push changes
