@@ -136,7 +136,7 @@ jobs:
           git commit --amend -m "$COMMIT_MESSAGE"
           git tag $TAG_NAME
           git push origin $TAG_NAME
-          git push origin --force-with-lease
+          git push origin --force
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
