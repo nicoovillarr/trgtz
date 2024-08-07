@@ -112,8 +112,8 @@ jobs:
           flutter build appbundle --flavor ${{ env.ENV_NAME }} -t lib/main_${{ env.ENV_NAME }}.dart --verbose
 
           echo "Flavor: ${{ env.ENV_NAME }}"
-          echo "Bundle saved in: ${{ github.workspace }}/build/app/outputs/bundle/${{ env.ENV_NAME }}Release/app-${{ env.ENV_NAME }}-release.aab"
-          file build/app/outputs/bundle/${{ env.ENV_NAME }}Release/app-${{ env.ENV_NAME }}-release.aab
+          echo "Bundle saved in: ${{ github.workspace }}/mobile/build/app/outputs/bundle/${{ env.ENV_NAME }}Release/app-${{ env.ENV_NAME }}-release.aab"
+          echo "BUNDLE_PATH=${{ github.workspace }}/mobile/build/app/outputs/bundle/${{ env.ENV_NAME }}Release/app-${{ env.ENV_NAME }}-release.aab" >> $GITHUB_ENV
         shell: bash
         env:
           ENDPOINT: ${{ vars.ENDPOINT }}
@@ -123,7 +123,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: flutter-app-bundle
-          path: ${{ github.workspace }}/build/app/outputs/bundle/${{ env.ENV_NAME }}Release/app-${{ env.ENV_NAME }}-release.aab
+          path: ${{ env.BUNDLE_PATH }}
 
       - name: Push changes
         run: |
