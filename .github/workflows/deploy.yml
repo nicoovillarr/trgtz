@@ -82,9 +82,18 @@ jobs:
           echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
         shell: bash
 
+      - name: Decode keystore
+        run: echo ${{ secrets.GOOGLE_PLAY_KEY_STORE }} | base64 -d > mobile/keystore.jks
+
       - name: Build Android bundle
         run: |
           cd mobile
+
+          echo "storeFile=../keystore.jks" > android/key.properties
+          echo "storePassword=${{ secrets.GOOGLE_PLAY_KEY_STORE_PASSWORD }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.GOOGLE_PLAY_KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.GOOGLE_PLAY_KEY_ALIAS }}" >> android/key.properties
+          cat android/key.properties
 
           touch .env.development
           touch .env.staging
