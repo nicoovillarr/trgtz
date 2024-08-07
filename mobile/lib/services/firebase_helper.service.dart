@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -13,7 +14,15 @@ class FirebaseHelperService {
     importance: Importance.max,
   );
 
-  static Future<String?> get token => _firebaseMessaging.getToken();
+  static Future<String?> get token {
+    if (Platform.isAndroid) {
+      return _firebaseMessaging.getToken();
+    } else if (Platform.isIOS) {
+      return _firebaseMessaging.getAPNSToken();
+    } else {
+      throw UnsupportedError('Unsupported platform');
+    }
+  }
 
   static Future<void> init() async {
     await _firebaseMessaging.requestPermission();
