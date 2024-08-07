@@ -8,6 +8,7 @@ import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/goal/providers/index.dart';
 import 'package:trgtz/utils.dart';
 import 'package:confetti/confetti.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import 'dart:math';
 
@@ -134,16 +135,25 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
           ),
       ];
 
-  Widget _buildBody(Size size, Goal goal) => Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SeparatedColumn(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildDesc(size, goal),
-            if (goal.milestones.isEmpty && goal.canEdit)
-              _buildNewMilestoneButton(goal),
-            if (goal.milestones.isNotEmpty) _buildMilestonesSummary(goal)
-          ],
+  Widget _buildBody(Size size, Goal goal) => RefreshIndicator(
+        onRefresh: () async {
+          await viewModel.populate(goal.id);
+        },
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SeparatedColumn(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildDesc(size, goal),
+                if (goal.milestones.isEmpty && goal.canEdit)
+                  _buildNewMilestoneButton(goal),
+                if (goal.milestones.isNotEmpty) _buildMilestonesSummary(goal),
+                const Divider(),
+                _buildEventHistory(goal),
+              ],
+            ),
+          ),
         ),
       );
 
@@ -514,4 +524,14 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
       : null;
 
   SingleGoalProvider get viewModel => context.read<SingleGoalProvider>();
+
+  Widget _buildEventHistory(Goal goal) => ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        itemBuilder: (context, index) => ListTile(
+          title: Text(goal.events[index].displayText),
+          trailing: Text(timeago.format(goal.events[index].createdOn)),
+        ),
+        itemCount: goal.events.length,
+        shrinkWrap: true,
+      );
 }

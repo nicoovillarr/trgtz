@@ -61,6 +61,20 @@ class SingleGoalProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future createMilestone(String title) async {
+    if (model == null) {
+      return;
+    }
+
+    Milestone milestone =
+        await _moduleService.createMilestone(model!.goal, title);
+    Goal goal = model!.goal.deepCopy();
+    goal.milestones.add(milestone);
+
+    _model = SingleGoalProviderModel(goal);
+    notifyListeners();
+  }
+
   Future updateMilestone(Goal goal, Milestone milestone) async {
     await _moduleService.updateMilestone(goal, milestone);
     goal.milestones = goal.milestones

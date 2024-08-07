@@ -10,6 +10,7 @@ class Goal extends ModelBase {
   DateTime createdOn;
   DateTime? completedOn;
   DateTime? deletedOn;
+  List<Event> events = [];
 
   Goal({
     required this.id,
@@ -21,11 +22,13 @@ class Goal extends ModelBase {
     this.description,
     this.completedOn,
     this.deletedOn,
+    this.events = const [],
   });
 
   factory Goal.fromJson(Map<String, dynamic> json) {
     final milestones =
         json.containsKey('milestones') ? json['milestones'] as List : [];
+    final events = json.containsKey('events') ? json['events'] as List : [];
     return Goal(
       id: json['_id'],
       title: json['title'],
@@ -37,6 +40,7 @@ class Goal extends ModelBase {
       createdOn: ModelBase.tryParseDateTime('createdOn', json)!,
       completedOn: ModelBase.tryParseDateTime('completedOn', json),
       deletedOn: ModelBase.tryParseDateTime('deletedOn', json),
+      events: events.map((event) => Event.fromJson(event)).toList(),
     );
   }
 
@@ -51,6 +55,7 @@ class Goal extends ModelBase {
         'deletedOn': deletedOn?.toString(),
         'milestones':
             milestones.map((milestone) => milestone.toJson()).toList(),
+        'events': events.map((event) => event.toJson()).toList(),
       };
 
   List<Milestone> getMilestonesSublist({int count = 3}) {
@@ -87,6 +92,7 @@ class Goal extends ModelBase {
       createdOn: createdOn,
       completedOn: completedOn,
       deletedOn: deletedOn,
+      events: events.map((event) => event.deepCopy()).toList(),
     );
   }
 }

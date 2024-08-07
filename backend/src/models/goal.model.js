@@ -37,6 +37,25 @@ const goalSchema = new mongoose.Schema({
       }
     }
   ],
+  events: [
+    {
+      type: {
+        type: String,
+        required: true,
+        enum: [
+          'goal_created',
+          'goal_updated',
+          'milestone_created',
+          'milestone_completed',
+          'goal_completed'
+        ]
+      },
+      createdOn: {
+        type: Date,
+        required: true
+      }
+    }
+  ],
   createdOn: {
     type: Date,
     required: true,
