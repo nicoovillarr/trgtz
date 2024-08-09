@@ -33,17 +33,18 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set environment name
+        id: set-env-name
+        run: echo "ENV_NAME=${{ github.ref == 'refs/heads/main' && 'staging' || github.ref == 'refs/heads/live' && 'live' }}" >> $GITHUB_ENV
 
       - name: Get last tag version
         id: get_version
         run: |
-          # Fetch all tags
           git fetch --tags
-          # Get the latest tag
           last_tag=$(git describe --tags $(git rev-list --tags --max-count=1))
-          # Remove the v prefix and pre-release suffix
-          clean_version=$(echo $last_tag | sed -E 's/^v//; s/-.*//')
-          # Update package.json with the cleaned version
+          clean_version=$(echo $last_tag | sed -E 's/^v//')
           jq --arg version "$clean_version" '.version = $version' package.json > package.tmp.json && mv package.tmp.json package.json
           echo "Cleaned version: $clean_version"
         shell: bash
@@ -79,8 +80,22 @@ jobs:
           echo "VERSION_NAME=$VERSION_NAME" > $VERSION_FILE
           echo "VERSION_CODE=$VERSION_CODE" >> $VERSION_FILE
 
-          echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
+          cat $VERSION_FILE
+
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
         shell: bash
+
+      - name: Decode keystore
+        run: echo ${{ secrets.GOOGLE_PLAY_KEY_STORE }} | base64 -d > mobile/keystore.jks
+
+      - name: Install keystore
+        run: |
+          echo ${{ secrets.GOOGLE_PLAY_KEY_STORE }} | base64 -d > mobile/keystore.jks
+          echo "storeFile=${{ github.workspace }}/mobile/keystore.jks" > mobile/android/key.properties
+          echo "storePassword=${{ secrets.GOOGLE_PLAY_KEY_STORE_PASSWORD }}" >> mobile/android/key.properties
+          echo "keyPassword=${{ secrets.GOOGLE_PLAY_KEY_PASSWORD }}" >> mobile/android/key.properties
+          echo "keyAlias=${{ secrets.GOOGLE_PLAY_KEY_ALIAS }}" >> mobile/android/key.properties
 
       - name: Build Android bundle
         run: |
@@ -90,28 +105,44 @@ jobs:
           touch .env.staging
           touch .env.live
 
-          echo "ENDPOINT=$ENDPOINT" > .env.${{ github.event.inputs.environment }}
-          echo "WS_ENDPOINT=$WS_ENDPOINT" >> .env.${{ github.event.inputs.environment }}
+          echo "Selected Flavor: ${{ env.ENV_NAME }}"
 
-          cat .env.${{ github.event.inputs.environment }}
+          echo "ENDPOINT=$ENDPOINT" > .env.${{ env.ENV_NAME }}
+          echo "WS_ENDPOINT=$WS_ENDPOINT" >> .env.${{ env.ENV_NAME }}
 
-          flutter build appbundle --flavor ${{ github.event.inputs.environment }} -t lib/main_${{ github.event.inputs.environment }}.dart
+          flutter clean
+          flutter pub get
+          flutter build appbundle --flavor ${{ env.ENV_NAME }} -t lib/main_${{ env.ENV_NAME }}.dart
+
+          echo "Flavor: ${{ env.ENV_NAME }}"
+          echo "Bundle saved in: ${{ github.workspace }}/mobile/build/app/outputs/bundle/${{ env.ENV_NAME }}Release/app-${{ env.ENV_NAME }}-release.aab"
+          echo "BUNDLE_PATH=${{ github.workspace }}/mobile/build/app/outputs/bundle/${{ env.ENV_NAME }}Release/app-${{ env.ENV_NAME }}-release.aab" >> $GITHUB_ENV
         shell: bash
         env:
           ENDPOINT: ${{ vars.ENDPOINT }}
           WS_ENDPOINT: ${{ vars.WS_ENDPOINT }}
 
+      - name: Upload app bundle as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: trgtz-${{ env.ENV_NAME }}-${{ env.VERSION_NAME }}-${{ env.VERSION_CODE }}
+          path: ${{ env.BUNDLE_PATH }}
+
       - name: Push changes
         run: |
           TAG_NAME=v$(node -p "require('./package.json').version")
           COMMIT_MESSAGE=$(git log --pretty=format:%s -n 1)
+          
+          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/nicoovillarr/trgtz.git
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
 
           git tag -d $TAG_NAME
-          git add .
+          git add mobile/android/version.properties
           git commit --amend -m "$COMMIT_MESSAGE"
           git tag $TAG_NAME
           git push origin $TAG_NAME
-          git push --follow-tags origin main
+          git push origin
         shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
