@@ -11,18 +11,18 @@ class TCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-        color: Colors.transparent,
+        color: Colors.white,
         elevation: 6,
-        clipBehavior: Clip.hardEdge,
+        clipBehavior: Clip.none,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.0),
         ),
         child: Container(
+          clipBehavior: Clip.none,
           padding: EdgeInsets.all(contentPadding),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-          ),
           child: Material(
+            color: Colors.transparent,
+            clipBehavior: Clip.none,
             child: child,
           ),
         ),
