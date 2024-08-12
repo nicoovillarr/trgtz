@@ -18,11 +18,9 @@ class TCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16.0),
         ),
         child: Container(
-          clipBehavior: Clip.none,
           padding: EdgeInsets.all(contentPadding),
           child: Material(
             color: Colors.transparent,
-            clipBehavior: Clip.none,
             child: child,
           ),
         ),
