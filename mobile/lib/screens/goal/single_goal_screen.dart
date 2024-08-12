@@ -6,6 +6,7 @@ import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/goal/providers/index.dart';
+import 'package:trgtz/screens/goal/widgets/index.dart';
 import 'package:trgtz/utils.dart';
 import 'package:confetti/confetti.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -149,6 +150,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
                 if (goal.milestones.isEmpty && goal.canEdit)
                   _buildNewMilestoneButton(goal),
                 if (goal.milestones.isNotEmpty) _buildMilestonesSummary(goal),
+                if (!goal.canEdit) _buildReactionBar(goal),
                 const Divider(),
                 _buildEventHistory(goal),
               ],
@@ -549,6 +551,50 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
         shrinkWrap: true,
       );
 
+  _buildReactionBar(Goal goal) => Padding(
+        padding: const EdgeInsets.only(top: 16.0),
+        child: TCard(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ReactionButton(
+                  icon: Icons.thumb_up,
+                  text: 'Like',
+                  color: const Color(0xFF1976D2),
+                  onReaction: () => _onReaction(goal, 'like'),
+                ),
+                ReactionButton(
+                  icon: Icons.favorite,
+                  text: 'Love',
+                  color: const Color(0xFFE53935),
+                  onReaction: () => _onReaction(goal, 'love'),
+                ),
+                ReactionButton(
+                  icon: Icons.sentiment_very_satisfied_rounded,
+                  text: 'Happy',
+                  color: const Color(0xFFFFC107),
+                  onReaction: () => _onReaction(goal, 'happy'),
+                ),
+                ReactionButton(
+                  icon: Icons.emoji_events_rounded,
+                  text: 'Celebrate',
+                  color: const Color(0xFFFFD700),
+                  onReaction: () => _onReaction(goal, 'love'),
+                ),
+                ReactionButton(
+                  icon: Icons.sentiment_very_dissatisfied_rounded,
+                  text: 'Dislike',
+                  color: const Color(0xFF9E9E9E),
+                  onReaction: () => _onReaction(goal, 'love'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
   IconData getEventIcon(Event e) {
     switch (e.type) {
       case 'goal_created':
@@ -564,5 +610,9 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
       default:
         return Icons.help;
     }
+  }
+
+  void _onReaction(Goal goal, String s) {
+    showSnackBar('Reaction added!');
   }
 }
