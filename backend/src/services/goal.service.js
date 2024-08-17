@@ -181,6 +181,39 @@ const getMilestone = async (id, milestoneId) => {
   return goal.milestones.id(milestoneId)
 }
 
+const reactToGoal = async (id, user, type) => {
+  const goal = await Goal.findOne({ _id: id })
+  if (goal == null) return null
+
+  const reactionIndex = goal.reactions.findIndex(
+    (r) => r.user.toString() == user.toString()
+  )
+
+  if (reactionIndex === -1) {
+    goal.reactions.push({ user, type })
+  } else {
+    goal.reactions[reactionIndex].type = type
+  }
+
+  await goal.save()
+
+  sendGoalChannelMessage(id, 'GOAL_REACTED', { user, type })
+
+  return goal
+}
+
+const deleteReaction = async (id, user) => {
+  const goal = await Goal.findOne({ _id: id })
+  if (goal == null) return null
+
+  goal.reactions = goal.reactions.filter(
+    (reaction) => reaction.user.toString() != user.toString()
+  )
+
+  await goal.save()
+  return goal
+}
+
 module.exports = {
   createMultipleGoals,
   createMilestone,
@@ -191,5 +224,7 @@ module.exports = {
   getSingleGoal,
   updateGoal,
   deleteGoal,
-  getMilestone
+  getMilestone,
+  reactToGoal,
+  deleteReaction
 }

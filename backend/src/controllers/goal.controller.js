@@ -133,6 +133,7 @@ const getSingleGoal = async (req, res) => {
       const json = Object.assign({}, goal.toJSON(), {
         canEdit: goal.user == user
       })
+
       if (json.user != user && !(await userService.hasAccess(goal.user, user)))
         res
           .status(403)
@@ -185,6 +186,38 @@ const deleteGoal = async (req, res) => {
   }
 }
 
+const reactToGoal = async (req, res) => {
+  try {
+    const user = req.user
+    const { id } = req.params
+    const { reaction } = req.body
+    const goal = await goalService.reactToGoal(id, user, reaction)
+    if (goal == null)
+      res.status(400).json({ message: `Goal with id ${id} not found.` })
+    else {
+      await alertService.addAlert(user, goal.user, 'goal_reaction')
+      res.status(200).json(goal)
+    }
+  } catch (error) {
+    res.status(500).json(error)
+    console.error(error)
+  }
+}
+
+const deleteReaction = async (req, res) => {
+  try {
+    const user = req.user
+    const { id } = req.params
+    const goal = await goalService.deleteReaction(id, user)
+    if (goal == null)
+      res.status(400).json({ message: `Goal with id ${id} not found.` })
+    else res.status(200).json(goal)
+  } catch (error) {
+    res.status(500).json(error)
+    console.error(error)
+  }
+}
+
 module.exports = {
   createMultipleGoals,
   createMilestone,
@@ -194,5 +227,7 @@ module.exports = {
   getGoals,
   getSingleGoal,
   updateGoal,
-  deleteGoal
+  deleteGoal,
+  reactToGoal,
+  deleteReaction
 }

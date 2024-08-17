@@ -33,9 +33,10 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
   @override
   Future afterFirstBuild(BuildContext context) async {
     setIsLoading(true);
-    final viewModel = await context
-        .read<SingleGoalProvider>()
-        .populate(ModalRoute.of(context)!.settings.arguments as String);
+    final viewModel = await context.read<SingleGoalProvider>().populate(
+          store.state.user!,
+          ModalRoute.of(context)!.settings.arguments as String,
+        );
     setIsLoading(false);
 
     if (!viewModel.model!.goal.canEdit) {
@@ -138,19 +139,27 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
 
   Widget _buildBody(Size size, Goal goal) => RefreshIndicator(
         onRefresh: () async {
-          await viewModel.populate(goal.id);
+          await viewModel.populate(store.state.user!, goal.id);
         },
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: SeparatedColumn(
               crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 16.0,
               children: [
                 _buildDesc(size, goal),
                 if (goal.milestones.isEmpty && goal.canEdit)
                   _buildNewMilestoneButton(goal),
                 if (goal.milestones.isNotEmpty) _buildMilestonesSummary(goal),
-                if (!goal.canEdit) _buildReactionBar(goal),
+                if (goal.reactions.isNotEmpty) _buildReactions(goal),
+                if (!goal.canEdit)
+                  GoalInteractions(
+                    goal: goal,
+                    onReaction: _onReaction,
+                    onShowComments: () {},
+                    onRemoveReaction: _onRemoveReaction,
+                  ),
                 const Divider(),
                 _buildEventHistory(goal),
               ],
@@ -551,50 +560,6 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
         shrinkWrap: true,
       );
 
-  _buildReactionBar(Goal goal) => Padding(
-        padding: const EdgeInsets.only(top: 16.0),
-        child: TCard(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ReactionButton(
-                  icon: Icons.thumb_up,
-                  text: 'Like',
-                  color: const Color(0xFF1976D2),
-                  onReaction: () => _onReaction(goal, 'like'),
-                ),
-                ReactionButton(
-                  icon: Icons.favorite,
-                  text: 'Love',
-                  color: const Color(0xFFE53935),
-                  onReaction: () => _onReaction(goal, 'love'),
-                ),
-                ReactionButton(
-                  icon: Icons.sentiment_very_satisfied_rounded,
-                  text: 'Happy',
-                  color: const Color(0xFFFFC107),
-                  onReaction: () => _onReaction(goal, 'happy'),
-                ),
-                ReactionButton(
-                  icon: Icons.emoji_events_rounded,
-                  text: 'Celebrate',
-                  color: const Color(0xFFFFD700),
-                  onReaction: () => _onReaction(goal, 'love'),
-                ),
-                ReactionButton(
-                  icon: Icons.sentiment_very_dissatisfied_rounded,
-                  text: 'Dislike',
-                  color: const Color(0xFF9E9E9E),
-                  onReaction: () => _onReaction(goal, 'love'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-
   IconData getEventIcon(Event e) {
     switch (e.type) {
       case 'goal_created':
@@ -612,7 +577,77 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
     }
   }
 
-  void _onReaction(Goal goal, String s) {
-    showSnackBar('Reaction added!');
+  void _onReaction(String reactionType) {
+    setIsLoading(true);
+    viewModel.reactToGoal(viewModel.model!.goal, reactionType).then((_) {
+      setIsLoading(false);
+      showSnackBar('Reaction added!');
+    }).catchError((_) {
+      setIsLoading(false);
+    });
+  }
+
+  Widget _buildReactions(Goal goal) => Row(
+        children: [
+          Dots(
+            size: 20,
+            dots: _getReactionsIcons(goal.reactions)
+                .map((icon) => Icon(
+                      icon,
+                      size: 10,
+                    ))
+                .toList(),
+          ),
+          const SizedBox(width: 8.0),
+          Expanded(
+            child: Text(
+              'You and 3 others reacted to this goal',
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey[600],
+              ),
+            ),
+          )
+        ],
+      );
+
+  List<IconData> _getReactionsIcons(List<Reaction> reactions) {
+    Map<ReactionType, List<Reaction>> groupedReactions = {};
+    groupedReactions = reactions.fold({}, (acc, cur) {
+      if (acc.containsKey(cur.type)) {
+        acc[cur.type]!.add(cur);
+      } else {
+        acc[cur.type] = [cur];
+      }
+      return acc;
+    });
+
+    List<ReactionType> sortedReactions = groupedReactions.keys.toList();
+    final me = store.state.user!.id;
+    sortedReactions.sort((a, b) {
+      if (groupedReactions[a]!.any((reaction) => reaction.user == me)) {
+        return -1;
+      } else if (groupedReactions[b]!.any((reaction) => reaction.user == me)) {
+        return 1;
+      } else {
+        return groupedReactions[b]!
+            .length
+            .compareTo(groupedReactions[a]!.length);
+      }
+    });
+
+    return sortedReactions
+        .map((type) => Reaction.getDisplayIcon(type))
+        .toList();
+  }
+
+  _onRemoveReaction() {
+    setIsLoading(true);
+    viewModel.removeReaction(viewModel.model!.goal).then((_) {
+      setIsLoading(false);
+      showSnackBar('Reaction removed!');
+    }).catchError((_) {
+      setIsLoading(false);
+    });
   }
 }
