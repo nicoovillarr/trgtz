@@ -607,11 +607,11 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
   Widget _buildReactions(Goal goal) => Row(
         children: [
           Dots(
-            size: 20,
+            size: 24,
             dots: _getReactionsIcons(goal.reactions)
                 .map((icon) => Icon(
                       icon,
-                      size: 10,
+                      size: 12,
                     ))
                 .toList(),
           ),
@@ -620,7 +620,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
             child: Text(
               reactionText,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 12,
                 color: Colors.grey[600],
               ),
             ),
