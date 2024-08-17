@@ -1,17 +1,13 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:trgtz/models/index.dart';
 
 class ReactionButton extends StatefulWidget {
-  final IconData icon;
-  final Color color;
-  final String text;
+  final ReactionType reactionTypeKey;
   final Function() onReaction;
   const ReactionButton({
     super.key,
-    required this.icon,
-    required this.color,
-    required this.text,
+    required this.reactionTypeKey,
     required this.onReaction,
   });
 
@@ -99,17 +95,19 @@ class _ReactionButtonState extends State<ReactionButton>
               scale: _isPanning
                   ? _calculateScale(_panDistance, _panMaxDistance)
                   : 1.0,
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
                 key: _key,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0x0D000000),
+                  color: Color.fromRGBO(250, 250, 250,
+                      _isPanning ? _calculateScale(_panDistance, 0.75) : 0),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Icon(
-                    widget.icon,
-                    color: widget.color,
+                    Reaction.getDisplayIcon(widget.reactionTypeKey),
+                    color: Reaction.getForegroundColor(widget.reactionTypeKey),
                     size: 21.0,
                   ),
                 ),
@@ -124,13 +122,18 @@ class _ReactionButtonState extends State<ReactionButton>
   void _initAnimations() {
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 100),
+      duration: const Duration(milliseconds: 150),
     );
 
     _animationOffset = Tween<Offset>(
       begin: const Offset(0.0, 0.0),
       end: const Offset(0.0, -100.0),
-    ).animate(_animationController);
+    ).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
   }
 
   double _calculateDistance(Offset posA, Offset posB) {
@@ -146,7 +149,6 @@ class _ReactionButtonState extends State<ReactionButton>
       distance = maxDistance;
     }
 
-    return min(_maxIconSize,
-        _maxIconSize - ((_maxIconSize - 1) * (distance / maxDistance)));
+    return _maxIconSize - ((_maxIconSize - 1) * (distance / maxDistance));
   }
 }

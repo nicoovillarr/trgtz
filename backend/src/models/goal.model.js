@@ -56,6 +56,20 @@ const goalSchema = new mongoose.Schema({
       }
     }
   ],
+  reactions: [
+    {
+      user: {
+        type: String,
+        ref: 'User',
+        required: true
+      },
+      type: {
+        type: String,
+        required: true,
+        enum: ['like', 'love', 'happy', 'cheer']
+      }
+    }
+  ],
   createdOn: {
     type: Date,
     required: true,
