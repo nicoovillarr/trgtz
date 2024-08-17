@@ -26,6 +26,12 @@ class SingleGoalProvider extends ChangeNotifier {
 
   bool get isLoaded => _isLoaded;
 
+  bool get hasReacted =>
+      model?.goal.reactions.any((reaction) => reaction.user == model!.me.id) ??
+      false;
+
+  int get reactionCount => model?.goal.reactions.length ?? 0;
+
   Future<SingleGoalProvider> populate(User me, String goalId) async {
     Goal goal = await _moduleService.getGoal(goalId);
     _model = SingleGoalProviderModel(me, goal);
