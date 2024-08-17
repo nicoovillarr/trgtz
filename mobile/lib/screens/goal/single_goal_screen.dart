@@ -24,6 +24,22 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
   late final String goalId;
   late ConfettiController _centerController;
 
+  String get reactionText {
+    int othersReactionCount =
+        viewModel.reactionCount - (viewModel.hasReacted ? 1 : 0);
+    bool shouldIncludeAnd = viewModel.hasReacted && viewModel.reactionCount > 1;
+
+    final youText = viewModel.hasReacted ? 'You' : '';
+    final andText = shouldIncludeAnd ? ' and' : '';
+    final othersText = othersReactionCount > 0 ? ' $othersReactionCount' : '';
+    final usersText =
+        youText.isEmpty && othersReactionCount > 0 ? ' users' : '';
+
+    return '$youText$andText$othersText$usersText reacted to this goal'
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+  }
+
   @override
   void customInitState() {
     _centerController =
@@ -601,7 +617,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
           const SizedBox(width: 8.0),
           Expanded(
             child: Text(
-              'You and 3 others reacted to this goal',
+              reactionText,
               style: TextStyle(
                 fontSize: 10,
                 color: Colors.grey[600],
