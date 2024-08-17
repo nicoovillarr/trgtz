@@ -18,9 +18,8 @@ class _GoalMilestonesViewState
   @override
   Future afterFirstBuild(BuildContext context) async {
     setIsLoading(true);
-    await context
-        .read<SingleGoalProvider>()
-        .populate(ModalRoute.of(context)!.settings.arguments as String);
+    await context.read<SingleGoalProvider>().populate(store.state.user!,
+        ModalRoute.of(context)!.settings.arguments as String);
     setIsLoading(false);
   }
 

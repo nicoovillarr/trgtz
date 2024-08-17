@@ -72,7 +72,13 @@ const sendNotificationToFriends = async (userId, title, body) => {
   await sendNotification(userId, tokens, title, body)
 }
 
+const sendNotificationToUser = async (userId, title, body) => {
+  const tokens = await userService.getUserFirebaseTokens([userId])
+  await sendNotification(userId, tokens, title, body)
+}
+
 module.exports = {
   sendNotification,
-  sendNotificationToFriends
+  sendNotificationToFriends,
+  sendNotificationToUser
 }

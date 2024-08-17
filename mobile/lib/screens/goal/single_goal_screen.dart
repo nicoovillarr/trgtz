@@ -6,6 +6,7 @@ import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/goal/providers/index.dart';
+import 'package:trgtz/screens/goal/widgets/index.dart';
 import 'package:trgtz/utils.dart';
 import 'package:confetti/confetti.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -23,6 +24,23 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
   late final String goalId;
   late ConfettiController _centerController;
 
+  String get reactionText {
+    int othersReactionCount =
+        viewModel.reactionCount - (viewModel.hasReacted ? 1 : 0);
+    bool shouldIncludeAnd = viewModel.hasReacted && viewModel.reactionCount > 1;
+
+    final youText = viewModel.hasReacted ? 'You' : '';
+    final andText = shouldIncludeAnd ? ' and' : '';
+    final othersText = othersReactionCount > 0 ? ' $othersReactionCount' : '';
+    final usersText = youText.isEmpty && othersReactionCount > 0
+        ? (othersReactionCount == 1 ? ' user' : ' users')
+        : '';
+
+    return '$youText$andText$othersText$usersText reacted to this goal'
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+  }
+
   @override
   void customInitState() {
     _centerController =
@@ -32,9 +50,10 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
   @override
   Future afterFirstBuild(BuildContext context) async {
     setIsLoading(true);
-    final viewModel = await context
-        .read<SingleGoalProvider>()
-        .populate(ModalRoute.of(context)!.settings.arguments as String);
+    final viewModel = await context.read<SingleGoalProvider>().populate(
+          store.state.user!,
+          ModalRoute.of(context)!.settings.arguments as String,
+        );
     setIsLoading(false);
 
     if (!viewModel.model!.goal.canEdit) {
@@ -137,18 +156,27 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
 
   Widget _buildBody(Size size, Goal goal) => RefreshIndicator(
         onRefresh: () async {
-          await viewModel.populate(goal.id);
+          await viewModel.populate(store.state.user!, goal.id);
         },
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: SeparatedColumn(
               crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 16.0,
               children: [
                 _buildDesc(size, goal),
                 if (goal.milestones.isEmpty && goal.canEdit)
                   _buildNewMilestoneButton(goal),
                 if (goal.milestones.isNotEmpty) _buildMilestonesSummary(goal),
+                if (goal.reactions.isNotEmpty) _buildReactions(goal),
+                if (!goal.canEdit)
+                  GoalInteractions(
+                    goal: goal,
+                    onReaction: _onReaction,
+                    onShowComments: () {},
+                    onRemoveReaction: _onRemoveReaction,
+                  ),
                 const Divider(),
                 _buildEventHistory(goal),
               ],
@@ -564,5 +592,79 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
       default:
         return Icons.help;
     }
+  }
+
+  void _onReaction(String reactionType) {
+    setIsLoading(true);
+    viewModel.reactToGoal(viewModel.model!.goal, reactionType).then((_) {
+      setIsLoading(false);
+      showSnackBar('Reaction added!');
+    }).catchError((_) {
+      setIsLoading(false);
+    });
+  }
+
+  Widget _buildReactions(Goal goal) => Row(
+        children: [
+          Dots(
+            size: 24,
+            dots: _getReactionsIcons(goal.reactions)
+                .map((icon) => Icon(
+                      icon,
+                      size: 12,
+                    ))
+                .toList(),
+          ),
+          const SizedBox(width: 8.0),
+          Expanded(
+            child: Text(
+              reactionText,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          )
+        ],
+      );
+
+  List<IconData> _getReactionsIcons(List<Reaction> reactions) {
+    Map<ReactionType, List<Reaction>> groupedReactions = {};
+    groupedReactions = reactions.fold({}, (acc, cur) {
+      if (acc.containsKey(cur.type)) {
+        acc[cur.type]!.add(cur);
+      } else {
+        acc[cur.type] = [cur];
+      }
+      return acc;
+    });
+
+    List<ReactionType> sortedReactions = groupedReactions.keys.toList();
+    final me = store.state.user!.id;
+    sortedReactions.sort((a, b) {
+      if (groupedReactions[a]!.any((reaction) => reaction.user == me)) {
+        return -1;
+      } else if (groupedReactions[b]!.any((reaction) => reaction.user == me)) {
+        return 1;
+      } else {
+        return groupedReactions[b]!
+            .length
+            .compareTo(groupedReactions[a]!.length);
+      }
+    });
+
+    return sortedReactions
+        .map((type) => Reaction.getDisplayIcon(type))
+        .toList();
+  }
+
+  _onRemoveReaction() {
+    setIsLoading(true);
+    viewModel.removeReaction(viewModel.model!.goal).then((_) {
+      setIsLoading(false);
+      showSnackBar('Reaction removed!');
+    }).catchError((_) {
+      setIsLoading(false);
+    });
   }
 }
