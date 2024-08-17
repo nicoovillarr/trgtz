@@ -196,6 +196,11 @@ const reactToGoal = async (req, res) => {
       res.status(400).json({ message: `Goal with id ${id} not found.` })
     else {
       await alertService.addAlert(user, goal.user, 'goal_reaction')
+      await pushNotificationService.sendNotificationToUser(
+        goal.user,
+        'Goal reaction',
+        `\$name reacted to your goal!`
+      )
       res.status(200).json(goal)
     }
   } catch (error) {
