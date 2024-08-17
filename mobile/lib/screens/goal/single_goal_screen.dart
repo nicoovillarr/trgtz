@@ -32,8 +32,9 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
     final youText = viewModel.hasReacted ? 'You' : '';
     final andText = shouldIncludeAnd ? ' and' : '';
     final othersText = othersReactionCount > 0 ? ' $othersReactionCount' : '';
-    final usersText =
-        youText.isEmpty && othersReactionCount > 0 ? ' users' : '';
+    final usersText = youText.isEmpty && othersReactionCount > 0
+        ? (othersReactionCount == 1 ? ' user' : ' users')
+        : '';
 
     return '$youText$andText$othersText$usersText reacted to this goal'
         .replaceAll(RegExp(r'\s+'), ' ')
