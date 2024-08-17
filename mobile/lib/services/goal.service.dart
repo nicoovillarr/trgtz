@@ -74,4 +74,18 @@ class GoalService {
       throw AppException(response.content);
     }
   }
+
+  Future reactToGoal(Goal goal, String reaction) async {
+    ApiResponse response = await _goalsApiService.reactToGoal(goal, reaction);
+    if (!response.status) {
+      throw AppException(response.content);
+    }
+  }
+
+  Future removeReaction(Goal goal) async {
+    ApiResponse response = await _goalsApiService.removeReaction(goal);
+    if (!response.status) {
+      throw AppException(response.content);
+    }
+  }
 }

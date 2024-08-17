@@ -26,4 +26,9 @@ class ModuleService {
 
   Future updateMilestone(Goal goal, Milestone milestone) =>
       _goalService.updateMilestone(goal, milestone);
+
+  Future reactToGoal(Goal goal, String reaction) =>
+      _goalService.reactToGoal(goal, reaction);
+
+  Future removeReaction(Goal goal) => _goalService.removeReaction(goal);
 }
