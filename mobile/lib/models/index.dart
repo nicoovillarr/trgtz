@@ -7,3 +7,4 @@ export './notification.dart';
 export './image.dart';
 export './event.dart';
 export './reaction.dart';
+export './comment.dart';

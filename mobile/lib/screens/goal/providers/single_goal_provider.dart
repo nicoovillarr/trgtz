@@ -149,4 +149,11 @@ class SingleGoalProvider extends ChangeNotifier {
     _model = SingleGoalProviderModel(model!.me, newGoal);
     notifyListeners();
   }
+
+  Future createComment(Goal goal, String text) async {
+    await _moduleService.createComment(goal, text);
+    Goal newGoal = await _moduleService.getGoal(goal.id);
+    _model = SingleGoalProviderModel(model!.me, newGoal);
+    notifyListeners();
+  }
 }

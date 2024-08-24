@@ -34,4 +34,7 @@ class GoalsApiService extends ApiBaseService {
 
   Future<ApiResponse> removeReaction(Goal goal) async =>
       await delete('${goal.id}/reactions', null);
+
+  Future<ApiResponse> createComment(Goal goal, String text) async =>
+      await post('${goal.id}/comments', {'text': text});
 }

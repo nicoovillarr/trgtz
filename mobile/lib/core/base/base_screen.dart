@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -148,24 +149,28 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
           topRight: Radius.circular(16.0),
         ),
       ),
-      builder: (_) => Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        color: backgroundColor,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (title != null) Text(title),
-            SingleChildScrollView(
-              child: SizedBox(
-                height: height,
-                child: child,
-              ),
+      builder: (BuildContext context) {
+        final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+        final screenHeight = MediaQuery.of(context).size.height;
+        final maxHeight = (screenHeight * 0.875) - keyboardHeight;
+        return Container(
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          height: height > 0 ? min(height, maxHeight) : null,
+          color: backgroundColor,
+          width: MediaQuery.of(context).size.width,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (title != null) Text(title),
+                child,
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
