@@ -31,4 +31,7 @@ class ModuleService {
       _goalService.reactToGoal(goal, reaction);
 
   Future removeReaction(Goal goal) => _goalService.removeReaction(goal);
+
+  Future createComment(Goal goal, String text) =>
+      _goalService.createComment(goal, text);
 }

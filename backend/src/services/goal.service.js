@@ -1,5 +1,6 @@
 const Goal = require('../models/goal.model')
 const User = require('../models/user.model')
+const { viewGoal } = require('../config/views')
 const { sendGoalChannelMessage } = require('../config/websocket')
 
 const getGoals = async (userId, year) =>
@@ -116,7 +117,7 @@ const updateMilestone = async (id, user, milestoneId, data) => {
   return goal
 }
 
-const getSingleGoal = async (id) => await Goal.findOne({ _id: id })
+const getSingleGoal = async (id) => await viewGoal.findOne({ _id: id })
 
 const updateGoal = async (id, user, data) => {
   const goal = await Goal.findOne({ _id: id, user })
@@ -214,6 +215,20 @@ const deleteReaction = async (id, user) => {
   return goal
 }
 
+const createComment = async (id, user, text) => {
+  const goal = await Goal.findOne({ _id: id })
+  if (goal == null) return null
+
+  goal.comments.push({
+    user,
+    text,
+    createdOn: new Date()
+  })
+
+  await goal.save()
+  return goal
+}
+
 module.exports = {
   createMultipleGoals,
   createMilestone,
@@ -226,5 +241,6 @@ module.exports = {
   deleteGoal,
   getMilestone,
   reactToGoal,
-  deleteReaction
+  deleteReaction,
+  createComment
 }

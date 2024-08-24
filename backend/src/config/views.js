@@ -14,5 +14,12 @@ module.exports = {
       },
       { collection: 'view_friends' }
     )
+  ),
+  viewGoal: mongoose.model(
+    'view_goal',
+    new mongoose.Schema(
+      { _id: mongoose.Types.ObjectId },
+      { collection: 'view_goal' }
+    )
   )
 }

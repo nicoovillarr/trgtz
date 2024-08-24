@@ -12,6 +12,7 @@ class Goal extends ModelBase {
   DateTime? deletedOn;
   List<Event> events = [];
   List<Reaction> reactions = [];
+  List<Comment> comments = [];
 
   Goal({
     required this.id,
@@ -25,6 +26,7 @@ class Goal extends ModelBase {
     this.deletedOn,
     this.events = const [],
     this.reactions = const [],
+    this.comments = const [],
   });
 
   factory Goal.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,8 @@ class Goal extends ModelBase {
     final events = json.containsKey('events') ? json['events'] as List : [];
     final reactions =
         json.containsKey('reactions') ? json['reactions'] as List : [];
+    final comments =
+        json.containsKey('comments') ? json['comments'] as List : [];
     return Goal(
       id: json['_id'],
       title: json['title'],
@@ -47,6 +51,7 @@ class Goal extends ModelBase {
       events: events.map((event) => Event.fromJson(event)).toList(),
       reactions:
           reactions.map((reaction) => Reaction.fromJson(reaction)).toList(),
+      comments: comments.map((comment) => Comment.fromJson(comment)).toList(),
     );
   }
 
@@ -63,6 +68,7 @@ class Goal extends ModelBase {
             milestones.map((milestone) => milestone.toJson()).toList(),
         'events': events.map((event) => event.toJson()).toList(),
         'reactions': reactions.map((reaction) => reaction.toJson()).toList(),
+        'comments': comments.map((comment) => comment.toJson()).toList(),
       };
 
   List<Milestone> getMilestonesSublist({int count = 3}) {
@@ -101,6 +107,7 @@ class Goal extends ModelBase {
       deletedOn: deletedOn,
       events: events.map((event) => event.deepCopy()).toList(),
       reactions: reactions.map((reaction) => reaction.deepCopy()).toList(),
+      comments: comments.map((comment) => comment.deepCopy()).toList(),
     );
   }
 }
