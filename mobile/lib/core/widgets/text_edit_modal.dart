@@ -30,7 +30,12 @@ class TextEditModal extends StatelessWidget {
     return Form(
       key: _formKey,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+        padding: EdgeInsets.only(
+          top: 16.0,
+          left: 24.0,
+          right: 24.0,
+          bottom: MediaQuery.of(context).viewInsets.bottom == 0 ? 48.0 : 16.0,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

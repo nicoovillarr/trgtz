@@ -4,17 +4,20 @@ import 'package:trgtz/models/index.dart';
 enum ReactionType { like, love, happy, cheer }
 
 class Reaction extends ModelBase {
-  final String user;
+  final String id;
+  final User user;
   final ReactionType type;
 
   Reaction({
+    required this.id,
     required this.user,
     required this.type,
   });
 
   factory Reaction.fromJson(Map<String, dynamic> json) {
     return Reaction(
-      user: json['user'],
+      id: json['_id'],
+      user: User.fromJson(json['user']),
       type: ReactionType.values.firstWhere(
         (element) => element.toString() == 'ReactionType.${json['type']}',
       ),
@@ -68,14 +71,16 @@ class Reaction extends ModelBase {
 
   Map<String, dynamic> toJson() {
     return {
-      'user': user,
-      'type': type,
+      '_id': id,
+      'user': user.toJson(),
+      'type': type.toString().split('.').last,
     };
   }
 
   Reaction deepCopy() {
     return Reaction(
-      user: user,
+      id: id,
+      user: user.deepCopy(),
       type: type,
     );
   }

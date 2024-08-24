@@ -92,6 +92,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
           onPressed: () {
             simpleBottomSheet(
               title: 'New goal',
+              height: 0,
               child: TextEditModal(
                 placeholder: 'I wanna...',
                 maxLength: 50,
@@ -186,8 +187,8 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         break;
 
       case logout:
-        Security.logOut().then((_) => Navigator.of(context)
-            .pushNamedAndRemoveUntil('/login', (route) => false));
+        Security.logOut()
+            .then((_) => Navigator.of(context).pushReplacementNamed('/login'));
         break;
 
       default:

@@ -2,6 +2,7 @@ const goalService = require('../services/goal.service')
 const alertService = require('../services/alert.service')
 const pushNotificationService = require('../services/push-notification.service')
 const userService = require('../services/user.service')
+const { viewGoal } = require('../config/views')
 
 const createMultipleGoals = async (req, res) => {
   try {
@@ -130,11 +131,14 @@ const getSingleGoal = async (req, res) => {
     if (goal == null)
       res.status(400).json({ message: `Goal with id ${id} not found.` })
     else {
-      const json = Object.assign({}, goal.toJSON(), {
-        canEdit: goal.user == user
+      const json = goal.toJSON()
+      const creator = json.user._id
+
+      Object.assign(json, {
+        canEdit: creator == user
       })
 
-      if (json.user != user && !(await userService.hasAccess(goal.user, user)))
+      if (creator != user && !(await userService.hasAccess(creator, user)))
         res
           .status(403)
           .json({ message: 'You do not have access to this goal.' })
@@ -223,6 +227,33 @@ const deleteReaction = async (req, res) => {
   }
 }
 
+const createComment = async (req, res) => {
+  try {
+    const user = req.user
+    const { id } = req.params
+    const { text } = req.body
+    if (text == null || text == '') {
+      res.status(400).json({ message: 'Comment cannot be empty.' })
+      return
+    }
+    const goal = await goalService.createComment(id, user, text)
+    if (goal == null)
+      res.status(400).json({ message: `Goal with id ${id} not found.` })
+    else {
+      await alertService.addAlert(user, goal.user, 'goal_comment')
+      await pushNotificationService.sendNotificationToUser(
+        goal.user,
+        'Goal comment',
+        `\$name commented on your goal!`
+      )
+      res.status(200).json(goal)
+    }
+  } catch (error) {
+    res.status(500).json(error)
+    console.error(error)
+  }
+}
+
 module.exports = {
   createMultipleGoals,
   createMilestone,
@@ -234,5 +265,6 @@ module.exports = {
   updateGoal,
   deleteGoal,
   reactToGoal,
-  deleteReaction
+  deleteReaction,
+  createComment
 }

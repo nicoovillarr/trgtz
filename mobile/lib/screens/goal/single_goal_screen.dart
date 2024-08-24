@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/goal/providers/index.dart';
+import 'package:trgtz/screens/goal/widgets/comment_card.dart';
 import 'package:trgtz/screens/goal/widgets/index.dart';
 import 'package:trgtz/utils.dart';
 import 'package:confetti/confetti.dart';
@@ -125,6 +129,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
                 title: 'Change title',
                 onTap: () => simpleBottomSheet(
                   title: 'Change title',
+                  height: 0,
                   child: TextEditModal(
                     placeholder: 'I wanna...',
                     initialValue: viewModel.model!.goal.title,
@@ -170,13 +175,12 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
                   _buildNewMilestoneButton(goal),
                 if (goal.milestones.isNotEmpty) _buildMilestonesSummary(goal),
                 if (goal.reactions.isNotEmpty) _buildReactions(goal),
-                if (!goal.canEdit)
-                  GoalInteractions(
-                    goal: goal,
-                    onReaction: _onReaction,
-                    onShowComments: () {},
-                    onRemoveReaction: _onRemoveReaction,
-                  ),
+                GoalInteractions(
+                  goal: goal,
+                  onReaction: _onReaction,
+                  onShowComments: _showComments,
+                  onRemoveReaction: _onRemoveReaction,
+                ),
                 const Divider(),
                 _buildEventHistory(goal),
               ],
@@ -414,7 +418,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
 
   void _showDescriptionModal(Size size, Goal goal) => simpleBottomSheet(
         title: 'Add description',
-        height: size.height * 0.9,
+        height: 0,
         child: TextEditModal(
           placeholder: 'Description',
           initialValue: goal.description,
@@ -666,5 +670,90 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
     }).catchError((_) {
       setIsLoading(false);
     });
+  }
+
+  void _showComments() {
+    StreamController<List<Comment>> controller =
+        StreamController<List<Comment>>.broadcast();
+    Future.delayed(
+        const Duration(
+          milliseconds: 1000,
+        ), () {
+      controller.add(viewModel.model!.goal.comments);
+    });
+
+    GlobalKey<FormState> key = GlobalKey();
+    String text = '';
+    simpleBottomSheet(
+      height: MediaQuery.of(context).size.height * 0.64,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Form(
+              key: key,
+              child: Column(
+                children: [
+                  TextEdit(
+                    placeholder: 'Write a comment',
+                    maxLines: 2,
+                    maxLength: 200,
+                    validate: (s) => s != null && s.isNotEmpty
+                        ? null
+                        : 'Your comment cannot be empty',
+                    onSaved: (value) {
+                      text = value ?? '';
+                    },
+                  ),
+                  const SizedBox(height: 4.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      MButton(
+                        onPressed: () {
+                          if (key.currentState!.validate()) {
+                            setIsLoading(true);
+                            key.currentState!.save();
+                            viewModel
+                                .createComment(viewModel.model!.goal, text)
+                                .then((_) {
+                              key.currentState!.reset();
+                              controller.add(viewModel.model!.goal.comments);
+                              setIsLoading(false);
+                            });
+                          }
+                        },
+                        text: 'Send',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.0),
+              child: Divider(),
+            ),
+            StreamBuilder<List<Comment>>(
+              stream: controller.stream,
+              builder: (context, snapshot) => snapshot.hasData
+                  ? ListView(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: viewModel.model!.goal.comments
+                          .map((comment) => CommentCard(
+                                comment: comment,
+                                mine: comment.user.id == store.state.user!.id,
+                              ))
+                          .toList(),
+                    )
+                  : const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

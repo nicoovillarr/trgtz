@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class TextEdit extends StatefulWidget {
   final String placeholder;
   final String? Function(String?)? validate;
+  final void Function(String?)? onSaved;
   final String? initialValue;
   final int? maxLines;
   final int? maxLength;
@@ -12,6 +13,7 @@ class TextEdit extends StatefulWidget {
     super.key,
     required this.placeholder,
     this.validate,
+    this.onSaved,
     this.initialValue = '',
     this.maxLines,
     this.maxLength,
@@ -56,6 +58,7 @@ class TextEditState extends State<TextEdit> {
           focusedErrorBorder: _buildBorder(Colors.redAccent),
         ),
         validator: widget.validate,
+        onSaved: widget.onSaved,
       );
 
   InputBorder _buildBorder(Color color) => OutlineInputBorder(
