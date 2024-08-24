@@ -15,6 +15,10 @@ on:
         description: "Mark as pre-release"
         required: true
         default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
 
 jobs:
   deploy:
