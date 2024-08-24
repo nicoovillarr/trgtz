@@ -41,8 +41,8 @@ class _GoalInteractionsState extends State<GoalInteractions> {
           ),
           _buildButton(
             icon: Icons.message,
-            text: 'Comment',
-            onTap: () {},
+            text: 'Comments (${widget.goal.comments.length})',
+            onTap: widget.onShowComments,
           ),
         ],
       );
@@ -60,7 +60,7 @@ class _GoalInteractionsState extends State<GoalInteractions> {
           onTap: onTap,
           onLongPress: onLongPress,
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(16.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -188,7 +188,7 @@ class _GoalInteractionsState extends State<GoalInteractions> {
     Store<AppState> store = StoreProvider.of<AppState>(context);
     final user = store.state.user!.id;
     return widget.goal.reactions
-        .where((reaction) => reaction.user == user)
+        .where((reaction) => reaction.user.id == user)
         .firstOrNull;
   }
 }

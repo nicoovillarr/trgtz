@@ -88,4 +88,11 @@ class GoalService {
       throw AppException(response.content);
     }
   }
+
+  Future createComment(Goal goal, String text) async {
+    ApiResponse response = await _goalsApiService.createComment(goal, text);
+    if (!response.status) {
+      throw AppException(response.content);
+    }
+  }
 }

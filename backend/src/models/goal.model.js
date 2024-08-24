@@ -70,6 +70,23 @@ const goalSchema = new mongoose.Schema({
       }
     }
   ],
+  comments: [
+    {
+      user: {
+        type: String,
+        ref: 'User',
+        required: true
+      },
+      text: {
+        type: String,
+        required: true
+      },
+      createdOn: {
+        type: Date,
+        required: true
+      }
+    }
+  ],
   createdOn: {
     type: Date,
     required: true,
