@@ -72,8 +72,8 @@ class Reaction extends ModelBase {
   Map<String, dynamic> toJson() {
     return {
       '_id': id,
-      'user': user,
-      'type': type,
+      'user': user.toJson(),
+      'type': type.toString().split('.').last,
     };
   }
 
