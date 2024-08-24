@@ -24,10 +24,10 @@ class Comment extends ModelBase {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      '_id': id,
       'text': text,
       'user': user.toJson(),
-      'createdOn': createdOn,
+      'createdOn': createdOn.toString(),
     };
   }
 
