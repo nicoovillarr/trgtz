@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.1-stg.4](https://github.com/nicoovillarr/trgtz/compare/v0.1.1-stg.3...v0.1.1-stg.4) (2024-08-24)
+
+
+### Features
+
+* add goal comments ([#112](https://github.com/nicoovillarr/trgtz/issues/112)) ([ad88418](https://github.com/nicoovillarr/trgtz/commit/ad88418a7857c55009bc163d562b2fdbdf413ecf))
+* decrease goal title/desc modal heights ([#112](https://github.com/nicoovillarr/trgtz/issues/112)) ([1d94ffc](https://github.com/nicoovillarr/trgtz/commit/1d94ffc5ba21bf000e4f4ce3c3876771aa0c2167))
+* fix some bugs ([#112](https://github.com/nicoovillarr/trgtz/issues/112)) ([cf9ed91](https://github.com/nicoovillarr/trgtz/commit/cf9ed918c368a193b1f10a5cbf534adedc3c8421))
+
 ### [0.1.1-stg.3](https://github.com/nicoovillarr/trgtz/compare/v0.1.1-stg.2...v0.1.1-stg.3) (2024-08-17)
 
 
