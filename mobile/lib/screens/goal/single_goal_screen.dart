@@ -129,6 +129,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
                 title: 'Change title',
                 onTap: () => simpleBottomSheet(
                   title: 'Change title',
+                  height: 0,
                   child: TextEditModal(
                     placeholder: 'I wanna...',
                     initialValue: viewModel.model!.goal.title,
@@ -417,7 +418,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
 
   void _showDescriptionModal(Size size, Goal goal) => simpleBottomSheet(
         title: 'Add description',
-        height: size.height * 0.9,
+        height: 0,
         child: TextEditModal(
           placeholder: 'Description',
           initialValue: goal.description,
