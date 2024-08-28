@@ -2,7 +2,6 @@ const goalService = require('../services/goal.service')
 const alertService = require('../services/alert.service')
 const pushNotificationService = require('../services/push-notification.service')
 const userService = require('../services/user.service')
-const { viewGoal } = require('../config/views')
 
 const createMultipleGoals = async (req, res) => {
   try {
@@ -135,7 +134,9 @@ const getSingleGoal = async (req, res) => {
       const creator = json.user._id
 
       Object.assign(json, {
-        canEdit: creator == user
+        canEdit: creator == user,
+        viewsCount:
+          json.viewsCount + ((await goalService.setGoalView(id, user)) ? 1 : 0)
       })
 
       if (creator != user && !(await userService.hasAccess(creator, user)))
