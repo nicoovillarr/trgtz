@@ -13,6 +13,8 @@ class Goal extends ModelBase {
   List<Event> events = [];
   List<Reaction> reactions = [];
   List<Comment> comments = [];
+  List<View> views;
+  int viewsCount;
 
   Goal({
     required this.id,
@@ -24,9 +26,11 @@ class Goal extends ModelBase {
     this.description,
     this.completedOn,
     this.deletedOn,
+    this.viewsCount = 0,
     this.events = const [],
     this.reactions = const [],
     this.comments = const [],
+    this.views = const [],
   });
 
   factory Goal.fromJson(Map<String, dynamic> json) {
@@ -37,6 +41,7 @@ class Goal extends ModelBase {
         json.containsKey('reactions') ? json['reactions'] as List : [];
     final comments =
         json.containsKey('comments') ? json['comments'] as List : [];
+    final views = json.containsKey('views') ? json['views'] as List : [];
     return Goal(
       id: json['_id'],
       title: json['title'],
@@ -52,6 +57,8 @@ class Goal extends ModelBase {
       reactions:
           reactions.map((reaction) => Reaction.fromJson(reaction)).toList(),
       comments: comments.map((comment) => Comment.fromJson(comment)).toList(),
+      views: views.map((view) => View.fromJson(view)).toList(),
+      viewsCount: json['viewsCount'] ?? 0,
     );
   }
 
@@ -69,6 +76,8 @@ class Goal extends ModelBase {
         'events': events.map((event) => event.toJson()).toList(),
         'reactions': reactions.map((reaction) => reaction.toJson()).toList(),
         'comments': comments.map((comment) => comment.toJson()).toList(),
+        'views': views.map((view) => view.toJson()).toList(),
+        'viewsCount': viewsCount,
       };
 
   List<Milestone> getMilestonesSublist({int count = 3}) {
@@ -108,6 +117,8 @@ class Goal extends ModelBase {
       events: events.map((event) => event.deepCopy()).toList(),
       reactions: reactions.map((reaction) => reaction.deepCopy()).toList(),
       comments: comments.map((comment) => comment.deepCopy()).toList(),
+      viewsCount: viewsCount,
+      views: views.map((view) => view.deepCopy()).toList(),
     );
   }
 }

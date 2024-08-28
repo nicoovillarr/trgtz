@@ -229,6 +229,22 @@ const createComment = async (id, user, text) => {
   return goal
 }
 
+const setGoalView = async (id, user) => {
+  const goal = await Goal.findOne({ _id: id })
+  if (goal == null) return false
+
+  const cache = require('../config/cache')
+  const key = `goal:${id}:views:${user}`
+
+  if (cache.get(key) != null) return false
+
+  goal.views.push({ user, viewedOn: new Date() })
+  await goal.save()
+
+  cache.set(key, true)
+  return true
+}
+
 module.exports = {
   createMultipleGoals,
   createMilestone,
@@ -242,5 +258,6 @@ module.exports = {
   getMilestone,
   reactToGoal,
   deleteReaction,
-  createComment
+  createComment,
+  setGoalView
 }
