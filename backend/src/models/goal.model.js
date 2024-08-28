@@ -19,6 +19,19 @@ const goalSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  views: [
+    {
+      user: {
+        type: String,
+        ref: 'User',
+        required: true
+      },
+      viewedOn: {
+        type: Date,
+        required: true
+      }
+    }
+  ],
   milestones: [
     {
       title: {

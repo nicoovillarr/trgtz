@@ -174,6 +174,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
                 if (goal.milestones.isEmpty && goal.canEdit)
                   _buildNewMilestoneButton(goal),
                 if (goal.milestones.isNotEmpty) _buildMilestonesSummary(goal),
+                _buildStats(goal),
                 if (goal.reactions.isNotEmpty) _buildReactions(goal),
                 GoalInteractions(
                   goal: goal,
@@ -756,4 +757,12 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
       ),
     );
   }
+
+  Widget _buildStats(Goal goal) => Row(
+        children: [
+          const Icon(Icons.visibility, size: 16.0),
+          const SizedBox(width: 8.0),
+          Text(goal.viewsCount.toString()),
+        ],
+      );
 }

@@ -27,7 +27,8 @@ class SingleGoalProvider extends ChangeNotifier {
   bool get isLoaded => _isLoaded;
 
   bool get hasReacted =>
-      model?.goal.reactions.any((reaction) => reaction.user == model!.me.id) ??
+      model?.goal.reactions
+          .any((reaction) => reaction.user.id == model!.me.id) ??
       false;
 
   int get reactionCount => model?.goal.reactions.length ?? 0;
