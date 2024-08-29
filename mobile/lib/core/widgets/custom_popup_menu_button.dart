@@ -3,8 +3,13 @@ import 'package:flutter/material.dart';
 class MenuItem {
   String title;
   void Function() onTap;
+  bool enabled;
 
-  MenuItem({required this.title, required this.onTap});
+  MenuItem({
+    required this.title,
+    required this.onTap,
+    this.enabled = true,
+  });
 }
 
 class CustomPopUpMenuButton extends StatelessWidget {
@@ -21,6 +26,7 @@ class CustomPopUpMenuButton extends StatelessWidget {
           for (int i = 0; i < items.length; i++)
             PopupMenuItem(
               value: i,
+              enabled: items[i].enabled,
               child: Text(items[i].title),
             )
         ],

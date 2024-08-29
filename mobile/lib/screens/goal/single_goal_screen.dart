@@ -131,69 +131,68 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
 
   @override
   List<Widget> get actions => [
-        if (viewModel.model != null && viewModel.model!.goal.canEdit)
-          CustomPopUpMenuButton(
-            items: [
-              if (viewModel.canComplete)
-                MenuItem(
-                  title: 'Complete',
-                  onTap: () {
-                    showMessage(
-                      'Complete goal',
-                      'Are you sure you want to complete this goal?',
-                      negativeText: 'Cancel',
-                      onPositiveTap: () {
-                        Navigator.of(context).pop();
-                        setIsLoading(true);
-                        viewModel.completeGoal().then((_) {
-                          setIsLoading(false);
-                          _centerController.play();
-                          Future.delayed(const Duration(milliseconds: 10), () {
-                            _centerController.stop();
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Goal completed!'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        });
-                      },
-                    );
+        CustomPopUpMenuButton(
+          items: [
+            MenuItem(
+              title: 'Complete',
+              enabled: viewModel.canComplete,
+              onTap: () {
+                showMessage(
+                  'Complete goal',
+                  'Are you sure you want to complete this goal?',
+                  negativeText: 'Cancel',
+                  onPositiveTap: () {
+                    Navigator.of(context).pop();
+                    setIsLoading(true);
+                    viewModel.completeGoal().then((_) {
+                      setIsLoading(false);
+                      _centerController.play();
+                      Future.delayed(const Duration(milliseconds: 10), () {
+                        _centerController.stop();
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Goal completed!'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    });
                   },
-                ),
-              MenuItem(
+                );
+              },
+            ),
+            MenuItem(
+              title: 'Change title',
+              onTap: () => simpleBottomSheet(
                 title: 'Change title',
-                onTap: () => simpleBottomSheet(
-                  title: 'Change title',
-                  height: 0,
-                  child: TextEditModal(
-                    placeholder: 'I wanna...',
-                    initialValue: viewModel.model!.goal.title,
-                    maxLength: 50,
-                    maxLines: 1,
-                    validate: (title) => title != null && title.isNotEmpty
-                        ? null
-                        : 'Title cannot be empty',
-                    onSave: (s) => _onSaveField(
-                      goal: viewModel.model!.goal,
-                      field: 'title',
-                      newValue: Utils.sanitize(s ?? ''),
-                    ),
+                height: 0,
+                child: TextEditModal(
+                  placeholder: 'I wanna...',
+                  initialValue: viewModel.model!.goal.title,
+                  maxLength: 50,
+                  maxLines: 1,
+                  validate: (title) => title != null && title.isNotEmpty
+                      ? null
+                      : 'Title cannot be empty',
+                  onSave: (s) => _onSaveField(
+                    goal: viewModel.model!.goal,
+                    field: 'title',
+                    newValue: Utils.sanitize(s ?? ''),
                   ),
                 ),
               ),
-              MenuItem(
-                title: 'Milestones',
-                onTap: () => Navigator.of(context).pushNamed('/goal/milestones',
-                    arguments: viewModel.model!.goal.id),
-              ),
-              MenuItem(
-                title: 'Delete',
-                onTap: _onDeleteGoal,
-              ),
-            ],
-          ),
+            ),
+            MenuItem(
+              title: 'Milestones',
+              onTap: () => Navigator.of(context).pushNamed('/goal/milestones',
+                  arguments: viewModel.model!.goal.id),
+            ),
+            MenuItem(
+              title: 'Delete',
+              onTap: _onDeleteGoal,
+            ),
+          ],
+        ),
       ];
 
   Widget _buildBody(Size size, Goal goal) => RefreshIndicator(
@@ -548,42 +547,6 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
 
   @override
   String? get title => viewModel.model?.goal.title;
-
-  @override
-  FloatingActionButton? get fab => viewModel.model?.goal != null &&
-          viewModel.model!.goal.completedOn == null &&
-          viewModel.model!.goal.deletedOn == null &&
-          viewModel.model!.goal.canEdit &&
-          (viewModel.model!.goal.milestones.isEmpty ||
-              viewModel.model!.goal.milestones
-                  .every((m) => m.completedOn != null))
-      ? FloatingActionButton.extended(
-          onPressed: () async {
-            viewModel.completeGoal().then((_) {
-              setState(() {});
-              _centerController.play();
-              Future.delayed(const Duration(milliseconds: 10), () {
-                _centerController.stop();
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Goal completed!'),
-                  duration: const Duration(seconds: 2),
-                  action: SnackBarAction(
-                    label: 'Undo',
-                    onPressed: () {
-                      viewModel
-                          .updateGoal(viewModel.model!.goal..completedOn = null)
-                          .then((value) => setState(() {}));
-                    },
-                  ),
-                ),
-              );
-            });
-          },
-          label: const Text('Complete'),
-        )
-      : null;
 
   SingleGoalProvider get viewModel => context.read<SingleGoalProvider>();
 

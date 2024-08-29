@@ -12,7 +12,7 @@ class ModuleService {
     return updateGoal(copy);
   }
 
-  Future updateGoal(Goal goal) {
+  Future<Goal> updateGoal(Goal goal) {
     return _goalService.updateGoal(goal);
   }
 
