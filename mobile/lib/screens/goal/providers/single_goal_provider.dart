@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/goal/services/index.dart';
 
+enum FooterType { comments, events, all }
+
 class SingleGoalProviderModel {
   final User _me;
   final Goal _goal;
@@ -21,6 +23,7 @@ class SingleGoalProvider extends ChangeNotifier {
 
   SingleGoalProviderModel? _model;
   bool _isLoaded = false;
+  FooterType _footerType = FooterType.all;
 
   SingleGoalProviderModel? get model => _model;
 
@@ -32,6 +35,35 @@ class SingleGoalProvider extends ChangeNotifier {
       false;
 
   int get reactionCount => model?.goal.reactions.length ?? 0;
+
+  String get reactionText {
+    int othersReactionCount = reactionCount - (hasReacted ? 1 : 0);
+    bool shouldIncludeAnd = hasReacted && reactionCount > 1;
+
+    final youText = hasReacted ? 'You' : '';
+    final andText = shouldIncludeAnd ? ' and' : '';
+    final othersText = othersReactionCount > 0 ? ' $othersReactionCount' : '';
+    final usersText = youText.isEmpty && othersReactionCount > 0
+        ? (othersReactionCount == 1 ? ' user' : ' users')
+        : '';
+
+    return '$youText$andText$othersText$usersText reacted to this goal'
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+  }
+
+  FooterType get footerType => _footerType;
+
+  set footerType(FooterType value) {
+    _footerType = value;
+    notifyListeners();
+  }
+
+  bool get canComplete =>
+      model != null &&
+      model!.goal.completedOn == null &&
+      (model!.goal.milestones.isEmpty ||
+          model!.goal.milestones.any((x) => x.completedOn == null) == false);
 
   Future<SingleGoalProvider> populate(User me, String goalId) async {
     Goal goal = await _moduleService.getGoal(goalId);
@@ -63,10 +95,7 @@ class SingleGoalProvider extends ChangeNotifier {
       return;
     }
 
-    Goal goal = model!.goal.deepCopy();
-    goal.completedOn = DateTime.now();
-
-    await _moduleService.completeGoal(goal);
+    Goal goal = await _moduleService.completeGoal(model!.goal);
 
     _model = SingleGoalProviderModel(model!.me, goal);
     notifyListeners();
