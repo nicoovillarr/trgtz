@@ -9,13 +9,11 @@ import 'package:trgtz/store/index.dart';
 class GoalInteractions extends StatefulWidget {
   final Goal goal;
   final Function(String type) onReaction;
-  final Function() onShowComments;
   final Function() onRemoveReaction;
   const GoalInteractions({
     super.key,
     required this.goal,
     required this.onReaction,
-    required this.onShowComments,
     required this.onRemoveReaction,
   });
 
@@ -33,7 +31,10 @@ class _GoalInteractionsState extends State<GoalInteractions> {
           _buildButton(
             icon:
                 _myReaction != null ? _myReaction!.displayIcon : Icons.thumb_up,
-            text: _myReaction != null ? _myReaction!.displayText : 'Like',
+            text: _buildText([
+              _myReaction?.displayText ?? "",
+              "(${widget.goal.reactions.length})"
+            ]),
             color: _myReaction?.foregroundColor,
             onTap: () =>
                 _myReaction != null ? _removeReaction() : _onReaction('like'),
@@ -41,43 +42,50 @@ class _GoalInteractionsState extends State<GoalInteractions> {
           ),
           _buildButton(
             icon: Icons.message,
-            text: 'Comments (${widget.goal.comments.length})',
-            onTap: widget.onShowComments,
+            text: "(${widget.goal.comments.length})",
+          ),
+          _buildButton(
+            icon: Icons.visibility,
+            text: "(${widget.goal.viewsCount})",
           ),
         ],
       );
 
+  String _buildText(List<String> input) =>
+      input.where((x) => x.isNotEmpty).join(" ");
+
   Widget _buildButton({
     required IconData icon,
-    required String text,
-    required Function() onTap,
+    Function()? onTap,
     Function()? onLongPress,
+    String? text,
     Color? color,
   }) =>
-      Expanded(
-        child: InkWell(
-          borderRadius: BorderRadius.circular(4.0),
-          onTap: onTap,
-          onLongPress: onLongPress,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  icon,
-                  size: 16,
-                  color: color,
-                ),
-                const SizedBox(width: 8),
+      InkWell(
+        borderRadius: BorderRadius.circular(4.0),
+        onTap: onTap,
+        onLongPress: onLongPress,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: color,
+              ),
+              if (text != null) const SizedBox(width: 8),
+              if (text != null)
                 Text(
                   text,
                   style: TextStyle(
                     color: color,
+                    fontSize: 12.0,
                   ),
                 ),
-              ],
-            ),
+            ],
           ),
         ),
       );
