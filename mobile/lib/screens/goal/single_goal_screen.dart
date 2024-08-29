@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
@@ -27,23 +26,6 @@ class SingleGoalScreen extends StatefulWidget {
 class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
   late final String goalId;
   late ConfettiController _centerController;
-
-  String get reactionText {
-    int othersReactionCount =
-        viewModel.reactionCount - (viewModel.hasReacted ? 1 : 0);
-    bool shouldIncludeAnd = viewModel.hasReacted && viewModel.reactionCount > 1;
-
-    final youText = viewModel.hasReacted ? 'You' : '';
-    final andText = shouldIncludeAnd ? ' and' : '';
-    final othersText = othersReactionCount > 0 ? ' $othersReactionCount' : '';
-    final usersText = youText.isEmpty && othersReactionCount > 0
-        ? (othersReactionCount == 1 ? ' user' : ' users')
-        : '';
-
-    return '$youText$andText$othersText$usersText reacted to this goal'
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
-  }
 
   @override
   void customInitState() {
@@ -101,7 +83,10 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
         }
         return Stack(
           children: [
-            _buildBody(size, goal),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 56.0),
+              child: _buildBody(size, goal),
+            ),
             Align(
               alignment: Alignment.center,
               child: ConfettiWidget(
@@ -114,6 +99,30 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
                 gravity: 0.05,
               ),
             ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.0),
+                      Colors.black.withOpacity(0.4),
+                    ],
+                  ),
+                ),
+                padding: const EdgeInsets.only(
+                    left: 24.0, right: 24.0, bottom: 40.0),
+                child: MButton(
+                  onPressed: _showComments,
+                  borderRadius: 16.0,
+                  text: 'Comment',
+                ),
+              ),
+            )
           ],
         );
       },
@@ -125,6 +134,34 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
         if (viewModel.model != null && viewModel.model!.goal.canEdit)
           CustomPopUpMenuButton(
             items: [
+              if (viewModel.canComplete)
+                MenuItem(
+                  title: 'Complete',
+                  onTap: () {
+                    showMessage(
+                      'Complete goal',
+                      'Are you sure you want to complete this goal?',
+                      negativeText: 'Cancel',
+                      onPositiveTap: () {
+                        Navigator.of(context).pop();
+                        setIsLoading(true);
+                        viewModel.completeGoal().then((_) {
+                          setIsLoading(false);
+                          _centerController.play();
+                          Future.delayed(const Duration(milliseconds: 10), () {
+                            _centerController.stop();
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Goal completed!'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        });
+                      },
+                    );
+                  },
+                ),
               MenuItem(
                 title: 'Change title',
                 onTap: () => simpleBottomSheet(
@@ -168,22 +205,19 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
             padding: const EdgeInsets.all(16.0),
             child: SeparatedColumn(
               crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 16.0,
+              spacing: 8.0,
               children: [
                 _buildDesc(size, goal),
                 if (goal.milestones.isEmpty && goal.canEdit)
                   _buildNewMilestoneButton(goal),
                 if (goal.milestones.isNotEmpty) _buildMilestonesSummary(goal),
-                _buildStats(goal),
-                if (goal.reactions.isNotEmpty) _buildReactions(goal),
                 GoalInteractions(
                   goal: goal,
                   onReaction: _onReaction,
-                  onShowComments: _showComments,
                   onRemoveReaction: _onRemoveReaction,
                 ),
                 const Divider(),
-                _buildEventHistory(goal),
+                _buildFooter(goal),
               ],
             ),
           ),
@@ -219,7 +253,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
                       padding: EdgeInsets.all(8.0),
                       child: Center(
                         child: Text(
-                          'View milestone',
+                          'View milestones',
                           style: TextStyle(color: mainColor),
                         ),
                       ),
@@ -326,40 +360,35 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
               itemCount: goal.getMilestonesSublist().length,
               itemBuilder: (context, index) {
                 final milestone = goal.getMilestonesSublist()[index];
                 return AnimatedOpacity(
                   duration: const Duration(milliseconds: 300),
                   opacity: milestone.completedOn != null ? 0.5 : 1.0,
-                  child: Stack(
-                    children: [
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4.0),
-                        ),
-                        title: Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: goal.canEdit ? 0.0 : 16.0),
-                          child: Text(
-                            milestone.title,
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                        ),
-                        leading: goal.canEdit
-                            ? Checkbox(
-                                value: milestone.completedOn != null,
-                                activeColor: mainColor,
-                                onChanged: (_) =>
-                                    _onMilestoneCompleted(milestone),
-                              )
-                            : null,
-                        onTap: () => goal.canEdit
-                            ? _onMilestoneCompleted(milestone)
-                            : null,
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4.0),
+                    ),
+                    title: Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: goal.canEdit ? 0.0 : 16.0),
+                      child: Text(
+                        milestone.title,
+                        style: const TextStyle(fontSize: 14),
                       ),
-                    ],
+                    ),
+                    leading: goal.canEdit
+                        ? Checkbox(
+                            value: milestone.completedOn != null,
+                            activeColor: mainColor,
+                            onChanged: (_) => _onMilestoneCompleted(milestone),
+                          )
+                        : null,
+                    onTap: () =>
+                        goal.canEdit ? _onMilestoneCompleted(milestone) : null,
                   ),
                 );
               },
@@ -558,30 +587,6 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
 
   SingleGoalProvider get viewModel => context.read<SingleGoalProvider>();
 
-  Widget _buildEventHistory(Goal goal) => ListView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        itemBuilder: (context, index) => ListTile(
-          leading: Icon(
-            getEventIcon(goal.events[index]),
-            size: 18.0,
-          ),
-          title: Text(
-            goal.events[index].toString(),
-            style: const TextStyle(
-              fontSize: 14,
-            ),
-          ),
-          trailing: Text(
-            timeago.format(goal.events[index].createdOn),
-            style: const TextStyle(
-              fontSize: 10,
-            ),
-          ),
-        ),
-        itemCount: goal.events.length,
-        shrinkWrap: true,
-      );
-
   IconData getEventIcon(Event e) {
     switch (e.type) {
       case 'goal_created':
@@ -609,60 +614,6 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
     });
   }
 
-  Widget _buildReactions(Goal goal) => Row(
-        children: [
-          Dots(
-            size: 24,
-            dots: _getReactionsIcons(goal.reactions)
-                .map((icon) => Icon(
-                      icon,
-                      size: 12,
-                    ))
-                .toList(),
-          ),
-          const SizedBox(width: 8.0),
-          Expanded(
-            child: Text(
-              reactionText,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
-          )
-        ],
-      );
-
-  List<IconData> _getReactionsIcons(List<Reaction> reactions) {
-    Map<ReactionType, List<Reaction>> groupedReactions = {};
-    groupedReactions = reactions.fold({}, (acc, cur) {
-      if (acc.containsKey(cur.type)) {
-        acc[cur.type]!.add(cur);
-      } else {
-        acc[cur.type] = [cur];
-      }
-      return acc;
-    });
-
-    List<ReactionType> sortedReactions = groupedReactions.keys.toList();
-    final me = store.state.user!.id;
-    sortedReactions.sort((a, b) {
-      if (groupedReactions[a]!.any((reaction) => reaction.user == me)) {
-        return -1;
-      } else if (groupedReactions[b]!.any((reaction) => reaction.user == me)) {
-        return 1;
-      } else {
-        return groupedReactions[b]!
-            .length
-            .compareTo(groupedReactions[a]!.length);
-      }
-    });
-
-    return sortedReactions
-        .map((type) => Reaction.getDisplayIcon(type))
-        .toList();
-  }
-
   _onRemoveReaction() {
     setIsLoading(true);
     viewModel.removeReaction(viewModel.model!.goal).then((_) {
@@ -674,95 +625,139 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
   }
 
   void _showComments() {
-    StreamController<List<Comment>> controller =
-        StreamController<List<Comment>>.broadcast();
-    Future.delayed(
-        const Duration(
-          milliseconds: 1000,
-        ), () {
-      controller.add(viewModel.model!.goal.comments);
-    });
-
     GlobalKey<FormState> key = GlobalKey();
     String text = '';
     simpleBottomSheet(
-      height: MediaQuery.of(context).size.height * 0.64,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Form(
-              key: key,
-              child: Column(
+        child: Form(
+          key: key,
+          child: Column(
+            children: [
+              TextEdit(
+                placeholder: 'Write a comment',
+                maxLines: 2,
+                maxLength: 200,
+                validate: (s) => s != null && s.isNotEmpty
+                    ? null
+                    : 'Your comment cannot be empty',
+                onSaved: (value) {
+                  text = value ?? '';
+                },
+              ),
+              const SizedBox(height: 4.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextEdit(
-                    placeholder: 'Write a comment',
-                    maxLines: 2,
-                    maxLength: 200,
-                    validate: (s) => s != null && s.isNotEmpty
-                        ? null
-                        : 'Your comment cannot be empty',
-                    onSaved: (value) {
-                      text = value ?? '';
+                  MButton(
+                    onPressed: () {
+                      if (key.currentState!.validate()) {
+                        setIsLoading(true);
+                        key.currentState!.save();
+                        viewModel
+                            .createComment(viewModel.model!.goal, text)
+                            .then((_) {
+                          key.currentState!.reset();
+                          setIsLoading(false);
+
+                          Navigator.of(context).pop();
+                        });
+                      }
                     },
-                  ),
-                  const SizedBox(height: 4.0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      MButton(
-                        onPressed: () {
-                          if (key.currentState!.validate()) {
-                            setIsLoading(true);
-                            key.currentState!.save();
-                            viewModel
-                                .createComment(viewModel.model!.goal, text)
-                                .then((_) {
-                              key.currentState!.reset();
-                              controller.add(viewModel.model!.goal.comments);
-                              setIsLoading(false);
-                            });
-                          }
-                        },
-                        text: 'Send',
-                      ),
-                    ],
+                    text: 'Send',
                   ),
                 ],
               ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.0),
-              child: Divider(),
-            ),
-            StreamBuilder<List<Comment>>(
-              stream: controller.stream,
-              builder: (context, snapshot) => snapshot.hasData
-                  ? ListView(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: viewModel.model!.goal.comments
-                          .map((comment) => CommentCard(
-                                comment: comment,
-                                mine: comment.user.id == store.state.user!.id,
-                              ))
-                          .toList(),
-                    )
-                  : const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildStats(Goal goal) => Row(
+  Widget _buildFooter(Goal goal) {
+    List<ModelBase> input;
+    switch (viewModel.footerType) {
+      case FooterType.comments:
+        input = goal.comments;
+        break;
+      case FooterType.events:
+        input = goal.events;
+        break;
+      case FooterType.all:
+        List<Map<DateTime, ModelBase>> aux = goal.comments
+            .map((e) => {e.createdOn: e as ModelBase})
+            .followedBy(goal.events.map((e) => {e.createdOn: e as ModelBase}))
+            .toList();
+        aux.sort((a, b) => b.keys.first.compareTo(a.keys.first));
+        input = aux.map((e) => e.values.first).toList();
+        break;
+      default:
+        input = [];
+    }
+
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: input.length,
+      itemBuilder: (context, index) => _buildFooterItem(input[index]),
+      separatorBuilder: (context, index) => Row(
         children: [
-          const Icon(Icons.visibility, size: 16.0),
-          const SizedBox(width: 8.0),
-          Text(goal.viewsCount.toString()),
+          Container(
+            margin: const EdgeInsets.symmetric(
+              vertical: 8.0,
+              horizontal: 16.0,
+            ),
+            height:
+                input[index] is Event && input[index + 1] is Event ? 8.0 : 20.0,
+            width: 1.0,
+            decoration: BoxDecoration(
+              color: Colors.grey,
+              borderRadius: BorderRadius.circular(4.0),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFooterItem(ModelBase item) {
+    if (item is Comment) {
+      return CommentCard(
+        comment: item,
+        mine: item.user.id == store.state.user!.id,
       );
+    } else if (item is Event) {
+      return ListTile(
+        contentPadding: const EdgeInsets.only(left: 5.0),
+        leading: Container(
+          padding: const EdgeInsets.all(4.0),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.grey,
+            ),
+          ),
+          child: Icon(
+            getEventIcon(item),
+            size: 12.0,
+          ),
+        ),
+        title: Text(
+          item.toString(),
+          style: const TextStyle(
+            fontSize: 12,
+          ),
+        ),
+        trailing: Text(
+          timeago.format(item.createdOn),
+          style: const TextStyle(
+            fontSize: 12,
+          ),
+        ),
+      );
+    } else {
+      return const Placeholder();
+    }
+  }
 }
