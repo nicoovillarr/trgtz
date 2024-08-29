@@ -101,11 +101,6 @@ const updateMilestone = async (id, user, milestoneId, data) => {
   milestone.title = title
   milestone.completedOn = completedOn
 
-  goal.completedOn =
-    goal.milestones.some((milestone) => !milestone.completedOn) === false
-      ? new Date()
-      : null
-
   await goal.save()
 
   sendGoalChannelMessage(
@@ -119,10 +114,12 @@ const updateMilestone = async (id, user, milestoneId, data) => {
 
 const getSingleGoal = async (id) => await viewGoal.findOne({ _id: id })
 
-const updateGoal = async (id, user, data) => {
-  const goal = await Goal.findOne({ _id: id, user })
-  if (goal == null) return null
+const canCompleteGoal = (goal) =>
+  goal.completedOn == null &&
+  (goal.milestones.length == 0 ||
+    goal.milestones.every((m) => m.completedOn != null))
 
+const updateGoal = async (goal, data) => {
   const eventType =
     Object.keys(data).includes('completedOn') &&
     data.completedOn != null &&
@@ -144,7 +141,7 @@ const updateGoal = async (id, user, data) => {
 
   await goal.save()
   sendGoalChannelMessage(
-    id,
+    goal._id,
     'GOAL_UPDATED',
     Object.keys(data)
       .filter((t) => editableFields.includes(t))
@@ -259,5 +256,6 @@ module.exports = {
   reactToGoal,
   deleteReaction,
   createComment,
-  setGoalView
+  setGoalView,
+  canCompleteGoal
 }

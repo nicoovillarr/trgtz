@@ -3,6 +3,8 @@ const alertService = require('../services/alert.service')
 const pushNotificationService = require('../services/push-notification.service')
 const userService = require('../services/user.service')
 
+const Goal = require('../models/goal.model')
+
 const createMultipleGoals = async (req, res) => {
   try {
     const user = req.user
@@ -155,24 +157,38 @@ const updateGoal = async (req, res) => {
   try {
     const user = req.user
     const { id } = req.params
-    const wasCompleted =
-      (await goalService.getSingleGoal(id).completedOn) != null
-    const goal = await goalService.updateGoal(id, user, req.body)
-    if (goal == null)
+
+    let goal = await Goal.findOne({ _id: id, user })
+    if (goal == null) {
       res.status(400).json({ message: `Goal with id ${id} not found.` })
-    else {
-      if (wasCompleted == false && goal.completedOn != null) {
-        await alertService.sendAlertToFriends(user, 'goal_completed')
-        await pushNotificationService.sendNotificationToFriends(
-          user,
-          'Goal completed',
-          `\$name completed ${goal.title}!`
-        )
-      }
-      res.status(200).json(goal)
     }
+
+    if (
+      Object.keys(req.body).includes('completedOn') &&
+      req.body.completedOn != null &&
+      goal.completedOn == null &&
+      !goalService.canCompleteGoal(goal)
+    ) {
+      res.status(400).json({
+        message: 'You cannot complete a goal without completing all milestones.'
+      })
+      return
+    }
+
+    const wasCompleted = goal.completedOn != null
+    goal = await goalService.updateGoal(goal, req.body)
+
+    if (wasCompleted == false && goal.completedOn != null) {
+      await alertService.sendAlertToFriends(user, 'goal_completed')
+      await pushNotificationService.sendNotificationToFriends(
+        user,
+        'Goal completed',
+        `\$name completed ${goal.title}!`
+      )
+    }
+    res.status(200).json(await goalService.getSingleGoal(id))
   } catch (error) {
-    res.status(500).json(error)
+    res.status(500).json()
     console.error(error)
   }
 }
