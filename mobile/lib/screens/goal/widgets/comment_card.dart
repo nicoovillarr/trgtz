@@ -47,7 +47,7 @@ class CommentCard extends StatelessWidget {
           subtitle: Text(
             comment.text,
             style: const TextStyle(
-              fontSize: 16.0,
+              fontSize: 14.0,
             ),
           ),
           leading: SizedBox(
