@@ -13,32 +13,49 @@ class CommentCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => ListTile(
-        onTap: () {},
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Text(
-                mine ? 'You' : comment.user.firstName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
+  Widget build(BuildContext context) => Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4.0),
+          border: Border.all(
+            color: Colors.grey,
+          ),
+        ),
+        child: ListTile(
+          titleAlignment: ListTileTitleAlignment.top,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  mine ? 'You' : comment.user.firstName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12.0,
+                  ),
                 ),
               ),
-            ),
-            Text(
-              timeago.format(comment.createdOn),
-              style: const TextStyle(
-                fontSize: 12,
+              Text(
+                timeago.format(comment.createdOn),
+                style: const TextStyle(
+                  fontSize: 12.0,
+                ),
               ),
+            ],
+          ),
+          subtitle: Text(
+            comment.text,
+            style: const TextStyle(
+              fontSize: 16.0,
             ),
-          ],
-        ),
-        subtitle: Text(comment.text),
-        leading: ProfileImage(
-          user: comment.user,
+          ),
+          leading: SizedBox(
+            width: 40,
+            child: ProfileImage(
+              user: comment.user,
+            ),
+          ),
         ),
       );
 }
