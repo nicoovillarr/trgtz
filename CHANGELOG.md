@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.1-stg.5](https://github.com/nicoovillarr/trgtz/compare/v0.1.1-stg.4...v0.1.1-stg.5) (2024-08-31)
+
+
+### Features
+
+* add goal views ([#110](https://github.com/nicoovillarr/trgtz/issues/110)) ([56cb9b6](https://github.com/nicoovillarr/trgtz/commit/56cb9b64bd5dbdcd5ec4fa0ea8d230a85770b332))
+* decrease comment text size ([#117](https://github.com/nicoovillarr/trgtz/issues/117)) ([bc91653](https://github.com/nicoovillarr/trgtz/commit/bc91653bdc2dfa9b11614f20a527fb9c34a84366))
+* improve real time changes inside goals ([db3edfe](https://github.com/nicoovillarr/trgtz/commit/db3edfe18796efb07c2a520f0f2cc75d5d672675))
+* improve single goal design ([#117](https://github.com/nicoovillarr/trgtz/issues/117)) ([be2f28e](https://github.com/nicoovillarr/trgtz/commit/be2f28ef16afda863d1f587966539f74fc6cef06))
+* include missing changes in SingleGoalProvider ([#117](https://github.com/nicoovillarr/trgtz/issues/117)) ([57fdca4](https://github.com/nicoovillarr/trgtz/commit/57fdca475511ea338d14c0615d38230eb2a28ef8))
+* only allow users to complete goal if all milestones are completed ([60dd7d3](https://github.com/nicoovillarr/trgtz/commit/60dd7d368a218bf9021b9cf42daa40b3905c5700))
+
 ### [0.1.1-stg.4](https://github.com/nicoovillarr/trgtz/compare/v0.1.1-stg.3...v0.1.1-stg.4) (2024-08-24)
 
 
