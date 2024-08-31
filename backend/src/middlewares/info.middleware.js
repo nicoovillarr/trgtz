@@ -5,6 +5,7 @@ const info = async (req, res, next) => {
 
   req.custom = {}
   req.custom.ip = parseIp(req)
+  req.custom.broadcastToken = req.headers['broadcast-token']
 
   next()
 }

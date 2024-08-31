@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:trgtz/app.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/goal/services/index.dart';
+import 'package:trgtz/services/websocket.service.dart';
+
+import '../goal_constants.dart';
 
 enum FooterType { comments, events, all }
 
@@ -74,62 +78,6 @@ class SingleGoalProvider extends ChangeNotifier {
     return this;
   }
 
-  Future updateGoal(Goal editedGoal) async {
-    await _moduleService.updateGoal(editedGoal);
-    _model = SingleGoalProviderModel(model!.me, editedGoal);
-    notifyListeners();
-  }
-
-  Future deleteGoal() async {
-    if (model == null) {
-      return;
-    }
-
-    await _moduleService.deleteGoal(model!.goal);
-    _model = null;
-    notifyListeners();
-  }
-
-  Future completeGoal() async {
-    if (model == null) {
-      return;
-    }
-
-    Goal goal = await _moduleService.completeGoal(model!.goal);
-
-    _model = SingleGoalProviderModel(model!.me, goal);
-    notifyListeners();
-  }
-
-  Future createMilestone(String title) async {
-    if (model == null) {
-      return;
-    }
-
-    Milestone milestone =
-        await _moduleService.createMilestone(model!.goal, title);
-    Goal goal = model!.goal.deepCopy();
-    goal.milestones.add(milestone);
-
-    _model = SingleGoalProviderModel(model!.me, goal);
-    notifyListeners();
-  }
-
-  Future updateMilestone(Goal goal, Milestone milestone) async {
-    await _moduleService.updateMilestone(goal, milestone);
-    goal.milestones = goal.milestones
-        .map((m) => m.id == milestone.id ? milestone : m)
-        .toList();
-    _model = SingleGoalProviderModel(model!.me, goal);
-    notifyListeners();
-  }
-
-  Future setMilestones(List<Milestone> milestones) async {
-    Goal newGoal = await _moduleService.setMilestones(model!.goal, milestones);
-    _model = SingleGoalProviderModel(model!.me, newGoal);
-    notifyListeners();
-  }
-
   void updateGoalField(Map<String, dynamic> fields) {
     if (model == null) {
       return;
@@ -159,31 +107,174 @@ class SingleGoalProvider extends ChangeNotifier {
         obj[key] = fields[key];
       }
     }
+
     _model = SingleGoalProviderModel(model!.me, Goal.fromJson(obj));
     notifyListeners();
   }
 
-  Future reactToGoal(Goal goal, String reactionKey) async {
-    await _moduleService.reactToGoal(goal, reactionKey);
-    Goal newGoal = await _moduleService.getGoal(goal.id);
-    _model = SingleGoalProviderModel(model!.me, newGoal);
-    notifyListeners();
+  Future updateGoal(Goal editedGoal) async {
+    if (model == null) {
+      return;
+    }
+
+    await _moduleService.updateGoal(editedGoal);
   }
 
-  Future removeReaction(Goal goal) async {
-    _moduleService.removeReaction(goal);
-    Goal newGoal = goal.deepCopy();
-    newGoal.reactions = newGoal.reactions
-        .where((reaction) => reaction.user != model!.me.id)
-        .toList();
-    _model = SingleGoalProviderModel(model!.me, newGoal);
-    notifyListeners();
+  Future deleteGoal() async {
+    if (model == null) {
+      return;
+    }
+
+    await _moduleService.deleteGoal(model!.goal);
   }
 
-  Future createComment(Goal goal, String text) async {
-    await _moduleService.createComment(goal, text);
-    Goal newGoal = await _moduleService.getGoal(goal.id);
-    _model = SingleGoalProviderModel(model!.me, newGoal);
-    notifyListeners();
+  Future completeGoal() async {
+    if (model == null) {
+      return;
+    }
+
+    final goal = model!.goal.deepCopy();
+    goal.completedOn = DateTime.now();
+    await _moduleService.completeGoal(goal);
+  }
+
+  Future createMilestone(String title) async {
+    if (model == null) {
+      return;
+    }
+
+    await _moduleService.createMilestone(model!.goal, title);
+  }
+
+  Future updateMilestone(Milestone milestone) async {
+    if (model == null) {
+      return;
+    }
+
+    await _moduleService.updateMilestone(model!.goal, milestone);
+  }
+
+  Future setMilestones(List<Milestone> milestones) async {
+    if (model == null) {
+      return;
+    }
+
+    await _moduleService.setMilestones(model!.goal, milestones);
+  }
+
+  Future deleteMilestone(Milestone milestone) async {
+    if (model == null) {
+      return;
+    }
+
+    await _moduleService.deleteMilestone(
+      model!.goal,
+      milestone.id,
+    );
+  }
+
+  Future reactToGoal(String reactionKey) async {
+    if (model == null) {
+      return;
+    }
+
+    await _moduleService.reactToGoal(model!.goal, reactionKey);
+  }
+
+  Future removeReaction() async {
+    if (model == null) {
+      return;
+    }
+
+    await _moduleService.removeReaction(model!.goal);
+  }
+
+  Future createComment(String text) async {
+    if (model == null) {
+      return;
+    }
+
+    await _moduleService.createComment(model!.goal, text);
+  }
+
+  processMessage(WebSocketMessage message) {
+    switch (message.type) {
+      case broadcastTypeGoalUpdate:
+        updateGoalField(message.data);
+        break;
+
+      case broadcastTypeGoalDelete:
+        Navigator.of(navigatorKey.currentContext!)
+            .popUntil((route) => route.settings.name == '/home');
+        break;
+
+      case broadcastTypeGoalCreateMilestone:
+        updateGoalField({
+          'milestones': [
+            ...model!.goal.milestones,
+            Milestone.fromJson(message.data)
+          ].map((m) => m.toJson()).toList(),
+        });
+        break;
+
+      case broadcastTypeGoalDeleteMilestone:
+        updateGoalField({
+          'milestones': model!.goal.milestones
+              .where((m) => m.id != message.data)
+              .map((m) => m.toJson())
+              .toList(),
+        });
+        break;
+
+      case broadcastTypeGoalUpdateMilestone:
+        updateGoalField({
+          'milestones': model!.goal.milestones
+              .map((m) =>
+                  message.data["_id"] == m.id ? message.data : m.toJson())
+              .toList(),
+        });
+        break;
+
+      case broadcastTypeGoalSetMilestones:
+        Map<String, dynamic> changes = {
+          'milestones': message.data,
+        };
+        updateGoalField(changes);
+        break;
+
+      case broadcastTypeGoalReacted:
+        updateGoalField({
+          'reactions': [
+            ...model!.goal.reactions,
+            Reaction.fromJson(message.data)
+          ].map((r) => r.toJson()).toList(),
+        });
+        break;
+
+      case broadcastTypeGoalReactDeleted:
+        updateGoalField({
+          'reactions': model!.goal.reactions
+              .where((reaction) => reaction.user.id != message.data)
+              .map((r) => r.toJson())
+              .toList(),
+        });
+        break;
+
+      case broadcastTypeGoalCommentCreated:
+        updateGoalField({
+          'comments': [...model!.goal.comments, Comment.fromJson(message.data)]
+              .map((c) => c.toJson())
+              .toList(),
+        });
+        break;
+
+      case broadcastTypeGoalEventAdded:
+        updateGoalField({
+          'events': [...model!.goal.events, Event.fromJson(message.data)]
+              .map((e) => e.toJson())
+              .toList(),
+        });
+        break;
+    }
   }
 }

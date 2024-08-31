@@ -158,6 +158,10 @@ class ApiBaseService {
     if (firebaseToken != null) {
       headers['Firebase-Token'] = firebaseToken;
     }
+    String? broadcastToken = await LocalStorage.getBroadcastToken();
+    if (broadcastToken != null) {
+      headers['Broadcast-Token'] = broadcastToken;
+    }
     return headers;
   }
 

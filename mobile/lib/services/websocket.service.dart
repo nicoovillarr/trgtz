@@ -112,15 +112,17 @@ class WebSocketService {
       _broadcastStream = _controller!.stream.map((event) {
         final message = WebSocketMessage.fromJson(jsonDecode(event));
         if (kDebugMode) {
-          print('Received message: ${message.type}');
+          print('[WebSocket] Received message: ${message.type}');
         }
 
         return message;
       }).asBroadcastStream();
 
       StreamSubscription<WebSocketMessage>? authAux;
-      authAux = _broadcastStream!.listen((event) {
+      authAux = _broadcastStream!.listen((event) async {
         if (event.type == broadcastTypeAuthSuccess) {
+          await LocalStorage.saveBroadcastToken(event.data);
+
           connected = true;
           completer.complete();
           authAux?.cancel();
@@ -142,7 +144,7 @@ class WebSocketService {
     }
 
     if (kDebugMode) {
-      print('Subscribed to $channelType/$documentId');
+      print('[WebSocket] Subscribed to $channelType/$documentId');
     }
 
     WebSocketChannelSubscription sub = WebSocketChannelSubscription(
@@ -163,7 +165,7 @@ class WebSocketService {
         .where((element) =>
             element.channelType == channelType &&
             element.documentId == documentId)
-        .firstOrNull;
+        .lastOrNull;
     if (sub == null) {
       return;
     }
@@ -181,7 +183,7 @@ class WebSocketService {
     _channelsSubscribed.remove(sub);
 
     if (kDebugMode) {
-      print('Unsubscribed from $channelType/$documentId');
+      print('[WebSocket] Unsubscribed from $channelType/$documentId');
     }
   }
 
@@ -201,7 +203,7 @@ class WebSocketService {
     _channelsSubscribed.clear();
 
     if (kDebugMode) {
-      print('Unsubscribed from all channels');
+      print('[WebSocket] Unsubscribed from all channels');
     }
   }
 
@@ -210,7 +212,7 @@ class WebSocketService {
       _channel!.sink.add(jsonEncode(message.toJson()));
 
       if (kDebugMode) {
-        print('Sent message: ${message.type}');
+        print('[WebSocket] Sent message: ${message.type}');
       }
     }
   }
