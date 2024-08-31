@@ -186,7 +186,7 @@ const updateGoal = async (req, res) => {
         `\$name completed ${goal.title}!`
       )
     }
-    res.status(200).json(await goalService.getSingleGoal(id))
+    res.status(201).end()
   } catch (error) {
     res.status(500).json()
     console.error(error)
@@ -200,7 +200,7 @@ const deleteGoal = async (req, res) => {
     const goal = await goalService.deleteGoal(id, user)
     if (goal == null)
       res.status(400).json({ message: `Goal with id ${id} not found.` })
-    else res.status(204).json(goal)
+    else res.status(201).end()
   } catch (error) {
     res.status(500).json(error)
     console.error(error)
@@ -222,7 +222,7 @@ const reactToGoal = async (req, res) => {
         'Goal reaction',
         `\$name reacted to your goal!`
       )
-      res.status(200).json(goal)
+      res.status(201).end()
     }
   } catch (error) {
     res.status(500).json(error)
@@ -237,7 +237,7 @@ const deleteReaction = async (req, res) => {
     const goal = await goalService.deleteReaction(id, user)
     if (goal == null)
       res.status(400).json({ message: `Goal with id ${id} not found.` })
-    else res.status(200).json(goal)
+    else res.status(201).end()
   } catch (error) {
     res.status(500).json(error)
     console.error(error)
@@ -246,25 +246,27 @@ const deleteReaction = async (req, res) => {
 
 const createComment = async (req, res) => {
   try {
-    const user = req.user
     const { id } = req.params
     const { text } = req.body
     if (text == null || text == '') {
       res.status(400).json({ message: 'Comment cannot be empty.' })
       return
     }
-    const goal = await goalService.createComment(id, user, text)
-    if (goal == null)
+
+    const goal = await Goal.findOne({ _id: id })
+    if (goal == null) {
       res.status(400).json({ message: `Goal with id ${id} not found.` })
-    else {
-      await alertService.addAlert(user, goal.user, 'goal_comment')
-      await pushNotificationService.sendNotificationToUser(
-        goal.user,
-        'Goal comment',
-        `\$name commented on your goal!`
-      )
-      res.status(200).json(goal)
     }
+
+    const comment = await goalService.createComment(goal, req.user, text)
+    await alertService.addAlert(req.user, goal.user, 'goal_comment')
+    await pushNotificationService.sendNotificationToUser(
+      goal.user,
+      'Goal comment',
+      `\$name commented on your goal!`
+    )
+
+    res.status(200).json(comment)
   } catch (error) {
     res.status(500).json(error)
     console.error(error)
