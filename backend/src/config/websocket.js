@@ -34,13 +34,18 @@ const init = () => {
           if (!clients[userId]) {
             clients[userId] = new Map()
           }
-          clients[userId].set(session._id, ws)
 
-          ws.send(JSON.stringify({ type: 'AUTH_SUCCESS' }), (error) => {
-            if (error) {
-              console.error('Error sending AUTH_SUCCESS:', error)
+          const uuid = randomUuid()
+          clients[userId].set(uuid, ws)
+
+          ws.send(
+            JSON.stringify({ type: 'AUTH_SUCCESS', data: uuid }),
+            (error) => {
+              if (error) {
+                console.error('Error sending AUTH_SUCCESS:', error)
+              }
             }
-          })
+          )
 
           console.log(`${userId} authenticated and connected to websocket...`)
         } else {
@@ -96,6 +101,14 @@ const init = () => {
   })
 
   console.log(`Websocket server started`)
+}
+
+const randomUuid = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0,
+      v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
 }
 
 const sendUserChannelMessage = (userId, type, data) =>

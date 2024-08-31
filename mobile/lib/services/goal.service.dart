@@ -46,12 +46,10 @@ class GoalService {
     }
   }
 
-  Future<Goal> setMilestones(Goal goal, List<Milestone> milestones) async {
+  Future setMilestones(Goal goal, List<Milestone> milestones) async {
     ApiResponse response =
         await _goalsApiService.setMilestones(goal, milestones);
-    if (response.status) {
-      return Goal.fromJson(response.content);
-    } else {
+    if (!response.status) {
       throw AppException(response.content);
     }
   }
@@ -89,6 +87,11 @@ class GoalService {
 
   Future createComment(Goal goal, String text) async {
     ApiResponse response = await _goalsApiService.createComment(goal, text);
+    if (!response.status) throw AppException(response.content);
+  }
+
+  Future deleteMilestone(Goal goal, String id) async {
+    ApiResponse response = await _goalsApiService.deleteMilestone(goal, id);
     if (!response.status) {
       throw AppException(response.content);
     }
