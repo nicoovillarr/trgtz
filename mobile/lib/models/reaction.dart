@@ -24,6 +24,16 @@ class Reaction extends ModelBase {
     );
   }
 
+  factory Reaction.fromType({required User user, required String type}) {
+    return Reaction(
+      id: '',
+      user: user,
+      type: ReactionType.values.firstWhere(
+        (element) => element.toString() == 'ReactionType.$type',
+      ),
+    );
+  }
+
   String get displayText {
     switch (type) {
       case ReactionType.like:

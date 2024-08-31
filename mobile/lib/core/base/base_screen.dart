@@ -22,7 +22,10 @@ class BottomModalOption {
   });
 }
 
-abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+
+abstract class BaseScreen<T extends StatefulWidget> extends State<T>
+    with RouteAware {
   bool _isLoading = false;
   ScreenState _state = ScreenState.loading;
   OverlayEntry? _overlayEntry;
@@ -32,15 +35,29 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
   final Map<String, StreamSubscription> _subscriptions = {};
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final ModalRoute? modalRoute = ModalRoute.of(context);
+    if (modalRoute is PageRoute) {
+      routeObserver.subscribe(this, modalRoute);
+    }
+  }
+
+  @override
   void initState() {
     super.initState();
     customInitState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _userId = StoreProvider.of<AppState>(context).state.user?.id;
-      afterFirstBuild(context).then((_) {
-        initSubscriptions();
-        setState(() => _state = ScreenState.ready);
+      setIsLoading(true);
+      loader().then((_) {
+        setIsLoading(false);
+        afterFirstBuild(context).then((_) {
+          initSubscriptions();
+          setState(() => _state = ScreenState.ready);
+        });
       });
     });
   }
@@ -110,6 +127,11 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
         .subscribe(channelType, documentId, onMessage);
   }
 
+  void unsuscribeToChannel(String channelType, String id) {
+    WebSocketService.getInstance()
+        .unsubscribe(channelType, channelsSubscribed[channelType]!);
+  }
+
   void initSubscriptions() {
     addSubscription(
       'isLoading',
@@ -129,6 +151,8 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
     );
   }
 
+  Future loader() async {}
+
   Future afterFirstBuild(BuildContext context) async {}
 
   void simpleBottomSheet({
@@ -143,6 +167,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T> {
       showDragHandle: true,
       enableDrag: true,
       backgroundColor: Colors.white,
+      useRootNavigator: false,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(16.0),

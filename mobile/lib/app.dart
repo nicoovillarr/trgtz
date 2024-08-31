@@ -5,6 +5,7 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:provider/provider.dart';
 import 'package:redux/redux.dart';
 import 'package:trgtz/constants.dart';
+import 'package:trgtz/core/base/base_screen.dart';
 import 'package:trgtz/screens/goal/providers/index.dart';
 import 'package:trgtz/screens/profile/index.dart';
 import 'package:trgtz/store/index.dart';
@@ -41,6 +42,7 @@ class MyApp extends StatelessWidget {
           title: appName,
           navigatorKey: navigatorKey,
           debugShowCheckedModeBanner: false,
+          navigatorObservers: [routeObserver],
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             useMaterial3: true,

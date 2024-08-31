@@ -34,40 +34,28 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
   }
 
   @override
-  Future afterFirstBuild(BuildContext context) async {
-    setIsLoading(true);
-    final viewModel = await context.read<SingleGoalProvider>().populate(
+  Future loader() async {
+    await context.read<SingleGoalProvider>().populate(
           store.state.user!,
           ModalRoute.of(context)!.settings.arguments as String,
         );
-    setIsLoading(false);
+  }
 
-    if (!viewModel.model!.goal.canEdit) {
-      return;
-    }
+  @override
+  void didPushNext() {
+    unsuscribeToChannel('GOAL', viewModel.model!.goal.id);
+  }
 
-    subscribeToChannel('GOAL', viewModel.model!.goal.id, (message) {
-      switch (message.type) {
-        case broadcastTypeGoalUpdate:
-          viewModel.updateGoalField(message.data);
-          break;
-
-        case broadcastTypeGoalSetMilestones:
-          Map<String, dynamic> changes = {
-            'milestones': message.data,
-          };
-          viewModel.updateGoalField(changes);
-          break;
-
-        case broadcastTypeGoalDelete:
-          Navigator.of(context)
-              .popUntil((route) => route.settings.name == '/home');
-          showSnackBar('Goal deleted by another user.');
-          break;
-      }
-
-      setState(() {});
+  @override
+  void didPopNext() {
+    loader().then((_) {
+      suscribeToGoalChannel();
     });
+  }
+
+  @override
+  Future afterFirstBuild(BuildContext context) async {
+    suscribeToGoalChannel();
   }
 
   @override
@@ -141,22 +129,11 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
                   'Complete goal',
                   'Are you sure you want to complete this goal?',
                   negativeText: 'Cancel',
-                  onPositiveTap: () {
+                  onPositiveTap: () async {
                     Navigator.of(context).pop();
                     setIsLoading(true);
-                    viewModel.completeGoal().then((_) {
-                      setIsLoading(false);
-                      _centerController.play();
-                      Future.delayed(const Duration(milliseconds: 10), () {
-                        _centerController.stop();
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Goal completed!'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    });
+                    await viewModel.completeGoal();
+                    setIsLoading(false);
                   },
                 );
               },
@@ -183,10 +160,11 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
               ),
             ),
             MenuItem(
-              title: 'Milestones',
-              onTap: () => Navigator.of(context).pushNamed('/goal/milestones',
-                  arguments: viewModel.model!.goal.id),
-            ),
+                title: 'Milestones',
+                onTap: () => Navigator.of(context).pushNamed('/goal/milestones',
+                    arguments: viewModel.model!.goal.id)
+                // .then((_) => loader()),
+                ),
             MenuItem(
               title: 'Delete',
               onTap: _onDeleteGoal,
@@ -420,7 +398,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
     required Goal goal,
     required String field,
     String? newValue = '',
-  }) {
+  }) async {
     Goal editedGoal = goal.deepCopy();
     setter(String? v) {
       switch (field) {
@@ -439,10 +417,13 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
     setter(newValue);
 
     setIsLoading(true);
-    viewModel.updateGoal(editedGoal).then((_) {
-      setIsLoading(false);
+    try {
+      await viewModel.updateGoal(editedGoal);
+    } catch (e) {
       showSnackBar('Goal updated successfully!');
-    });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   void _showDescriptionModal(Size size, Goal goal) => simpleBottomSheet(
@@ -477,11 +458,11 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
             ),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               if (Navigator.of(context).canPop()) {
                 Navigator.of(context).pop();
               }
-              _deleteGoal();
+              await _deleteGoal();
             },
             child: const Text(
               'Delete',
@@ -493,16 +474,15 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
     );
   }
 
-  void _deleteGoal() {
+  Future _deleteGoal() async {
     setIsLoading(true);
-    viewModel.deleteGoal().then(
-      (_) {
-        setIsLoading(false);
-        Navigator.of(context)
-            .popUntil((route) => route.settings.name == '/home');
-        showSnackBar('Goal deleted successfully!');
-      },
-    );
+    try {
+      await viewModel.deleteGoal();
+    } catch (e) {
+      showSnackBar('Goal deleted successfully!');
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   void _onMilestoneCompleted(Milestone milestone) {
@@ -532,17 +512,12 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
 
     Milestone copy = milestone.deepCopy();
     copy.completedOn = milestone.completedOn == null ? DateTime.now() : null;
-    viewModel.updateMilestone(viewModel.model!.goal, copy).then((_) {
-      if (viewModel.model!.goal.milestones
-              .every((element) => element.completedOn != null) &&
-          viewModel.model!.goal.completedOn != null) {
-        showSnackBar('Goal completed!');
-        _centerController.play();
-        Future.delayed(const Duration(milliseconds: 10), () {
-          _centerController.stop();
-        });
-      }
-    });
+
+    setIsLoading(true);
+    viewModel
+        .updateMilestone(copy)
+        .then((_) => setIsLoading(false))
+        .catchError((_) => setIsLoading(false));
   }
 
   @override
@@ -567,24 +542,28 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
     }
   }
 
-  void _onReaction(String reactionType) {
+  Future _onReaction(String reactionType) async {
     setIsLoading(true);
-    viewModel.reactToGoal(viewModel.model!.goal, reactionType).then((_) {
-      setIsLoading(false);
+    try {
+      await viewModel.reactToGoal(reactionType);
       showSnackBar('Reaction added!');
-    }).catchError((_) {
+    } catch (e) {
+      showSnackBar('An error occurred');
+    } finally {
       setIsLoading(false);
-    });
+    }
   }
 
-  _onRemoveReaction() {
+  Future _onRemoveReaction() async {
     setIsLoading(true);
-    viewModel.removeReaction(viewModel.model!.goal).then((_) {
-      setIsLoading(false);
+    try {
+      viewModel.removeReaction();
       showSnackBar('Reaction removed!');
-    }).catchError((_) {
+    } catch (e) {
+      showSnackBar('An error occurred');
+    } finally {
       setIsLoading(false);
-    });
+    }
   }
 
   void _showComments() {
@@ -617,13 +596,14 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
                       if (key.currentState!.validate()) {
                         setIsLoading(true);
                         key.currentState!.save();
-                        viewModel
-                            .createComment(viewModel.model!.goal, text)
-                            .then((_) {
+                        viewModel.createComment(text).then((_) {
+                          showSnackBar('Comment added!');
                           key.currentState!.reset();
-                          setIsLoading(false);
-
                           Navigator.of(context).pop();
+                          setIsLoading(false);
+                        }).catchError((_) {
+                          showSnackBar('An error occurred');
+                          setIsLoading(false);
                         });
                       }
                     },
@@ -722,5 +702,12 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
     } else {
       return const Placeholder();
     }
+  }
+
+  void suscribeToGoalChannel() {
+    subscribeToChannel('GOAL', viewModel.model!.goal.id, (message) {
+      viewModel.processMessage(message);
+      setState(() {});
+    });
   }
 }

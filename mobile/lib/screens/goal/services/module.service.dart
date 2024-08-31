@@ -12,7 +12,7 @@ class ModuleService {
     return updateGoal(copy);
   }
 
-  Future<Goal> updateGoal(Goal goal) {
+  Future updateGoal(Goal goal) {
     return _goalService.updateGoal(goal);
   }
 
@@ -21,7 +21,7 @@ class ModuleService {
   Future createMilestone(Goal goal, String title) =>
       _goalService.createMilestone(goal, title);
 
-  Future<Goal> setMilestones(Goal goal, List<Milestone> milestones) =>
+  Future setMilestones(Goal goal, List<Milestone> milestones) =>
       _goalService.setMilestones(goal, milestones);
 
   Future updateMilestone(Goal goal, Milestone milestone) =>
@@ -34,4 +34,7 @@ class ModuleService {
 
   Future createComment(Goal goal, String text) =>
       _goalService.createComment(goal, text);
+
+  Future deleteMilestone(Goal goal, String id) =>
+      _goalService.deleteMilestone(goal, id);
 }
