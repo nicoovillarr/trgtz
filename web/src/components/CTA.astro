@@ -1,0 +1,33 @@
+---
+import google from "/public/images/badges/google.png";
+import apple from "/public/images/badges/apple.svg";
+---
+
+<section id="cta" class="bg-primary text-white text-center py-10 md:py-24">
+  <div
+    class="w-full sm:w-3/5 md:w-2/3 mx-auto flex flex-col justify-center items-center px-8"
+  >
+    <h1
+      class="text-xl sm:text-3xl md:text-5xl font-josefin-sans font-bold mb-2"
+    >
+      Be Among the First to Experience Trgtz
+    </h1>
+    <p class="text-xs sm:text-sm text-gray-300 mb-8">
+      Download for free on Android and iOS
+    </p>
+    <aside class="flex flex-col md:flex-row gap-4">
+      <a href="#" class="btn btn-primary"
+        ><img
+          class="h-10 md:h-14 w-full shadow-md transition-all hover:scale-105"
+          src={google.src}
+        /></a
+      >
+      <a href="#" class="btn btn-primary"
+        ><img
+          class="h-10 md:h-14 w-full shadow-md transition-all hover:scale-105"
+          src={apple.src}
+        /></a
+      >
+    </aside>
+  </div>
+</section>

@@ -21,9 +21,20 @@ class ModuleService {
   Future createMilestone(Goal goal, String title) =>
       _goalService.createMilestone(goal, title);
 
-  Future<Goal> setMilestones(Goal goal, List<Milestone> milestones) =>
+  Future setMilestones(Goal goal, List<Milestone> milestones) =>
       _goalService.setMilestones(goal, milestones);
 
   Future updateMilestone(Goal goal, Milestone milestone) =>
       _goalService.updateMilestone(goal, milestone);
+
+  Future reactToGoal(Goal goal, String reaction) =>
+      _goalService.reactToGoal(goal, reaction);
+
+  Future removeReaction(Goal goal) => _goalService.removeReaction(goal);
+
+  Future createComment(Goal goal, String text) =>
+      _goalService.createComment(goal, text);
+
+  Future deleteMilestone(Goal goal, String id) =>
+      _goalService.deleteMilestone(goal, id);
 }

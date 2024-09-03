@@ -3,10 +3,17 @@ import 'package:flutter/material.dart';
 class MButton extends StatelessWidget {
   final String text;
   final Function() onPressed;
+  final double borderRadius;
+  final Color backgroundColor;
+  final Color foregroundColor;
+
   const MButton({
     super.key,
     required this.text,
     required this.onPressed,
+    this.borderRadius = 4.0,
+    this.backgroundColor = const Color(0xFF003E4B),
+    this.foregroundColor = Colors.white,
   });
 
   @override
@@ -14,10 +21,10 @@ class MButton extends StatelessWidget {
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           elevation: 5,
-          backgroundColor: const Color(0xFF003E4B),
-          foregroundColor: Colors.white,
+          backgroundColor: backgroundColor,
+          foregroundColor: foregroundColor,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4.0),
+            borderRadius: BorderRadius.circular(borderRadius),
           ),
         ),
         child: Text(text),

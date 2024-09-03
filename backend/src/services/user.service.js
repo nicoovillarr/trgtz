@@ -159,7 +159,7 @@ const getUserFirebaseTokens = async (ids) => {
   const users = await Session.find({
     userId: { $in: ids },
     device: { $ne: null },
-    expiredOn: { $eq: null }
+    'device.firebaseToken': { $ne: null }
   })
   return users.map((user) => user.device.firebaseToken)
 }
@@ -187,7 +187,8 @@ const hasAccess = async (me, other) => {
     (friend) =>
       ((friend.requester == me && friend.recipient == other) ||
         (friend.requester == other && friend.recipient == me)) &&
-      friend.status == 'accepted' && friend.deletedOn == null
+      friend.status == 'accepted' &&
+      friend.deletedOn == null
   )
 }
 

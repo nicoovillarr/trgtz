@@ -28,4 +28,16 @@ class GoalsApiService extends ApiBaseService {
 
   Future<ApiResponse> createMilestone(Goal goal, String title) async =>
       await post('${goal.id}/milestones', {'title': title});
+
+  Future<ApiResponse> reactToGoal(Goal goal, String reaction) async =>
+      await post('${goal.id}/reactions', {'reaction': reaction});
+
+  Future<ApiResponse> removeReaction(Goal goal) async =>
+      await delete('${goal.id}/reactions', null);
+
+  Future<ApiResponse> createComment(Goal goal, String text) async =>
+      await post('${goal.id}/comments', {'text': text});
+
+  deleteMilestone(Goal goal, String id) async =>
+      await delete('${goal.id}/milestones/$id', null);
 }

@@ -2,6 +2,41 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.1-stg.5](https://github.com/nicoovillarr/trgtz/compare/v0.1.1-stg.4...v0.1.1-stg.5) (2024-08-31)
+
+
+### Features
+
+* add goal views ([#110](https://github.com/nicoovillarr/trgtz/issues/110)) ([56cb9b6](https://github.com/nicoovillarr/trgtz/commit/56cb9b64bd5dbdcd5ec4fa0ea8d230a85770b332))
+* decrease comment text size ([#117](https://github.com/nicoovillarr/trgtz/issues/117)) ([bc91653](https://github.com/nicoovillarr/trgtz/commit/bc91653bdc2dfa9b11614f20a527fb9c34a84366))
+* improve real time changes inside goals ([db3edfe](https://github.com/nicoovillarr/trgtz/commit/db3edfe18796efb07c2a520f0f2cc75d5d672675))
+* improve single goal design ([#117](https://github.com/nicoovillarr/trgtz/issues/117)) ([be2f28e](https://github.com/nicoovillarr/trgtz/commit/be2f28ef16afda863d1f587966539f74fc6cef06))
+* include missing changes in SingleGoalProvider ([#117](https://github.com/nicoovillarr/trgtz/issues/117)) ([57fdca4](https://github.com/nicoovillarr/trgtz/commit/57fdca475511ea338d14c0615d38230eb2a28ef8))
+* only allow users to complete goal if all milestones are completed ([60dd7d3](https://github.com/nicoovillarr/trgtz/commit/60dd7d368a218bf9021b9cf42daa40b3905c5700))
+
+### [0.1.1-stg.4](https://github.com/nicoovillarr/trgtz/compare/v0.1.1-stg.3...v0.1.1-stg.4) (2024-08-24)
+
+
+### Features
+
+* add goal comments ([#112](https://github.com/nicoovillarr/trgtz/issues/112)) ([ad88418](https://github.com/nicoovillarr/trgtz/commit/ad88418a7857c55009bc163d562b2fdbdf413ecf))
+* decrease goal title/desc modal heights ([#112](https://github.com/nicoovillarr/trgtz/issues/112)) ([1d94ffc](https://github.com/nicoovillarr/trgtz/commit/1d94ffc5ba21bf000e4f4ce3c3876771aa0c2167))
+* fix some bugs ([#112](https://github.com/nicoovillarr/trgtz/issues/112)) ([cf9ed91](https://github.com/nicoovillarr/trgtz/commit/cf9ed918c368a193b1f10a5cbf534adedc3c8421))
+
+### [0.1.1-stg.3](https://github.com/nicoovillarr/trgtz/compare/v0.1.1-stg.2...v0.1.1-stg.3) (2024-08-17)
+
+
+### Features
+
+* add goal reaction bar ([#68](https://github.com/nicoovillarr/trgtz/issues/68)) ([a2a43ad](https://github.com/nicoovillarr/trgtz/commit/a2a43ad0ccf67330863394a09891ed48b802452e))
+* add new alert type to the display text utils parser ([e30c195](https://github.com/nicoovillarr/trgtz/commit/e30c195d6fafb6e631fe537079fc699ca7c83925))
+* fix reactions status text ([b3852af](https://github.com/nicoovillarr/trgtz/commit/b3852afba3b0261818e0d35b6aad1f9797652b4e))
+* fix singular case in reactions text ([945cf19](https://github.com/nicoovillarr/trgtz/commit/945cf19f435e023a05ca6294c34d94a9a60a32ac))
+* refactor, improve UI and add backend endpoints ([6970702](https://github.com/nicoovillarr/trgtz/commit/697070238077446981fe76fbab86827cf307a37f))
+* remove unnecessary clip behaviour in t_card ([847c3c5](https://github.com/nicoovillarr/trgtz/commit/847c3c54ba30508390b3b913097cee2ba427bec6))
+* send push notification and minor fixes ([d685ee2](https://github.com/nicoovillarr/trgtz/commit/d685ee23cd249d67e30aefc4b5da939039329d4b))
+* some UI changes ([6eff9a1](https://github.com/nicoovillarr/trgtz/commit/6eff9a16a10ad89aedf3c6065927ac884a4719ee))
+
 ### [0.1.1-stg.2](https://github.com/nicoovillarr/trgtz/compare/v0.1.1-stg.1...v0.1.1-stg.2) (2024-08-07)
 
 ### [0.1.1-stg.0](https://github.com/marppasas/ygoal/compare/v0.1.1-0...v0.1.1-stg.0) (2024-08-07)

@@ -75,6 +75,10 @@ class Utils {
         return '${sentBy.firstName} completed a goal';
       case 'milestone_completed':
         return '${sentBy.firstName} completed a milestone';
+      case 'goal_reaction':
+        return '${sentBy.firstName} reacted to a goal';
+      case 'goal_comment':
+        return '${sentBy.firstName} commented on a goal';
       default:
         return message;
     }
