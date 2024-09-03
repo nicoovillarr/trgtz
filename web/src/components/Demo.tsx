@@ -36,17 +36,17 @@ export default function Demo() {
     {
       title: "Join the trgtz community",
       description: "Sign up for an account and start your journey to a better you. Connect with friends and family to share your progress and stay motivated.",
-      imageSource: "/public/images/demo/login.webp"
+      imageSource: "/images/demo/login.webp"
     },
     {
         title: "Set your goals",
         description: "Easily create and manage your goals. Break them into actionable steps and set deadlines to keep yourself on track.",
-      imageSource: "/public/images/demo/home.webp"
+      imageSource: "/images/demo/home.webp"
       },
     {
       title: "Share your progress",
       description: "Keep your friends updated on your journey. Share milestones, challenges and victories to stay motivated and accountable",
-      imageSource: "/public/images/demo/goal.webp"
+      imageSource: "/images/demo/goal.webp"
     }
   ]
 
