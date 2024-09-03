@@ -1,0 +1,84 @@
+---
+import Button from "./Button.astro";
+import { Icon } from "astro-icon/components";
+---
+
+<nav
+  class="fixed h-[80px] w-screen px-10 flex justify-between items-center bg-white shadow-md z-10"
+>
+  <h1 class="text-3xl font-josefin-sans">trgtz<i class="text-pinky">.</i></h1>
+  <button
+    id="nav-open-menu"
+    class="block transition-shadow hover:drop-shadow-lg md:hidden"
+  >
+    <Icon name="menu" size={24} />
+  </button>
+  <aside
+    id="nav-actions"
+    class="absolute transition-colors top-[80px] right-0 h-screen w-screen md:static md:w-auto md:h-auto"
+  >
+    <ul
+      class="relative transition-all -right-full w-4/5 flex flex-col justify-start items-center gap-4 float-right bg-white h-screen p-8 md:float-none md:w-auto md:h-auto md:flex md:flex-row md:bg-transparent md:p-0 md:right-0"
+    >
+      <li><a class="hover:underline" href="/">Home</a></li>
+      <li><a class="hover:underline" href="#benefits">Benefits</a></li>
+      <li><a class="hover:underline" href="#demo">Demo</a></li>
+      <Button link="#cta" newTab={false} type="special">Enroll</Button>
+    </ul>
+  </aside>
+</nav>
+
+<script>
+  const closeMenu = () => {
+    document
+      .getElementById("nav-actions")!
+      .classList.remove("bg-black", "bg-opacity-50");
+
+    document.querySelector("#nav-actions ul")!.classList.add("-right-full");
+    document.querySelector("#nav-actions ul")!.classList.remove("right-0");
+  };
+
+  const openMenu = () => {
+    document
+      .getElementById("nav-actions")!
+      .classList.add("bg-black", "bg-opacity-50");
+
+    document.querySelector("#nav-actions ul")!.classList.remove("-right-full");
+    document.querySelector("#nav-actions ul")!.classList.add("right-0");
+  };
+
+  const closeMenuOnScroll = () => {
+    if (window.scrollY > 0) {
+      closeMenu();
+    }
+  };
+
+  window.addEventListener("scroll", closeMenuOnScroll);
+
+  const closeMenuOnResize = () => {
+    if (window.innerWidth > 768) {
+      closeMenu();
+    }
+  };
+
+  window.addEventListener("resize", closeMenuOnResize);
+
+  document.addEventListener("click", (e) => {
+    if (
+      !document.getElementById("nav-actions")!.contains(e.target) &&
+      !document.getElementById("nav-open-menu")!.contains(e.target)
+    ) {
+      closeMenu();
+    }
+  });
+
+  document.getElementById("nav-open-menu")!.addEventListener("click", () => {
+    if (
+      document.getElementById("nav-actions")!.classList.contains("bg-black")
+    ) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  });
+</script>

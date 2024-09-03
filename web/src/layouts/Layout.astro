@@ -1,0 +1,48 @@
+---
+import Footer from "../components/Footer.astro";
+import NavBar from "../components/NavBar.astro";
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Astro description" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+
+    <style>
+      @font-face {
+        font-family: "JosefinSans";
+        src: url("/fonts/josefin-sans/JosefinSans.ttf") format("truetype");
+        font-weight: 100 900;
+        font-stretch: 75% 100%;
+        font-style: normal;
+      }
+
+      @font-face {
+        font-family: "Inter";
+        src: url("/fonts/inter/Inter.ttf") format("truetype");
+        font-weight: 100 900;
+        font-stretch: 75% 100%;
+        font-style: normal;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <NavBar />
+    <slot />
+    <Footer />
+  </body>
+</html>

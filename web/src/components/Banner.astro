@@ -1,0 +1,22 @@
+---
+import Button from "./Button.astro";
+import { Icon } from "astro-icon/components";
+---
+
+<article class="text-center mx-auto mb-10 p-8 pt-32 w-full md:w-1/2">
+  <h1 class="text-4xl font-bold mb-4">Goals are better when shared</h1>
+
+  <p class="text-gray-500 mb-8">
+    Trgtz is an app where you can add your yearly goals, share them with your
+    friends, and celebrate every achievement together. The idea was born from a
+    desire to make goal-setting more interactive and social, allowing people to
+    motivate each other.
+  </p>
+
+  <aside class="flex gap-x-4 justify-center items-start">
+    <Button link="#cta" newTab={false}>Get started!</Button>
+    <Button link="https://github.com/nicoovillarr/trgtz" type="tertiary"
+      ><Icon name="new-tab" /> See repository</Button
+    >
+  </aside>
+</article>
