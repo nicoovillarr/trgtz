@@ -1,0 +1,47 @@
+---
+import BenefitRow from "./BenefitRow.astro";
+
+import celebrate_achievements from "/public/images/benefits/celebrate_achievements.svg";
+import shared_motivation from "/public/images/benefits/shared_motivation.svg";
+import social_accountability from "/public/images/benefits/social_accountability.svg";
+import visual_progress_tracking from "/public/images/benefits/visual_progress_tracking.svg";
+---
+
+<section id="benefits" class="mx-auto mt-8 p-8 w-full sm:4/5 md:w-3/5 lg:w-2/5">
+  <h1 class="text-4xl font-josefin-sans text-center mb-8 font-bold">
+    Benefits
+  </h1>
+
+  <div class="flex flex-col gap-y-16">
+    <BenefitRow
+      title="Shared motivation"
+      description="Keep your motivation high by sharing your goals with friends and supporting each other throughout the journey."
+      image={shared_motivation.src}
+    />
+
+    <BenefitRow
+      title="Healthy competition"
+      description="Compete with friends and see who can reach their goals first. A little competition never hurt anyone!"
+      image={celebrate_achievements.src}
+      direction="rightToLeft"
+    />
+
+    <BenefitRow
+      title="Visual progress tracking"
+      description="Track your progress clearly with visual tools that help you stay focused on achieving your objectives."
+      image={visual_progress_tracking.src}
+    />
+
+    <BenefitRow
+      title="Social accountability"
+      description="By sharing your goals, you feel more responsible for achieving them, creating personal and social commitment."
+      image={social_accountability.src}
+      direction="rightToLeft"
+    />
+
+    <BenefitRow
+      title="Personal growth"
+      description="Trgtz is more than just an app; it's a platform for growth. By making your goals visible and actionable, and having the support of your friends, you're taking steps towards becoming the best version of yourself. With each goal reached, your're not only achieving something great, but also groqing stronger, more resilient, and more capable of tackling the future."
+    />
+  </div>
+</section>
