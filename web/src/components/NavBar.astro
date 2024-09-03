@@ -6,7 +6,9 @@ import { Icon } from "astro-icon/components";
 <nav
   class="fixed h-[80px] w-screen px-10 flex justify-between items-center bg-white shadow-md z-10"
 >
-  <h1 class="text-3xl font-josefin-sans">trgtz<i class="text-pinky">.</i></h1>
+  <a class="text-3xl font-josefin-sans" href="/"
+    >trgtz<i class="text-pinky">.</i></a
+  >
   <button
     id="nav-open-menu"
     class="block transition-shadow hover:drop-shadow-lg md:hidden"
@@ -15,15 +17,15 @@ import { Icon } from "astro-icon/components";
   </button>
   <aside
     id="nav-actions"
-    class="absolute transition-colors top-[80px] right-0 h-screen w-screen pointer-events-none md:static md:w-auto md:h-auto"
+    class="absolute transition-colors top-[80px] right-0 h-screen w-screen md:static md:w-auto md:h-auto"
   >
     <ul
       class="relative transition-all -right-full w-4/5 flex flex-col justify-start items-center gap-4 float-right bg-white h-screen p-8 md:float-none md:w-auto md:h-auto md:flex md:flex-row md:bg-transparent md:p-0 md:right-0"
     >
       <li><a class="hover:underline" href="/">Home</a></li>
-      <li><a class="hover:underline" href="#benefits">Benefits</a></li>
-      <li><a class="hover:underline" href="#demo">Demo</a></li>
-      <Button link="#cta" newTab={false} type="special">Enroll</Button>
+      <li><a class="hover:underline" href="/#benefits">Benefits</a></li>
+      <li><a class="hover:underline" href="/#demo">Demo</a></li>
+      <Button link="/#cta" newTab={false} type="special">Enroll</Button>
     </ul>
   </aside>
 </nav>
