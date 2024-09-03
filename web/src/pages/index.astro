@@ -1,0 +1,16 @@
+---
+import Banner from "../components/Banner.astro";
+import Benefits from "../components/Benefits.astro";
+import CTA from "../components/CTA.astro";
+import Demo from "../components/Demo.tsx";
+import Information from "../components/Information.tsx";
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Welcome to Astro.">
+  <Banner />
+  <Information client:load />
+  <Benefits />
+  <Demo client:load />
+  <CTA />
+</Layout>
