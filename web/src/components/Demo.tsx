@@ -53,10 +53,10 @@ export default function Demo() {
   const scrollRef = useRef(null);
 
   useEffect(() => {
-    const scrollElement = scrollRef.current;
-    let intervalId;
+    const scrollElement = (scrollRef.current! as HTMLElement);
+    let intervalId: any;
     let currentIndex = 0;
-    const itemWidth = scrollElement.firstChild.clientWidth;
+    const itemWidth = (scrollElement.firstChild as HTMLElement).clientWidth;
     const viewportWidth = scrollElement.clientWidth;
     const flexWidth = itemWidth * scrollElement.childElementCount;
 
