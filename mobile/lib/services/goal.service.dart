@@ -46,22 +46,18 @@ class GoalService {
     }
   }
 
-  Future<Goal> setMilestones(Goal goal, List<Milestone> milestones) async {
+  Future setMilestones(Goal goal, List<Milestone> milestones) async {
     ApiResponse response =
         await _goalsApiService.setMilestones(goal, milestones);
-    if (response.status) {
-      return Goal.fromJson(response.content);
-    } else {
+    if (!response.status) {
       throw AppException(response.content);
     }
   }
 
-  Future<Goal> updateMilestone(Goal goal, Milestone milestone) async {
+  Future updateMilestone(Goal goal, Milestone milestone) async {
     ApiResponse response =
         await _goalsApiService.updateMilestone(goal, milestone);
-    if (response.status) {
-      return Goal.fromJson(response.content);
-    } else {
+    if (!response.status) {
       throw AppException(response.content);
     }
   }
@@ -71,6 +67,32 @@ class GoalService {
     if (response.status) {
       return Milestone.fromJson(response.content);
     } else {
+      throw AppException(response.content);
+    }
+  }
+
+  Future reactToGoal(Goal goal, String reaction) async {
+    ApiResponse response = await _goalsApiService.reactToGoal(goal, reaction);
+    if (!response.status) {
+      throw AppException(response.content);
+    }
+  }
+
+  Future removeReaction(Goal goal) async {
+    ApiResponse response = await _goalsApiService.removeReaction(goal);
+    if (!response.status) {
+      throw AppException(response.content);
+    }
+  }
+
+  Future createComment(Goal goal, String text) async {
+    ApiResponse response = await _goalsApiService.createComment(goal, text);
+    if (!response.status) throw AppException(response.content);
+  }
+
+  Future deleteMilestone(Goal goal, String id) async {
+    ApiResponse response = await _goalsApiService.deleteMilestone(goal, id);
+    if (!response.status) {
       throw AppException(response.content);
     }
   }

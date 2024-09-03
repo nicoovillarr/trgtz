@@ -1,5 +1,7 @@
 const Goal = require('../models/goal.model')
 const User = require('../models/user.model')
+const userService = require('./user.service')
+const { viewGoal } = require('../config/views')
 const { sendGoalChannelMessage } = require('../config/websocket')
 
 const getGoals = async (userId, year) =>
@@ -39,6 +41,8 @@ const createMilestone = async (id, user, milestone) => {
   await goal.save()
 
   const newMilestone = goal.milestones[goal.milestones.length - 1]
+  sendGoalChannelMessage(id, 'GOAL_CREATE_MILESTONE', newMilestone)
+
   return newMilestone
 }
 
@@ -80,11 +84,7 @@ const deleteMilestone = async (id, user, milestoneId) => {
   )
   await goal.save()
 
-  sendGoalChannelMessage(
-    id,
-    'GOAL_SET_MILESTONES',
-    goal.milestones.map((milestone) => milestone.toJSON())
-  )
+  sendGoalChannelMessage(id, 'GOAL_DELETE_MILESTONE', milestoneId)
 
   return goal
 }
@@ -100,28 +100,21 @@ const updateMilestone = async (id, user, milestoneId, data) => {
   milestone.title = title
   milestone.completedOn = completedOn
 
-  goal.completedOn =
-    goal.milestones.some((milestone) => !milestone.completedOn) === false
-      ? new Date()
-      : null
-
   await goal.save()
 
-  sendGoalChannelMessage(
-    id,
-    'GOAL_SET_MILESTONES',
-    goal.milestones.map((milestone) => milestone.toJSON())
-  )
+  sendGoalChannelMessage(id, 'GOAL_UPDATE_MILESTONE', milestone)
 
   return goal
 }
 
-const getSingleGoal = async (id) => await Goal.findOne({ _id: id })
+const getSingleGoal = async (id) => await viewGoal.findOne({ _id: id })
 
-const updateGoal = async (id, user, data) => {
-  const goal = await Goal.findOne({ _id: id, user })
-  if (goal == null) return null
+const canCompleteGoal = (goal) =>
+  goal.completedOn == null &&
+  (goal.milestones.length == 0 ||
+    goal.milestones.every((m) => m.completedOn != null))
 
+const updateGoal = async (goal, data) => {
   const eventType =
     Object.keys(data).includes('completedOn') &&
     data.completedOn != null &&
@@ -143,11 +136,16 @@ const updateGoal = async (id, user, data) => {
 
   await goal.save()
   sendGoalChannelMessage(
-    id,
+    goal._id,
     'GOAL_UPDATED',
     Object.keys(data)
       .filter((t) => editableFields.includes(t))
       .reduce((acc, curr) => ({ ...acc, [curr]: data[curr] }), {})
+  )
+  sendGoalChannelMessage(
+    goal._id,
+    'GOAL_EVENT_ADDED',
+    goal.events[goal.events.length - 1].toJSON()
   )
   return goal
 }
@@ -158,7 +156,7 @@ const deleteGoal = async (id, user) => {
   goal.deletedOn = new Date()
   await goal.save()
 
-  sendGoalChannelMessage(id, 'GOAL_DELETED', null)
+  sendGoalChannelMessage(id, 'GOAL_DELETED', id)
 
   return goal
 }
@@ -181,6 +179,118 @@ const getMilestone = async (id, milestoneId) => {
   return goal.milestones.id(milestoneId)
 }
 
+const reactToGoal = async (id, user, type) => {
+  const goal = await Goal.findOne({ _id: id })
+  if (goal == null) return null
+
+  const reactionIndex = goal.reactions.findIndex(
+    (r) => r.user.toString() == user.toString()
+  )
+
+  if (reactionIndex === -1) {
+    goal.reactions.push({ user, type })
+  } else {
+    goal.reactions[reactionIndex].type = type
+  }
+
+  await goal.save()
+
+  const { firstName, email, avatar } = (
+    await userService.getUserInfo(user)
+  ).toJSON()
+  const reaction = Object.assign(
+    {},
+    goal.reactions.find((r) => r.user.toString() == user.toString()).toJSON(),
+    {
+      user: {
+        _id: user,
+        firstName,
+        email,
+        avatar
+      }
+    }
+  )
+  sendGoalChannelMessage(id, 'GOAL_REACTED', reaction)
+
+  return goal
+}
+
+const deleteReaction = async (id, user) => {
+  const goal = await Goal.findOne({ _id: id })
+  if (goal == null) return null
+
+  goal.reactions = goal.reactions.filter(
+    (reaction) => reaction.user.toString() != user.toString()
+  )
+
+  await goal.save()
+
+  sendGoalChannelMessage(id, 'GOAL_REACT_DELETED', user)
+
+  return goal
+}
+
+const createComment = async (goal, user, text) => {
+  goal.comments.push({
+    user,
+    text,
+    createdOn: new Date()
+  })
+
+  await goal.save()
+
+  const comment = goal.comments[goal.comments.length - 1].toJSON()
+  Object.assign(comment, {
+    user: (
+      await User.aggregate([
+        { $match: { _id: comment.user } },
+        {
+          $lookup: {
+            from: 'images',
+            localField: 'avatar',
+            foreignField: '_id',
+            as: 'avatar'
+          }
+        },
+        {
+          $unwind: '$avatar'
+        },
+        {
+          $project: {
+            _id: 1,
+            firstName: 1,
+            email: 1,
+            avatar: {
+              _id: 1,
+              url: 1,
+              createdOn: 1
+            }
+          }
+        }
+      ])
+    )[0]
+  })
+  sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_CREATED', comment)
+
+  return comment
+}
+
+const setGoalView = async (id, user) => {
+  const goal = await Goal.findOne({ _id: id })
+  if (goal == null) return false
+
+  const cache = require('../config/cache')
+  const key = `goal:${id}:views:${user}`
+
+  if (cache.get(key) != null) return false
+
+  goal.views.push({ user, viewedOn: new Date() })
+  await goal.save()
+
+  cache.set(key, true)
+  return true
+}
+
 module.exports = {
   createMultipleGoals,
   createMilestone,
@@ -191,5 +301,10 @@ module.exports = {
   getSingleGoal,
   updateGoal,
   deleteGoal,
-  getMilestone
+  getMilestone,
+  reactToGoal,
+  deleteReaction,
+  createComment,
+  setGoalView,
+  canCompleteGoal
 }

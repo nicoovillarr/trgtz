@@ -14,8 +14,11 @@ app.delete(
   protect,
   goalController.deleteMilestone
 )
+app.post('/:id/reactions', protect, goalController.reactToGoal)
+app.delete('/:id/reactions', protect, goalController.deleteReaction)
 app.get('/:id', protect, goalController.getSingleGoal)
 app.put('/:id', protect, goalController.updateGoal)
 app.delete('/:id', protect, goalController.deleteGoal)
+app.post('/:id/comments', protect, goalController.createComment)
 
 module.exports = app

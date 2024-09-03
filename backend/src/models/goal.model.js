@@ -19,6 +19,19 @@ const goalSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  views: [
+    {
+      user: {
+        type: String,
+        ref: 'User',
+        required: true
+      },
+      viewedOn: {
+        type: Date,
+        required: true
+      }
+    }
+  ],
   milestones: [
     {
       title: {
@@ -49,6 +62,37 @@ const goalSchema = new mongoose.Schema({
           'milestone_completed',
           'goal_completed'
         ]
+      },
+      createdOn: {
+        type: Date,
+        required: true
+      }
+    }
+  ],
+  reactions: [
+    {
+      user: {
+        type: String,
+        ref: 'User',
+        required: true
+      },
+      type: {
+        type: String,
+        required: true,
+        enum: ['like', 'love', 'happy', 'cheer']
+      }
+    }
+  ],
+  comments: [
+    {
+      user: {
+        type: String,
+        ref: 'User',
+        required: true
+      },
+      text: {
+        type: String,
+        required: true
       },
       createdOn: {
         type: Date,

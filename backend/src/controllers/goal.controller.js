@@ -3,6 +3,8 @@ const alertService = require('../services/alert.service')
 const pushNotificationService = require('../services/push-notification.service')
 const userService = require('../services/user.service')
 
+const Goal = require('../models/goal.model')
+
 const createMultipleGoals = async (req, res) => {
   try {
     const user = req.user
@@ -130,10 +132,16 @@ const getSingleGoal = async (req, res) => {
     if (goal == null)
       res.status(400).json({ message: `Goal with id ${id} not found.` })
     else {
-      const json = Object.assign({}, goal.toJSON(), {
-        canEdit: goal.user == user
+      const json = goal.toJSON()
+      const creator = json.user._id
+
+      Object.assign(json, {
+        canEdit: creator == user,
+        viewsCount:
+          json.viewsCount + ((await goalService.setGoalView(id, user)) ? 1 : 0)
       })
-      if (json.user != user && !(await userService.hasAccess(goal.user, user)))
+
+      if (creator != user && !(await userService.hasAccess(creator, user)))
         res
           .status(403)
           .json({ message: 'You do not have access to this goal.' })
@@ -149,24 +157,38 @@ const updateGoal = async (req, res) => {
   try {
     const user = req.user
     const { id } = req.params
-    const wasCompleted =
-      (await goalService.getSingleGoal(id).completedOn) != null
-    const goal = await goalService.updateGoal(id, user, req.body)
-    if (goal == null)
+
+    let goal = await Goal.findOne({ _id: id, user })
+    if (goal == null) {
       res.status(400).json({ message: `Goal with id ${id} not found.` })
-    else {
-      if (wasCompleted == false && goal.completedOn != null) {
-        await alertService.sendAlertToFriends(user, 'goal_completed')
-        await pushNotificationService.sendNotificationToFriends(
-          user,
-          'Goal completed',
-          `\$name completed ${goal.title}!`
-        )
-      }
-      res.status(200).json(goal)
     }
+
+    if (
+      Object.keys(req.body).includes('completedOn') &&
+      req.body.completedOn != null &&
+      goal.completedOn == null &&
+      !goalService.canCompleteGoal(goal)
+    ) {
+      res.status(400).json({
+        message: 'You cannot complete a goal without completing all milestones.'
+      })
+      return
+    }
+
+    const wasCompleted = goal.completedOn != null
+    goal = await goalService.updateGoal(goal, req.body)
+
+    if (wasCompleted == false && goal.completedOn != null) {
+      await alertService.sendAlertToFriends(user, 'goal_completed')
+      await pushNotificationService.sendNotificationToFriends(
+        user,
+        'Goal completed',
+        `\$name completed ${goal.title}!`
+      )
+    }
+    res.status(201).end()
   } catch (error) {
-    res.status(500).json(error)
+    res.status(500).json()
     console.error(error)
   }
 }
@@ -178,7 +200,73 @@ const deleteGoal = async (req, res) => {
     const goal = await goalService.deleteGoal(id, user)
     if (goal == null)
       res.status(400).json({ message: `Goal with id ${id} not found.` })
-    else res.status(204).json(goal)
+    else res.status(201).end()
+  } catch (error) {
+    res.status(500).json(error)
+    console.error(error)
+  }
+}
+
+const reactToGoal = async (req, res) => {
+  try {
+    const user = req.user
+    const { id } = req.params
+    const { reaction } = req.body
+    const goal = await goalService.reactToGoal(id, user, reaction)
+    if (goal == null)
+      res.status(400).json({ message: `Goal with id ${id} not found.` })
+    else {
+      await alertService.addAlert(user, goal.user, 'goal_reaction')
+      await pushNotificationService.sendNotificationToUser(
+        goal.user,
+        'Goal reaction',
+        `\$name reacted to your goal!`
+      )
+      res.status(201).end()
+    }
+  } catch (error) {
+    res.status(500).json(error)
+    console.error(error)
+  }
+}
+
+const deleteReaction = async (req, res) => {
+  try {
+    const user = req.user
+    const { id } = req.params
+    const goal = await goalService.deleteReaction(id, user)
+    if (goal == null)
+      res.status(400).json({ message: `Goal with id ${id} not found.` })
+    else res.status(201).end()
+  } catch (error) {
+    res.status(500).json(error)
+    console.error(error)
+  }
+}
+
+const createComment = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { text } = req.body
+    if (text == null || text == '') {
+      res.status(400).json({ message: 'Comment cannot be empty.' })
+      return
+    }
+
+    const goal = await Goal.findOne({ _id: id })
+    if (goal == null) {
+      res.status(400).json({ message: `Goal with id ${id} not found.` })
+    }
+
+    const comment = await goalService.createComment(goal, req.user, text)
+    await alertService.addAlert(req.user, goal.user, 'goal_comment')
+    await pushNotificationService.sendNotificationToUser(
+      goal.user,
+      'Goal comment',
+      `\$name commented on your goal!`
+    )
+
+    res.status(200).json(comment)
   } catch (error) {
     res.status(500).json(error)
     console.error(error)
@@ -194,5 +282,8 @@ module.exports = {
   getGoals,
   getSingleGoal,
   updateGoal,
-  deleteGoal
+  deleteGoal,
+  reactToGoal,
+  deleteReaction,
+  createComment
 }
