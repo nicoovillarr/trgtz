@@ -65,8 +65,8 @@ import { Icon } from "astro-icon/components";
 
   document.addEventListener("click", (e) => {
     if (
-      !document.getElementById("nav-actions")!.contains(e.target) &&
-      !document.getElementById("nav-open-menu")!.contains(e.target)
+      !document.getElementById("nav-actions")!.contains(e.target as Node) &&
+      !document.getElementById("nav-open-menu")!.contains(e.target as Node)
     ) {
       closeMenu();
     }
