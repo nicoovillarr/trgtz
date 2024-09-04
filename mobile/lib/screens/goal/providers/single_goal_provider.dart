@@ -268,6 +268,24 @@ class SingleGoalProvider extends ChangeNotifier {
         });
         break;
 
+      case broadcastTypeGoalCommentUpdated:
+        updateGoalField({
+          'comments': model!.goal.comments
+              .map((c) =>
+                  message.data["_id"] == c.id ? message.data : c.toJson())
+              .toList(),
+        });
+        break;
+
+      case broadcastTypeGoalCommentDeleted:
+        updateGoalField({
+          'comments': model!.goal.comments
+              .where((comment) => comment.id != message.data)
+              .map((c) => c.toJson())
+              .toList(),
+        });
+        break;
+
       case broadcastTypeGoalEventAdded:
         updateGoalField({
           'events': [...model!.goal.events, Event.fromJson(message.data)]
@@ -276,5 +294,21 @@ class SingleGoalProvider extends ChangeNotifier {
         });
         break;
     }
+  }
+
+  Future deleteComment(Comment item) async {
+    if (model == null) {
+      return;
+    }
+
+    await _moduleService.deleteComment(model!.goal, item.id);
+  }
+
+  Future updateComment(Comment item, String s) async {
+    if (model == null) {
+      return;
+    }
+
+    await _moduleService.updateComment(model!.goal, item.id, s);
   }
 }

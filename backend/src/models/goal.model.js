@@ -97,7 +97,24 @@ const goalSchema = new mongoose.Schema({
       createdOn: {
         type: Date,
         required: true
-      }
+      },
+      deletedOn: {
+        type: Date,
+        required: false,
+        default: null
+      },
+      editions: [
+        {
+          oldText: {
+            type: String,
+            required: true
+          },
+          editedOn: {
+            type: Date,
+            required: true
+          }
+        }
+      ]
     }
   ],
   createdOn: {
