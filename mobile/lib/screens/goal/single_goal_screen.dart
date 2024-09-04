@@ -87,30 +87,6 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
                 gravity: 0.05,
               ),
             ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.0),
-                      Colors.black.withOpacity(0.4),
-                    ],
-                  ),
-                ),
-                padding: const EdgeInsets.only(
-                    left: 24.0, right: 24.0, bottom: 40.0),
-                child: MButton(
-                  onPressed: _showComments,
-                  borderRadius: 16.0,
-                  text: 'Comment',
-                ),
-              ),
-            )
           ],
         );
       },
@@ -188,12 +164,17 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
                 if (goal.milestones.isEmpty && goal.canEdit)
                   _buildNewMilestoneButton(goal),
                 if (goal.milestones.isNotEmpty) _buildMilestonesSummary(goal),
+                const SizedBox(height: 4.0),
                 GoalInteractions(
                   goal: goal,
                   onReaction: _onReaction,
                   onRemoveReaction: _onRemoveReaction,
                 ),
                 const Divider(),
+                _buildFooterTypeSelector(),
+                if ([FooterType.all, FooterType.comments]
+                    .contains(viewModel.footerType))
+                  _buildAddComment(goal),
                 _buildFooter(goal),
               ],
             ),
@@ -619,48 +600,37 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
   }
 
   Widget _buildFooter(Goal goal) {
-    List<ModelBase> input;
+    List<Map<DateTime, ModelBase>> aux;
     switch (viewModel.footerType) {
       case FooterType.comments:
-        input = goal.comments;
+        aux = goal.comments.map((e) => {e.createdOn: e as ModelBase}).toList();
         break;
       case FooterType.events:
-        input = goal.events;
+        aux = goal.events.map((e) => {e.createdOn: e as ModelBase}).toList();
         break;
       case FooterType.all:
-        List<Map<DateTime, ModelBase>> aux = goal.comments
+        aux = goal.comments
             .map((e) => {e.createdOn: e as ModelBase})
             .followedBy(goal.events.map((e) => {e.createdOn: e as ModelBase}))
             .toList();
-        aux.sort((a, b) => b.keys.first.compareTo(a.keys.first));
-        input = aux.map((e) => e.values.first).toList();
         break;
       default:
-        input = [];
+        aux = [];
     }
 
+    aux.sort((a, b) => b.keys.first.compareTo(a.keys.first));
+    final List<ModelBase> input = aux.map((e) => e.values.first).toList();
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: input.length,
       itemBuilder: (context, index) => _buildFooterItem(input[index]),
-      separatorBuilder: (context, index) => Row(
-        children: [
-          Container(
-            margin: const EdgeInsets.symmetric(
-              vertical: 8.0,
-              horizontal: 16.0,
-            ),
-            height:
-                input[index] is Event && input[index + 1] is Event ? 8.0 : 20.0,
-            width: 1.0,
-            decoration: BoxDecoration(
-              color: Colors.grey,
-              borderRadius: BorderRadius.circular(4.0),
-            ),
-          ),
-        ],
-      ),
+      separatorBuilder: (context, index) => SizedBox(
+          height: input[index] is Event && input[index + 1] is Event
+              ? 0.0
+              : input[index] is Comment && input[index + 1] is Event
+                  ? 8.0
+                  : 16.0),
     );
   }
 
@@ -710,4 +680,83 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
       setState(() {});
     });
   }
+
+  Widget _buildAddComment(Goal goal) {
+    GlobalKey<FormState> key = GlobalKey();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Form(
+        key: key,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: TextEdit(
+                placeholder: 'Write a comment',
+                maxLines: 1,
+                maxLength: 200,
+                showMaxLength: false,
+                validate: (s) => s != null && s.isNotEmpty
+                    ? null
+                    : 'Your comment cannot be empty',
+                onSaved: (value) {
+                  viewModel.createComment(value ?? '');
+                },
+              ),
+            ),
+            const SizedBox(width: 8.0),
+            Container(
+              decoration: BoxDecoration(
+                color: mainColor,
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              child: IconButton(
+                icon: const Icon(
+                  Icons.send,
+                  size: 18,
+                ),
+                color: Colors.white,
+                onPressed: () => key.currentState!.save(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFooterTypeSelector() => Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4.0),
+          color: mainColor.withOpacity(0.1),
+        ),
+        height: 32,
+        child: DropdownButton(
+          focusColor: mainColor,
+          value: viewModel.footerType,
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          items: const [
+            DropdownMenuItem(
+              value: FooterType.all,
+              child: Text('All'),
+            ),
+            DropdownMenuItem(
+              value: FooterType.comments,
+              child: Text('Comments'),
+            ),
+            DropdownMenuItem(
+              value: FooterType.events,
+              child: Text('History'),
+            ),
+          ],
+          onChanged: (value) => viewModel.footerType = value as FooterType,
+          icon: const Icon(Icons.keyboard_arrow_down),
+          underline: Container(),
+          style: const TextStyle(
+            color: Colors.black,
+            fontSize: 12.0,
+          ),
+          iconSize: 14.0,
+        ),
+      );
 }
