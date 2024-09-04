@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:provider/provider.dart';
 import 'package:redux/redux.dart';
@@ -10,6 +11,7 @@ import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/friends/providers/index.dart';
 import 'package:trgtz/screens/friends/services/index.dart';
 import 'package:trgtz/screens/profile/index.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import 'package:trgtz/store/index.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -289,36 +291,33 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
     Size size = MediaQuery.of(context).size;
     Store<AppState> store = StoreProvider.of<AppState>(context);
     simpleBottomSheet(
-      child: SizedBox(
-        height: size.height * 0.75,
-        width: size.width,
-        child: Column(
-          children: [
-            const Text('Share this code with your friends:'),
-            const SizedBox(height: 16),
-            Center(
-              child: SizedBox(
-                width: size.width * 0.5,
-                height: size.width * 0.5,
-                child: const Placeholder(),
-              ),
+      height: size.height * 0.6,
+      child: Column(
+        children: [
+          const Text('Share this code with your friends:'),
+          const SizedBox(height: 16),
+          Center(
+            child: QrImageView(
+              data: '${dotenv.env["WEB"]}/friend/${store.state.user!.id}',
+              version: QrVersions.auto,
+              size: size.width * 0.5,
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('#${store.state.user!.id}'),
-                IconButton(
-                  onPressed: () => Clipboard.setData(
-                      ClipboardData(text: store.state.user!.id)),
-                  icon: const Icon(
-                    Icons.copy,
-                    size: 16,
-                  ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('#${store.state.user!.id}'),
+              IconButton(
+                onPressed: () => Clipboard.setData(
+                    ClipboardData(text: store.state.user!.id)),
+                icon: const Icon(
+                  Icons.copy,
+                  size: 16,
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
