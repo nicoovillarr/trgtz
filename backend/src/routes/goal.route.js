@@ -20,5 +20,7 @@ app.get('/:id', protect, goalController.getSingleGoal)
 app.put('/:id', protect, goalController.updateGoal)
 app.delete('/:id', protect, goalController.deleteGoal)
 app.post('/:id/comments', protect, goalController.createComment)
+app.put('/:id/comments/:commentId', protect, goalController.editComment)
+app.delete('/:id/comments/:commentId', protect, goalController.deleteComment)
 
 module.exports = app

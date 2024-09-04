@@ -291,6 +291,66 @@ const setGoalView = async (id, user) => {
   return true
 }
 
+const editComment = async (goal, commentId, text) => {
+  const comment = goal.comments.id(commentId)
+  if (comment == null) return null
+
+  comment.editions.push({
+    oldText: comment.text,
+    editedOn: new Date()
+  })
+  comment.text = text
+  await goal.save()
+
+  const editedComment = goal.comments.id(commentId).toJSON()
+  Object.assign(editedComment, {
+    user: (
+      await User.aggregate([
+        { $match: { _id: editedComment.user } },
+        {
+          $lookup: {
+            from: 'images',
+            localField: 'avatar',
+            foreignField: '_id',
+            as: 'avatar'
+          }
+        },
+        {
+          $unwind: '$avatar'
+        },
+        {
+          $project: {
+            _id: 1,
+            firstName: 1,
+            email: 1,
+            avatar: {
+              _id: 1,
+              url: 1,
+              createdOn: 1
+            }
+          }
+        }
+      ])
+    )[0]
+  })
+  sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_UPDATED', editedComment)
+
+  return editedComment
+}
+
+const deleteComment = async (goal, commentId) => {
+  const comment = goal.comments.id(commentId)
+  if (comment == null) return null
+
+  comment.deletedOn = new Date()
+
+  await goal.save()
+
+  sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_DELETED', commentId)
+
+  return goal
+}
+
 module.exports = {
   createMultipleGoals,
   createMilestone,
@@ -306,5 +366,7 @@ module.exports = {
   deleteReaction,
   createComment,
   setGoalView,
-  canCompleteGoal
+  canCompleteGoal,
+  editComment,
+  deleteComment
 }

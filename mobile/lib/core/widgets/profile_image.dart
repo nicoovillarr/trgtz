@@ -3,9 +3,11 @@ import 'package:trgtz/models/index.dart';
 
 class ProfileImage extends StatefulWidget {
   final User user;
+  final double size;
   const ProfileImage({
     super.key,
     required this.user,
+    this.size = 64,
   });
 
   @override
@@ -45,8 +47,8 @@ class _ProfileImageState extends State<ProfileImage> {
             : null;
 
     return Container(
-      width: 64,
-      height: 64,
+      width: widget.size,
+      height: widget.size,
       decoration: BoxDecoration(
         shape: BoxShape.circle, // Forma circular
         image: image == null

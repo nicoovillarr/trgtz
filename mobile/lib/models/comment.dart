@@ -5,12 +5,14 @@ class Comment extends ModelBase {
   final String text;
   final User user;
   final DateTime createdOn;
+  final DateTime? lastEditedOn;
 
   Comment({
     required this.id,
     required this.text,
     required this.user,
     required this.createdOn,
+    this.lastEditedOn,
   });
 
   factory Comment.fromJson(Map<String, dynamic> map) {
@@ -19,6 +21,7 @@ class Comment extends ModelBase {
       text: map['text'],
       user: User.fromJson(map['user']),
       createdOn: ModelBase.tryParseDateTime('createdOn', map)!,
+      lastEditedOn: ModelBase.tryParseDateTime('lastEditedOn', map),
     );
   }
 
@@ -28,6 +31,7 @@ class Comment extends ModelBase {
       'text': text,
       'user': user.toJson(),
       'createdOn': createdOn.toString(),
+      'lastEditedOn': lastEditedOn?.toString(),
     };
   }
 
@@ -37,6 +41,7 @@ class Comment extends ModelBase {
       text: text,
       user: user.deepCopy(),
       createdOn: createdOn,
+      lastEditedOn: lastEditedOn,
     );
   }
 }

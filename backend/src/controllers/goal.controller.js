@@ -273,6 +273,46 @@ const createComment = async (req, res) => {
   }
 }
 
+const editComment = async (req, res) => {
+  try {
+    const { id, commentId } = req.params
+    const { text } = req.body
+    if (text == null || text == '') {
+      res.status(400).json({ message: 'Comment cannot be empty.' })
+      return
+    }
+
+    const goal = await Goal.findOne({ _id: id })
+    if (goal == null) {
+      res.status(400).json({ message: `Goal with id ${id} not found.` })
+    }
+
+    const comment = await goalService.editComment(goal, commentId, text)
+    res.status(200).json(comment)
+  } catch (error) {
+    res.status(500).json(error)
+    console.error(error)
+  }
+}
+
+const deleteComment = async (req, res) => {
+  try {
+    const { id, commentId } = req.params
+    const goal = await Goal.findOne({ _id: id })
+
+    if (goal == null) {
+      res.status(400).json({ message: `Goal with id ${id} not found.` })
+      return
+    }
+
+    const comment = await goalService.deleteComment(goal, commentId)
+    res.status(200).json(comment)
+  } catch (error) {
+    res.status(500).json(error)
+    console.error(error)
+  }
+}
+
 module.exports = {
   createMultipleGoals,
   createMilestone,
@@ -285,5 +325,7 @@ module.exports = {
   deleteGoal,
   reactToGoal,
   deleteReaction,
-  createComment
+  createComment,
+  editComment,
+  deleteComment
 }

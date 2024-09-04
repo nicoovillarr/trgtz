@@ -37,4 +37,10 @@ class ModuleService {
 
   Future deleteMilestone(Goal goal, String id) =>
       _goalService.deleteMilestone(goal, id);
+
+  Future deleteComment(Goal goal, String commentId) =>
+      _goalService.deleteComment(goal, commentId);
+
+  Future updateComment(Goal goal, String commentId, String value) =>
+      _goalService.updateComment(goal, commentId, value);
 }
