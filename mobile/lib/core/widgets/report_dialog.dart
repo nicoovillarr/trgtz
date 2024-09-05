@@ -20,6 +20,7 @@ class ReportDialog extends StatefulWidget {
 }
 
 class _ReportDialogState extends State<ReportDialog> {
+  GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final ReportService _reportService = ReportService();
 
   late PageController _pageController;
@@ -191,7 +192,6 @@ class _ReportDialogState extends State<ReportDialog> {
       );
 
   Widget _buildReasonPage() {
-    GlobalKey<FormState> formKey = GlobalKey<FormState>();
     return Form(
       key: formKey,
       child: Column(
