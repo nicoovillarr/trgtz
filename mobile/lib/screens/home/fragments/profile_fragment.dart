@@ -181,12 +181,9 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
         children: [
           Stack(
             children: [
-              SizedBox(
-                height: _imgSize,
-                width: _imgSize,
-                child: ProfileImage(
-                  user: user,
-                ),
+              ProfileImage(
+                size: _imgSize,
+                user: user,
               ),
               Positioned(
                 bottom: 0,
