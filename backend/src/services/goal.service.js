@@ -187,13 +187,26 @@ const reactToGoal = async (id, user, type) => {
     (r) => r.user.toString() == user.toString()
   )
 
-  if (reactionIndex === -1) {
-    goal.reactions.push({ user, type })
-  } else {
-    goal.reactions[reactionIndex].type = type
+  let reactionToDelete = null
+  if (reactionIndex !== -1) {
+    reactionToDelete = goal.reactions[reactionIndex]
+    goal.reactions = goal.reactions.filter(
+      (r) => r.user.toString() != user.toString()
+    )
+  }
+
+  if (reactionToDelete == null || reactionToDelete.type != type) {
+    goal.reactions.push({ user, type, createdOn: new Date() })
   }
 
   await goal.save()
+
+  if (reactionToDelete != null) {
+    sendGoalChannelMessage(id, 'GOAL_REACT_DELETED', user)
+    if (reactionToDelete.type == type) {
+      return goal
+    }
+  }
 
   const { firstName, email, avatar } = (
     await userService.getUserInfo(user)
@@ -373,13 +386,14 @@ const reactToComment = async (goal, commentId, user, type) => {
 
   await goal.save()
 
-  sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_REACT_DELETED', {
-    commentId,
-    user
-  })
-
-  if (reactionToDelete != null && reactionToDelete.type == type) {
-    return comment
+  if (reactionToDelete != null) {
+    sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_REACT_DELETED', {
+      commentId,
+      user
+    })
+    if (reactionToDelete.type == type) {
+      return comment
+    }
   }
 
   const { firstName, email, avatar } = (
