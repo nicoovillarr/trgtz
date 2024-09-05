@@ -69,6 +69,8 @@ class SingleGoalProvider extends ChangeNotifier {
       (model!.goal.milestones.isEmpty ||
           model!.goal.milestones.any((x) => x.completedOn == null) == false);
 
+  String get goalId => model?.goal.id ?? '';
+
   Future<SingleGoalProvider> populate(User me, String goalId) async {
     Goal goal = await _moduleService.getGoal(goalId);
     _model = SingleGoalProviderModel(me, goal);

@@ -133,4 +133,13 @@ class Report extends ModelBase {
         ReportCategory.nudity,
         ReportCategory.other,
       ];
+
+  static forGoal() => [
+        ReportCategory.spam,
+        ReportCategory.harassment,
+        ReportCategory.hateSpeech,
+        ReportCategory.violence,
+        ReportCategory.nudity,
+        ReportCategory.other,
+      ];
 }
