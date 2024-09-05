@@ -159,7 +159,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
     required Widget child,
     String? title,
     double height = 350,
-    Color backgroundColor = const Color(0xFFF5F5F5),
+    Color backgroundColor = const Color(0xFFFFFFFF),
   }) {
     showModalBottomSheet(
       context: context,
@@ -168,6 +168,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
       enableDrag: true,
       backgroundColor: Colors.white,
       useRootNavigator: false,
+      elevation: 20,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(16.0),
@@ -189,7 +190,11 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (title != null) Text(title),
+                if (title != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: Text(title),
+                  ),
                 child,
               ],
             ),
@@ -202,37 +207,35 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
   void simpleBottomSheetOptions({
     required List<BottomModalOption> options,
     String? title,
-    int height = 350,
   }) {
-    showModalBottomSheet(
-      context: context,
-      showDragHandle: true,
-      enableDrag: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16.0),
-          topRight: Radius.circular(16.0),
-        ),
-      ),
-      builder: (_) => ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: height.toDouble(),
-        ),
+    simpleBottomSheet(
+      title: title,
+      child: Material(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (title != null) Text(title),
-            ...options
-                .map(
-                  (option) => ListTile(
-                    title: Text(option.title),
-                    onTap: option.onTap,
-                    subtitle:
-                        option.tooltip != null ? Text(option.tooltip!) : null,
+          children: options
+              .map(
+                (option) => Container(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: mainColor.withOpacity(0.25),
+                      ),
+                    ),
                   ),
-                )
-                .toList(),
-          ],
+                  child: ListTile(
+                    title: Text(
+                      option.title,
+                      textAlign: TextAlign.center,
+                    ),
+                    tileColor: mainColor.withOpacity(0.025),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      option.onTap();
+                    },
+                  ),
+                ),
+              )
+              .toList(),
         ),
       ),
     );

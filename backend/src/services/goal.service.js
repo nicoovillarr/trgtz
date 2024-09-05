@@ -187,13 +187,26 @@ const reactToGoal = async (id, user, type) => {
     (r) => r.user.toString() == user.toString()
   )
 
-  if (reactionIndex === -1) {
-    goal.reactions.push({ user, type })
-  } else {
-    goal.reactions[reactionIndex].type = type
+  let reactionToDelete = null
+  if (reactionIndex !== -1) {
+    reactionToDelete = goal.reactions[reactionIndex]
+    goal.reactions = goal.reactions.filter(
+      (r) => r.user.toString() != user.toString()
+    )
+  }
+
+  if (reactionToDelete == null || reactionToDelete.type != type) {
+    goal.reactions.push({ user, type, createdOn: new Date() })
   }
 
   await goal.save()
+
+  if (reactionToDelete != null) {
+    sendGoalChannelMessage(id, 'GOAL_REACT_DELETED', user)
+    if (reactionToDelete.type == type) {
+      return goal
+    }
+  }
 
   const { firstName, email, avatar } = (
     await userService.getUserInfo(user)
@@ -291,6 +304,124 @@ const setGoalView = async (id, user) => {
   return true
 }
 
+const editComment = async (goal, commentId, text) => {
+  const comment = goal.comments.id(commentId)
+  if (comment == null) return null
+
+  comment.editions.push({
+    oldText: comment.text,
+    editedOn: new Date()
+  })
+  comment.text = text
+  await goal.save()
+
+  const editedComment = goal.comments.id(commentId).toJSON()
+  Object.assign(editedComment, {
+    user: (
+      await User.aggregate([
+        { $match: { _id: editedComment.user } },
+        {
+          $lookup: {
+            from: 'images',
+            localField: 'avatar',
+            foreignField: '_id',
+            as: 'avatar'
+          }
+        },
+        {
+          $unwind: '$avatar'
+        },
+        {
+          $project: {
+            _id: 1,
+            firstName: 1,
+            email: 1,
+            avatar: {
+              _id: 1,
+              url: 1,
+              createdOn: 1
+            }
+          }
+        }
+      ])
+    )[0]
+  })
+  sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_UPDATED', editedComment)
+
+  return editedComment
+}
+
+const deleteComment = async (goal, commentId) => {
+  const comment = goal.comments.id(commentId)
+  if (comment == null) return null
+
+  comment.deletedOn = new Date()
+
+  await goal.save()
+
+  sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_DELETED', commentId)
+
+  return goal
+}
+
+const reactToComment = async (goal, commentId, user, type) => {
+  const comment = goal.comments.id(commentId)
+  if (comment == null) return null
+
+  const reactionIndex = comment.reactions.findIndex(
+    (r) => r.user.toString() == user.toString()
+  )
+
+  let reactionToDelete = null
+  if (reactionIndex !== -1) {
+    reactionToDelete = comment.reactions[reactionIndex]
+    comment.reactions = comment.reactions.filter(
+      (r) => r.user.toString() != user.toString()
+    )
+  }
+
+  if (reactionToDelete == null || reactionToDelete.type != type) {
+    comment.reactions.push({ user, type, createdOn: new Date() })
+  }
+
+  await goal.save()
+
+  if (reactionToDelete != null) {
+    sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_REACT_DELETED', {
+      commentId,
+      user
+    })
+    if (reactionToDelete.type == type) {
+      return comment
+    }
+  }
+
+  const { firstName, email, avatar } = (
+    await userService.getUserInfo(user)
+  ).toJSON()
+  const reaction = Object.assign(
+    {},
+    {
+      commentId: comment._id.toString()
+    },
+    comment.reactions
+      .find((r) => r.user.toString() == user.toString())
+      .toJSON(),
+    {
+      user: {
+        _id: user,
+        firstName,
+        email,
+        avatar
+      }
+    }
+  )
+
+  sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_REACTED', reaction)
+
+  return comment
+}
+
 module.exports = {
   createMultipleGoals,
   createMilestone,
@@ -306,5 +437,8 @@ module.exports = {
   deleteReaction,
   createComment,
   setGoalView,
-  canCompleteGoal
+  canCompleteGoal,
+  editComment,
+  deleteComment,
+  reactToComment
 }
