@@ -11,7 +11,7 @@ class Goal extends ModelBase {
   DateTime? completedOn;
   DateTime? deletedOn;
   List<Event> events = [];
-  List<Reaction> reactions = [];
+  List<GoalReaction> reactions = [];
   List<Comment> comments = [];
   List<View> views;
   int viewsCount;
@@ -55,7 +55,7 @@ class Goal extends ModelBase {
       deletedOn: ModelBase.tryParseDateTime('deletedOn', json),
       events: events.map((event) => Event.fromJson(event)).toList(),
       reactions:
-          reactions.map((reaction) => Reaction.fromJson(reaction)).toList(),
+          reactions.map((reaction) => GoalReaction.fromJson(reaction)).toList(),
       comments: comments.map((comment) => Comment.fromJson(comment)).toList(),
       views: views.map((view) => View.fromJson(view)).toList(),
       viewsCount: json['viewsCount'] ?? 0,

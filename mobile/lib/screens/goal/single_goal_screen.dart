@@ -7,6 +7,7 @@ import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
+import 'package:trgtz/screens/goal/goal_constants.dart';
 import 'package:trgtz/screens/goal/providers/index.dart';
 import 'package:trgtz/screens/goal/widgets/comment_card.dart';
 import 'package:trgtz/screens/goal/widgets/index.dart';
@@ -636,9 +637,59 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
 
   Widget _buildFooterItem(ModelBase item) {
     if (item is Comment) {
+      bool isMine = item.user.id == store.state.user!.id;
+
+      List<BottomModalOption> options;
+      if (isMine) {
+        options = [
+          BottomModalOption(
+            title: 'Edit',
+            onTap: () => _editComment(item),
+          ),
+          BottomModalOption(
+            title: 'Delete',
+            onTap: () => _deleteComment(item),
+          ),
+        ];
+      } else {
+        options = [
+          BottomModalOption(
+            title: 'Report',
+            onTap: () {},
+          ),
+        ];
+      }
+
       return CommentCard(
         comment: item,
-        mine: item.user.id == store.state.user!.id,
+        me: store.state.user!,
+        onLongPress: () {
+          simpleBottomSheetOptions(
+            title: 'Options',
+            options: options,
+          );
+        },
+        onLike: () {
+          setIsLoading(true);
+          viewModel.reactToComment(item, 'like').then((_) {
+            showSnackBar('Comment liked!');
+            setIsLoading(false);
+          }).catchError((_) {
+            showSnackBar('An error occurred');
+            setIsLoading(false);
+          });
+        },
+        onDislike: () {
+          setIsLoading(true);
+          viewModel.reactToComment(item, 'dislike').then((_) {
+            showSnackBar('Comment disliked!');
+            setIsLoading(false);
+          }).catchError((_) {
+            showSnackBar('An error occurred');
+            setIsLoading(false);
+          });
+        },
+        onReport: () {},
       );
     } else if (item is Event) {
       return ListTile(
@@ -674,6 +725,50 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
     }
   }
 
+  void _editComment(Comment item) {
+    simpleBottomSheet(
+      child: TextEditModal(
+        placeholder: 'Edit comment',
+        initialValue: item.text,
+        maxLength: maxCommentLength,
+        validate: (s) =>
+            s != null && s.isNotEmpty ? null : 'Your comment cannot be empty',
+        onSave: (s) {
+          if (s == null || s.isEmpty || s == item.text) return;
+
+          setIsLoading(true);
+          viewModel.updateComment(item, s).then((_) {
+            showSnackBar('Comment edited!');
+            setIsLoading(false);
+          }).catchError((_) {
+            showSnackBar('An error occurred');
+            setIsLoading(false);
+          });
+        },
+      ),
+    );
+  }
+
+  void _deleteComment(Comment item) {
+    showMessage(
+      'Delete comment',
+      'Are you sure you want to delete this comment?',
+      negativeText: 'Cancel',
+      onPositiveTap: () {
+        Navigator.of(context).pop();
+
+        setIsLoading(true);
+        viewModel.deleteComment(item).then((_) {
+          showSnackBar('Comment deleted!');
+          setIsLoading(false);
+        }).catchError((_) {
+          showSnackBar('An error occurred');
+          setIsLoading(false);
+        });
+      },
+    );
+  }
+
   void suscribeToGoalChannel() {
     subscribeToChannel('GOAL', viewModel.model!.goal.id, (message) {
       viewModel.processMessage(message);
@@ -693,8 +788,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
             Expanded(
               child: TextEdit(
                 placeholder: 'Write a comment',
-                maxLines: 1,
-                maxLength: 200,
+                maxLength: maxCommentLength,
                 showMaxLength: false,
                 validate: (s) => s != null && s.isNotEmpty
                     ? null
