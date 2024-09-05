@@ -64,8 +64,9 @@ class TextEditState extends State<TextEdit> {
         ),
         validator: widget.validate,
         focusNode: _focusNode,
+        autofocus: false,
         onSaved: widget.onSaved,
-        onTapOutside: (_) => FocusScope.of(context).unfocus(),
+        onTapOutside: (_) => _focusNode.unfocus(),
       );
 
   InputBorder _buildBorder(Color color) => OutlineInputBorder(

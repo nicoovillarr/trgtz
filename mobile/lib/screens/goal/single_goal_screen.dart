@@ -25,6 +25,8 @@ class SingleGoalScreen extends StatefulWidget {
 }
 
 class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
+  final GlobalKey<FormState> commentTextEditKey = GlobalKey();
+
   late final String goalId;
   late ConfettiController _centerController;
 
@@ -548,58 +550,6 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
     }
   }
 
-  void _showComments() {
-    GlobalKey<FormState> key = GlobalKey();
-    String text = '';
-    simpleBottomSheet(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: key,
-          child: Column(
-            children: [
-              TextEdit(
-                placeholder: 'Write a comment',
-                maxLines: 2,
-                maxLength: 200,
-                validate: (s) => s != null && s.isNotEmpty
-                    ? null
-                    : 'Your comment cannot be empty',
-                onSaved: (value) {
-                  text = value ?? '';
-                },
-              ),
-              const SizedBox(height: 4.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  MButton(
-                    onPressed: () {
-                      if (key.currentState!.validate()) {
-                        setIsLoading(true);
-                        key.currentState!.save();
-                        viewModel.createComment(text).then((_) {
-                          showSnackBar('Comment added!');
-                          key.currentState!.reset();
-                          Navigator.of(context).pop();
-                          setIsLoading(false);
-                        }).catchError((_) {
-                          showSnackBar('An error occurred');
-                          setIsLoading(false);
-                        });
-                      }
-                    },
-                    text: 'Send',
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildFooter(Goal goal) {
     List<Map<DateTime, ModelBase>> aux;
     switch (viewModel.footerType) {
@@ -786,11 +736,10 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
   }
 
   Widget _buildAddComment(Goal goal) {
-    GlobalKey<FormState> key = GlobalKey();
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Form(
-        key: key,
+        key: commentTextEditKey,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -819,7 +768,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
                   size: 18,
                 ),
                 color: Colors.white,
-                onPressed: () => key.currentState!.save(),
+                onPressed: () => commentTextEditKey.currentState!.save(),
               ),
             ),
           ],
