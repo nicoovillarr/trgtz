@@ -43,4 +43,7 @@ class ModuleService {
 
   Future updateComment(Goal goal, String commentId, String value) =>
       _goalService.updateComment(goal, commentId, value);
+
+  Future reactToComment(Goal goal, String commentId, String reactionType) =>
+      _goalService.reactToComment(goal, commentId, reactionType);
 }

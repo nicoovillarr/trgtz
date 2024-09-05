@@ -112,4 +112,16 @@ class GoalService {
       throw AppException(response.content);
     }
   }
+
+  Future reactToComment(
+      Goal goal, String commentId, String reactionType) async {
+    ApiResponse response = await _goalsApiService.reactToComment(
+      goal,
+      commentId,
+      reactionType,
+    );
+    if (!response.status) {
+      throw AppException(response.content);
+    }
+  }
 }

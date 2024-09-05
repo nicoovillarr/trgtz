@@ -351,6 +351,63 @@ const deleteComment = async (goal, commentId) => {
   return goal
 }
 
+const reactToComment = async (goal, commentId, user, type) => {
+  const comment = goal.comments.id(commentId)
+  if (comment == null) return null
+
+  const reactionIndex = comment.reactions.findIndex(
+    (r) => r.user.toString() == user.toString()
+  )
+
+  let reactionToDelete = null
+  if (reactionIndex !== -1) {
+    reactionToDelete = comment.reactions[reactionIndex]
+    comment.reactions = comment.reactions.filter(
+      (r) => r.user.toString() != user.toString()
+    )
+  }
+
+  if (reactionToDelete == null || reactionToDelete.type != type) {
+    comment.reactions.push({ user, type, createdOn: new Date() })
+  }
+
+  await goal.save()
+
+  sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_REACT_DELETED', {
+    commentId,
+    user
+  })
+
+  if (reactionToDelete != null && reactionToDelete.type == type) {
+    return comment
+  }
+
+  const { firstName, email, avatar } = (
+    await userService.getUserInfo(user)
+  ).toJSON()
+  const reaction = Object.assign(
+    {},
+    {
+      commentId: comment._id.toString()
+    },
+    comment.reactions
+      .find((r) => r.user.toString() == user.toString())
+      .toJSON(),
+    {
+      user: {
+        _id: user,
+        firstName,
+        email,
+        avatar
+      }
+    }
+  )
+
+  sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_REACTED', reaction)
+
+  return comment
+}
+
 module.exports = {
   createMultipleGoals,
   createMilestone,
@@ -368,5 +425,6 @@ module.exports = {
   setGoalView,
   canCompleteGoal,
   editComment,
-  deleteComment
+  deleteComment,
+  reactToComment
 }

@@ -313,6 +313,24 @@ const deleteComment = async (req, res) => {
   }
 }
 
+const reactToComment = async (req, res) => {
+  try {
+    const { id, commentId } = req.params
+    const { reaction } = req.body
+    const goal = await Goal.findOne({ _id: id })
+    if (goal == null) {
+      res.status(400).json({ message: `Goal with id ${id} not found.` })
+      return
+    }
+
+    await goalService.reactToComment(goal, commentId, req.user, reaction)
+    res.status(200).end()
+  } catch (error) {
+    res.status(500).json(error)
+    console.error(error)
+  }
+}
+
 module.exports = {
   createMultipleGoals,
   createMilestone,
@@ -327,5 +345,6 @@ module.exports = {
   deleteReaction,
   createComment,
   editComment,
-  deleteComment
+  deleteComment,
+  reactToComment
 }

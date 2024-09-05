@@ -130,19 +130,19 @@ class _GoalInteractionsState extends State<GoalInteractions> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     ReactionButton(
-                      reactionTypeKey: ReactionType.like,
+                      reactionTypeKey: GoalReactionType.like,
                       onReaction: () => _onReaction('like'),
                     ),
                     ReactionButton(
-                      reactionTypeKey: ReactionType.love,
+                      reactionTypeKey: GoalReactionType.love,
                       onReaction: () => _onReaction('love'),
                     ),
                     ReactionButton(
-                      reactionTypeKey: ReactionType.happy,
+                      reactionTypeKey: GoalReactionType.happy,
                       onReaction: () => _onReaction('happy'),
                     ),
                     ReactionButton(
-                      reactionTypeKey: ReactionType.cheer,
+                      reactionTypeKey: GoalReactionType.cheer,
                       onReaction: () => _onReaction('cheer'),
                     ),
                   ],
@@ -192,7 +192,7 @@ class _GoalInteractionsState extends State<GoalInteractions> {
     _overlayEntry = null;
   }
 
-  Reaction? get _myReaction {
+  GoalReaction? get _myReaction {
     Store<AppState> store = StoreProvider.of<AppState>(context);
     final user = store.state.user!.id;
     return widget.goal.reactions

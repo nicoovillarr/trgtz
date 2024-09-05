@@ -6,6 +6,7 @@ class Comment extends ModelBase {
   final User user;
   final DateTime createdOn;
   final DateTime? lastEditedOn;
+  final List<CommentReaction> reactions;
 
   Comment({
     required this.id,
@@ -13,15 +14,22 @@ class Comment extends ModelBase {
     required this.user,
     required this.createdOn,
     this.lastEditedOn,
+    this.reactions = const [],
   });
 
   factory Comment.fromJson(Map<String, dynamic> map) {
+    final reactions =
+        map.containsKey('reactions') ? (map['reactions'] as List) : [];
+
     return Comment(
       id: map['_id'],
       text: map['text'],
       user: User.fromJson(map['user']),
       createdOn: ModelBase.tryParseDateTime('createdOn', map)!,
       lastEditedOn: ModelBase.tryParseDateTime('lastEditedOn', map),
+      reactions: reactions
+          .map((reaction) => CommentReaction.fromJson(reaction))
+          .toList(),
     );
   }
 
