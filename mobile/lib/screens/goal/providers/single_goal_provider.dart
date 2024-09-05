@@ -246,7 +246,7 @@ class SingleGoalProvider extends ChangeNotifier {
         updateGoalField({
           'reactions': [
             ...model!.goal.reactions,
-            Reaction.fromJson(message.data)
+            GoalReaction.fromJson(message.data)
           ].map((r) => r.toJson()).toList(),
         });
         break;
@@ -286,6 +286,36 @@ class SingleGoalProvider extends ChangeNotifier {
         });
         break;
 
+      case broadcastTypeGoalCommentReacted:
+        updateGoalField({
+          'comments': model!.goal.comments.map((c) {
+            if (c.id == message.data['commentId']) {
+              final reactions = [
+                ...c.reactions,
+                CommentReaction.fromJson(message.data)
+              ].map((r) => r.toJson()).toList();
+              return c.toJson()..['reactions'] = reactions;
+            }
+            return c.toJson();
+          }).toList(),
+        });
+        break;
+
+      case broadcastTypeGoalCommentReactDeleted:
+        updateGoalField({
+          'comments': model!.goal.comments.map((c) {
+            if (c.id == message.data['commentId']) {
+              final reactions = c.reactions
+                  .where((reaction) => reaction.user.id != message.data['user'])
+                  .map((r) => r.toJson())
+                  .toList();
+              return c.toJson()..['reactions'] = reactions;
+            }
+            return c.toJson();
+          }).toList(),
+        });
+        break;
+
       case broadcastTypeGoalEventAdded:
         updateGoalField({
           'events': [...model!.goal.events, Event.fromJson(message.data)]
@@ -310,5 +340,13 @@ class SingleGoalProvider extends ChangeNotifier {
     }
 
     await _moduleService.updateComment(model!.goal, item.id, s);
+  }
+
+  Future reactToComment(Comment item, String reactionType) async {
+    if (model == null) {
+      return;
+    }
+
+    await _moduleService.reactToComment(model!.goal, item.id, reactionType);
   }
 }

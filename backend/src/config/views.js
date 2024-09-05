@@ -19,7 +19,7 @@ module.exports = {
     'view_goal',
     new mongoose.Schema(
       { _id: mongoose.Types.ObjectId },
-      { collection: 'view_goal' }
+      { collection: 'view_goal_3' }
     )
   )
 }

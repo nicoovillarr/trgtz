@@ -22,5 +22,10 @@ app.delete('/:id', protect, goalController.deleteGoal)
 app.post('/:id/comments', protect, goalController.createComment)
 app.put('/:id/comments/:commentId', protect, goalController.editComment)
 app.delete('/:id/comments/:commentId', protect, goalController.deleteComment)
+app.post(
+  '/:id/comments/:commentId/reactions',
+  protect,
+  goalController.reactToComment
+)
 
 module.exports = app

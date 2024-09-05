@@ -662,13 +662,34 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
 
       return CommentCard(
         comment: item,
-        mine: isMine,
+        me: store.state.user!,
         onLongPress: () {
           simpleBottomSheetOptions(
             title: 'Options',
             options: options,
           );
         },
+        onLike: () {
+          setIsLoading(true);
+          viewModel.reactToComment(item, 'like').then((_) {
+            showSnackBar('Comment liked!');
+            setIsLoading(false);
+          }).catchError((_) {
+            showSnackBar('An error occurred');
+            setIsLoading(false);
+          });
+        },
+        onDislike: () {
+          setIsLoading(true);
+          viewModel.reactToComment(item, 'dislike').then((_) {
+            showSnackBar('Comment disliked!');
+            setIsLoading(false);
+          }).catchError((_) {
+            showSnackBar('An error occurred');
+            setIsLoading(false);
+          });
+        },
+        onReport: () {},
       );
     } else if (item is Event) {
       return ListTile(
@@ -709,7 +730,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
       child: TextEditModal(
         placeholder: 'Edit comment',
         initialValue: item.text,
-        maxLength: MAX_COMMENT_LENGTH,
+        maxLength: maxCommentLength,
         validate: (s) =>
             s != null && s.isNotEmpty ? null : 'Your comment cannot be empty',
         onSave: (s) {
@@ -767,7 +788,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
             Expanded(
               child: TextEdit(
                 placeholder: 'Write a comment',
-                maxLength: MAX_COMMENT_LENGTH,
+                maxLength: maxCommentLength,
                 showMaxLength: false,
                 validate: (s) => s != null && s.isNotEmpty
                     ? null

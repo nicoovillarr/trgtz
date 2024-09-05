@@ -47,4 +47,9 @@ class GoalsApiService extends ApiBaseService {
   Future<ApiResponse> updateComment(
           Goal goal, String commentId, String value) async =>
       await put('${goal.id}/comments/$commentId', {'text': value});
+
+  Future<ApiResponse> reactToComment(
+          Goal goal, String commentId, String reactionType) async =>
+      await post('${goal.id}/comments/$commentId/reactions',
+          {'reaction': reactionType});
 }
