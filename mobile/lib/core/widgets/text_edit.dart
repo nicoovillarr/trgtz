@@ -33,6 +33,8 @@ class TextEditState extends State<TextEdit> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
 
+  String get value => _key.currentState?.value ?? '';
+
   @override
   void initState() {
     super.initState();
@@ -66,7 +68,7 @@ class TextEditState extends State<TextEdit> {
         focusNode: _focusNode,
         autofocus: false,
         onSaved: widget.onSaved,
-        onTapOutside: (_) => _focusNode.unfocus(),
+        onTapOutside: (_) => unfocus(),
       );
 
   InputBorder _buildBorder(Color color) => OutlineInputBorder(
@@ -76,5 +78,13 @@ class TextEditState extends State<TextEdit> {
         ),
       );
 
-  String get value => _key.currentState?.value ?? '';
+  void unfocus() => _focusNode.unfocus();
+
+  void save() {
+    if (_key.currentState!.validate()) {
+      _key.currentState!.save();
+    }
+  }
+
+  void clear() => _controller.clear();
 }

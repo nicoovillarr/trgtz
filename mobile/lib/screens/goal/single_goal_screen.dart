@@ -25,7 +25,8 @@ class SingleGoalScreen extends StatefulWidget {
 }
 
 class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
-  final GlobalKey<FormState> commentTextEditKey = GlobalKey();
+  final GlobalKey<TextEditState> commentTextEditKey =
+      GlobalKey<TextEditState>();
 
   late final String goalId;
   late ConfettiController _centerController;
@@ -738,41 +739,50 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
   Widget _buildAddComment(Goal goal) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
-      child: Form(
-        key: commentTextEditKey,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: TextEdit(
-                placeholder: 'Write a comment',
-                maxLength: maxCommentLength,
-                showMaxLength: false,
-                validate: (s) => s != null && s.isNotEmpty
-                    ? null
-                    : 'Your comment cannot be empty',
-                onSaved: (value) {
-                  viewModel.createComment(value ?? '');
-                },
-              ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: TextEdit(
+              key: commentTextEditKey,
+              placeholder: 'Write a comment',
+              maxLength: maxCommentLength,
+              showMaxLength: false,
+              validate: (s) => s != null && s.isNotEmpty
+                  ? null
+                  : 'Your comment cannot be empty',
+              onSaved: (value) {
+                setIsLoading(true);
+                viewModel.createComment(value ?? '').then((_) {
+                  commentTextEditKey.currentState!.clear();
+                  commentTextEditKey.currentState!.unfocus();
+
+                  setIsLoading(false);
+                }).catchError((_) {
+                  commentTextEditKey.currentState!.unfocus();
+                  showSnackBar('An error occurred');
+
+                  setIsLoading(false);
+                });
+              },
             ),
-            const SizedBox(width: 8.0),
-            Container(
-              decoration: BoxDecoration(
-                color: mainColor,
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              child: IconButton(
-                icon: const Icon(
-                  Icons.send,
-                  size: 18,
-                ),
-                color: Colors.white,
-                onPressed: () => commentTextEditKey.currentState!.save(),
-              ),
+          ),
+          const SizedBox(width: 8.0),
+          Container(
+            decoration: BoxDecoration(
+              color: mainColor,
+              borderRadius: BorderRadius.circular(4.0),
             ),
-          ],
-        ),
+            child: IconButton(
+              icon: const Icon(
+                Icons.send,
+                size: 18,
+              ),
+              color: Colors.white,
+              onPressed: () => commentTextEditKey.currentState!.save(),
+            ),
+          ),
+        ],
       ),
     );
   }
