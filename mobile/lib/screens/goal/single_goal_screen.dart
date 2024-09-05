@@ -611,7 +611,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
         options = [
           BottomModalOption(
             title: 'Report',
-            onTap: () {},
+            onTap: () => _showCommentReportDialog(item.id),
           ),
         ];
       }
@@ -645,16 +645,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
             setIsLoading(false);
           });
         },
-        onReport: () {
-          simpleBottomSheet(
-            height: MediaQuery.of(context).size.height * 0.95,
-            builder: (context, _) => ReportDialog(
-              categoriesAvailable: Report.forComment(),
-              entityType: 'comment',
-              entityId: item.id,
-            ),
-          );
-        },
+        onReport: () => _showCommentReportDialog(item.id),
       );
     } else if (item is Event) {
       return ListTile(
@@ -834,6 +825,17 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
         categoriesAvailable: Report.forGoal(),
         entityType: 'goal',
         entityId: viewModel.goalId,
+      ),
+    );
+  }
+
+  void _showCommentReportDialog(String commentId) {
+    simpleBottomSheet(
+      height: MediaQuery.of(context).size.height * 0.95,
+      builder: (context, _) => ReportDialog(
+        categoriesAvailable: Report.forComment(),
+        entityType: 'comment',
+        entityId: commentId,
       ),
     );
   }
