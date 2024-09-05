@@ -8,3 +8,4 @@ export './error_dialog.dart';
 export './t_card.dart';
 export './profile_image.dart';
 export './dots.dart';
+export './report_dialog.dart';

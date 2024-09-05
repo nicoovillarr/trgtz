@@ -689,7 +689,16 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
             setIsLoading(false);
           });
         },
-        onReport: () {},
+        onReport: () {
+          simpleBottomSheet(
+            height: MediaQuery.of(context).size.height * 0.95,
+            builder: (context, _) => ReportDialog(
+              categoriesAvailable: Report.forComment(),
+              entityType: 'comment',
+              entityId: item.id,
+            ),
+          );
+        },
       );
     } else if (item is Event) {
       return ListTile(
