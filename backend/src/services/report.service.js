@@ -3,6 +3,7 @@ const User = require('../models/user.model')
 const Goal = require('../models/goal.model')
 const alertService = require('./alert.service')
 const pushNotificationService = require('./push-notification.service')
+const { viewReports } = require('../config/views')
 
 const mongoose = require('mongoose')
 
@@ -67,13 +68,9 @@ const resolveReport = async (user, id, status, resolution) => {
   return report
 }
 
-const getAllReports = async () => {
-  return await Report.find()
-}
+const getAllReports = async () => await viewReports.find()
 
-const getReport = async (id) => {
-  return await Report.findById(id)
-}
+const getReport = async (id) => await viewReports.findById(id)
 
 const getUserReports = async (user) => {
   return await Report.find({ user: user._id })

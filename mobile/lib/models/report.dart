@@ -1,4 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/src/widgets/icon_data.dart';
 import 'package:trgtz/models/index.dart';
+import 'package:trgtz/utils.dart';
+
+enum ReportEntityType { comment, goal, user }
 
 enum ReportCategory { spam, harassment, hateSpeech, violence, nudity, other }
 
@@ -11,12 +16,16 @@ enum ReportStatus {
 class Report extends ModelBase {
   String id;
   User user;
-  String entityType;
+  ReportEntityType entityType;
   String entityId;
   ReportCategory category;
   String reason;
   ReportStatus status;
-  String resolution;
+  String? resolution;
+  DateTime createdOn;
+  DateTime? resolvedOn;
+
+  Map<String, dynamic> entity;
 
   Report({
     required this.id,
@@ -26,21 +35,30 @@ class Report extends ModelBase {
     required this.category,
     required this.reason,
     required this.status,
-    required this.resolution,
+    this.resolution,
+    required this.createdOn,
+    this.resolvedOn,
+    required this.entity,
   });
 
-  String get displayText => Report.getDisplayText(category);
+  String get categoryTitle => Report.getCategoryTytle(category);
 
   String get categoryDescription => Report.getCategoryDescription(category);
 
   String get statusText => Report.getStatusText(status);
 
+  String get entityTypeText => Report.getEntityTypeText(entityType);
+
+  IconData get icon => Report.getIcon(entityType);
+
   factory Report.fromJson(Map<String, dynamic> json) {
     return Report(
       id: json['_id'],
       user: User.fromJson(json['user']),
-      entityType: json['entityType'],
-      entityId: json['entityId'],
+      entityType: ReportEntityType.values.firstWhere(
+        (e) => e.toString().split('.').last == json['entity_type'],
+      ),
+      entityId: json['entity_id'],
       category: ReportCategory.values.firstWhere(
         (e) => e.toString().split('.').last == json['category'],
       ),
@@ -49,18 +67,24 @@ class Report extends ModelBase {
         (e) => e.toString().split('.').last == json['status'],
       ),
       resolution: json['resolution'],
+      createdOn: ModelBase.tryParseDateTime('createdOn', json)!,
+      resolvedOn: ModelBase.tryParseDateTime('resolvedOn', json),
+      entity: json['entity'],
     );
   }
 
   Map<String, dynamic> toJson() => {
         '_id': id,
         'user': user.toJson(),
-        'entityType': entityType,
+        'entityType': entityType.toString().split('.').last,
         'entityId': entityId,
         'category': category.toString().split('.').last,
         'reason': reason,
         'status': status.toString().split('.').last,
         'resolution': resolution,
+        'createdOn': createdOn.toIso8601String(),
+        'resolvedOn': resolvedOn?.toIso8601String(),
+        'entity': entity,
       };
 
   Report deepCopy() => Report(
@@ -72,6 +96,9 @@ class Report extends ModelBase {
         reason: reason,
         status: status,
         resolution: resolution,
+        createdOn: createdOn,
+        resolvedOn: resolvedOn,
+        entity: entity,
       );
 
   static String getDisplayText(ReportCategory category) {
@@ -134,7 +161,7 @@ class Report extends ModelBase {
         ReportCategory.other,
       ];
 
-  static forGoal() => [
+  static List<ReportCategory> forGoal() => [
         ReportCategory.spam,
         ReportCategory.harassment,
         ReportCategory.hateSpeech,
@@ -142,4 +169,32 @@ class Report extends ModelBase {
         ReportCategory.nudity,
         ReportCategory.other,
       ];
+
+  static String getCategoryTytle(ReportCategory category) {
+    String cat = category.toString().split('.').last;
+    String categoryTitle = '';
+    for (int i = 0; i < cat.length; i++) {
+      if (cat[i].toUpperCase() == cat[i]) {
+        categoryTitle += ' ';
+      }
+      categoryTitle += cat[i];
+    }
+    return categoryTitle.trim();
+  }
+
+  static String getEntityTypeText(ReportEntityType entityType) =>
+      Utils.capitalize(entityType.toString().split('.').last);
+
+  static IconData getIcon(ReportEntityType entityType) {
+    switch (entityType) {
+      case ReportEntityType.comment:
+        return Icons.comment_outlined;
+      case ReportEntityType.goal:
+        return Icons.flag_outlined;
+      case ReportEntityType.user:
+        return Icons.person_outline;
+      default:
+        throw UnimplementedError();
+    }
+  }
 }

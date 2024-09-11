@@ -9,6 +9,7 @@ import 'package:trgtz/store/index.dart';
 const String setProfileImage = 'SET_PROFILE_IMAGE';
 const String editUserFirstName = 'EDIT_USER_FIRST_NAME';
 const String editUserEmail = 'EDIT_USER_EMAIL';
+const String goReports = 'GO_REPORTS';
 const String editUserPassword = 'EDIT_USER_PASSWORD';
 const String logout = 'LOGOUT';
 
@@ -70,6 +71,11 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
                   _buildListItem(
                     onTap: () {},
                     field: 'Notifications',
+                    icon: Icons.keyboard_arrow_right,
+                  ),
+                  _buildListItem(
+                    onTap: () => widget.enimtAction(goReports),
+                    field: 'Reports',
                     icon: Icons.keyboard_arrow_right,
                   ),
                 ],

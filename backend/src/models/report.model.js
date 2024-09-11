@@ -40,6 +40,11 @@ const reportSchema = new mongoose.Schema({
   createdOn: {
     type: Date,
     required: true
+  },
+  resolvedOn: {
+    type: Date,
+    required: false,
+    default: null
   }
 })
 

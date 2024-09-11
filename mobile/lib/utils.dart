@@ -79,6 +79,12 @@ class Utils {
         return '${sentBy.firstName} reacted to a goal';
       case 'goal_comment':
         return '${sentBy.firstName} commented on a goal';
+      case 'report_created':
+        return 'Your report has been created';
+      case 'report_resolved':
+        return 'Your report has been resolved';
+      case 'report_rejected':
+        return 'Your report has been rejected';
       default:
         return message;
     }
@@ -125,4 +131,17 @@ class Utils {
 
     return controller.stream;
   }
+
+  static String capitalize(String input) {
+    if (input.isEmpty) {
+      return input;
+    }
+    return input[0].toUpperCase() + input.substring(1);
+  }
+
+  static String formatDateTime(DateTime createdOn) =>
+      DateFormat("MM-dd-yyyy HH:mm").format(createdOn);
+
+  static String formatDate(DateTime createdOn) =>
+      DateFormat("MM-dd-yyyy").format(createdOn);
 }
