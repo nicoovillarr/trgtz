@@ -110,14 +110,15 @@ class CommentCard extends StatelessWidget {
                             size: 14.0,
                           ),
                         ),
-                        IconButton(
-                          visualDensity: VisualDensity.compact,
-                          onPressed: onReport,
-                          icon: const Icon(
-                            Icons.flag_outlined,
-                            size: 14.0,
+                        if (me.id != comment.user.id)
+                          IconButton(
+                            visualDensity: VisualDensity.compact,
+                            onPressed: onReport,
+                            icon: const Icon(
+                              Icons.flag_outlined,
+                              size: 14.0,
+                            ),
                           ),
-                        ),
                       ],
                     ),
                   ],

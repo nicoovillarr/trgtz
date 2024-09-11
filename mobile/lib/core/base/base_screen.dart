@@ -156,11 +156,27 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
   Future afterFirstBuild(BuildContext context) async {}
 
   void simpleBottomSheet({
-    required Widget child,
+    Widget? child,
+    Widget Function(BuildContext, Widget?)? builder,
     String? title,
     double height = 350,
     Color backgroundColor = const Color(0xFFFFFFFF),
   }) {
+    assert(child != null || builder != null,
+        'child or builder should be provided');
+    builder ??= (context, child) => SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (title != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: Text(title),
+                ),
+              child!,
+            ],
+          ),
+        );
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -186,19 +202,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
           height: height > 0 ? min(height, maxHeight) : null,
           color: backgroundColor,
           width: MediaQuery.of(context).size.width,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (title != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: Text(title),
-                  ),
-                child,
-              ],
-            ),
-          ),
+          child: builder!(context, child),
         );
       },
     );

@@ -11,3 +11,4 @@ export './comment.dart';
 export './view.dart';
 export './comment_reaction.dart';
 export './reaction_base.dart';
+export './report.dart';

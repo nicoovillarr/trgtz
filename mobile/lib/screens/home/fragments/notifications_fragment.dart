@@ -48,7 +48,9 @@ class _NotificationsFragmentState
               ),
             Expanded(
               child: Text(
-                alert.sentBy.firstName,
+                alert.sentBy.id == store.state.user!.id
+                    ? 'System'
+                    : alert.sentBy.firstName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -62,8 +64,10 @@ class _NotificationsFragmentState
           ],
         ),
         subtitle: Text(Utils.getAlertMessage(alert.sentBy, alert.type)),
-        leading: ProfileImage(
-          user: alert.sentBy,
-        ),
+        leading: alert.sentBy.id != store.state.user!.id
+            ? ProfileImage(
+                user: alert.sentBy,
+              )
+            : null,
       );
 }

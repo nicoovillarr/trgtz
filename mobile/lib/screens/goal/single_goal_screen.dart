@@ -25,7 +25,9 @@ class SingleGoalScreen extends StatefulWidget {
 }
 
 class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
-  late final String goalId;
+  final GlobalKey<TextEditState> commentTextEditKey =
+      GlobalKey<TextEditState>();
+
   late ConfettiController _centerController;
 
   @override
@@ -98,54 +100,60 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
   List<Widget> get actions => [
         CustomPopUpMenuButton(
           items: [
-            MenuItem(
-              title: 'Complete',
-              enabled: viewModel.canComplete,
-              onTap: () {
-                showMessage(
-                  'Complete goal',
-                  'Are you sure you want to complete this goal?',
-                  negativeText: 'Cancel',
-                  onPositiveTap: () async {
-                    Navigator.of(context).pop();
-                    setIsLoading(true);
-                    await viewModel.completeGoal();
-                    setIsLoading(false);
-                  },
-                );
-              },
-            ),
-            MenuItem(
-              title: 'Change title',
-              onTap: () => simpleBottomSheet(
+            if (viewModel.model!.goal.canEdit)
+              MenuItem(
+                title: 'Complete',
+                enabled: viewModel.canComplete,
+                onTap: () {
+                  showMessage(
+                    'Complete goal',
+                    'Are you sure you want to complete this goal?',
+                    negativeText: 'Cancel',
+                    onPositiveTap: () async {
+                      Navigator.of(context).pop();
+                      setIsLoading(true);
+                      await viewModel.completeGoal();
+                      setIsLoading(false);
+                    },
+                  );
+                },
+              ),
+            if (viewModel.model!.goal.canEdit)
+              MenuItem(
                 title: 'Change title',
-                height: 0,
-                child: TextEditModal(
-                  placeholder: 'I wanna...',
-                  initialValue: viewModel.model!.goal.title,
-                  maxLength: 50,
-                  maxLines: 1,
-                  validate: (title) => title != null && title.isNotEmpty
-                      ? null
-                      : 'Title cannot be empty',
-                  onSave: (s) => _onSaveField(
-                    goal: viewModel.model!.goal,
-                    field: 'title',
-                    newValue: Utils.sanitize(s ?? ''),
+                onTap: () => simpleBottomSheet(
+                  title: 'Change title',
+                  height: 0,
+                  child: TextEditModal(
+                    placeholder: 'I wanna...',
+                    initialValue: viewModel.model!.goal.title,
+                    maxLength: 50,
+                    maxLines: 1,
+                    validate: (title) => title != null && title.isNotEmpty
+                        ? null
+                        : 'Title cannot be empty',
+                    onSave: (s) => _onSaveField(
+                      goal: viewModel.model!.goal,
+                      field: 'title',
+                      newValue: Utils.sanitize(s ?? ''),
+                    ),
                   ),
                 ),
               ),
-            ),
             MenuItem(
-                title: 'Milestones',
-                onTap: () => Navigator.of(context).pushNamed('/goal/milestones',
-                    arguments: viewModel.model!.goal.id)
-                // .then((_) => loader()),
-                ),
-            MenuItem(
-              title: 'Delete',
-              onTap: _onDeleteGoal,
+              title: 'Milestones',
+              onTap: () => Navigator.of(context).pushNamed(
+                '/goal/milestones',
+                arguments: viewModel.model!.goal.id,
+              ),
             ),
+            if (!viewModel.model!.goal.canEdit)
+              MenuItem(title: 'Report', onTap: _showGoalReportDialog),
+            if (viewModel.model!.goal.canEdit)
+              MenuItem(
+                title: 'Delete',
+                onTap: _onDeleteGoal,
+              ),
           ],
         ),
       ];
@@ -548,58 +556,6 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
     }
   }
 
-  void _showComments() {
-    GlobalKey<FormState> key = GlobalKey();
-    String text = '';
-    simpleBottomSheet(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: key,
-          child: Column(
-            children: [
-              TextEdit(
-                placeholder: 'Write a comment',
-                maxLines: 2,
-                maxLength: 200,
-                validate: (s) => s != null && s.isNotEmpty
-                    ? null
-                    : 'Your comment cannot be empty',
-                onSaved: (value) {
-                  text = value ?? '';
-                },
-              ),
-              const SizedBox(height: 4.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  MButton(
-                    onPressed: () {
-                      if (key.currentState!.validate()) {
-                        setIsLoading(true);
-                        key.currentState!.save();
-                        viewModel.createComment(text).then((_) {
-                          showSnackBar('Comment added!');
-                          key.currentState!.reset();
-                          Navigator.of(context).pop();
-                          setIsLoading(false);
-                        }).catchError((_) {
-                          showSnackBar('An error occurred');
-                          setIsLoading(false);
-                        });
-                      }
-                    },
-                    text: 'Send',
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildFooter(Goal goal) {
     List<Map<DateTime, ModelBase>> aux;
     switch (viewModel.footerType) {
@@ -655,7 +611,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
         options = [
           BottomModalOption(
             title: 'Report',
-            onTap: () {},
+            onTap: () => _showCommentReportDialog(item.id),
           ),
         ];
       }
@@ -689,7 +645,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
             setIsLoading(false);
           });
         },
-        onReport: () {},
+        onReport: () => _showCommentReportDialog(item.id),
       );
     } else if (item is Event) {
       return ListTile(
@@ -777,44 +733,52 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
   }
 
   Widget _buildAddComment(Goal goal) {
-    GlobalKey<FormState> key = GlobalKey();
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
-      child: Form(
-        key: key,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: TextEdit(
-                placeholder: 'Write a comment',
-                maxLength: maxCommentLength,
-                showMaxLength: false,
-                validate: (s) => s != null && s.isNotEmpty
-                    ? null
-                    : 'Your comment cannot be empty',
-                onSaved: (value) {
-                  viewModel.createComment(value ?? '');
-                },
-              ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: TextEdit(
+              key: commentTextEditKey,
+              placeholder: 'Write a comment',
+              maxLength: maxCommentLength,
+              showMaxLength: false,
+              validate: (s) => s != null && s.isNotEmpty
+                  ? null
+                  : 'Your comment cannot be empty',
+              onSaved: (value) {
+                setIsLoading(true);
+                viewModel.createComment(value ?? '').then((_) {
+                  commentTextEditKey.currentState!.clear();
+                  commentTextEditKey.currentState!.unfocus();
+
+                  setIsLoading(false);
+                }).catchError((_) {
+                  commentTextEditKey.currentState!.unfocus();
+                  showSnackBar('An error occurred');
+
+                  setIsLoading(false);
+                });
+              },
             ),
-            const SizedBox(width: 8.0),
-            Container(
-              decoration: BoxDecoration(
-                color: mainColor,
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              child: IconButton(
-                icon: const Icon(
-                  Icons.send,
-                  size: 18,
-                ),
-                color: Colors.white,
-                onPressed: () => key.currentState!.save(),
-              ),
+          ),
+          const SizedBox(width: 8.0),
+          Container(
+            decoration: BoxDecoration(
+              color: mainColor,
+              borderRadius: BorderRadius.circular(4.0),
             ),
-          ],
-        ),
+            child: IconButton(
+              icon: const Icon(
+                Icons.send,
+                size: 18,
+              ),
+              color: Colors.white,
+              onPressed: () => commentTextEditKey.currentState!.save(),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -853,4 +817,26 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
           iconSize: 14.0,
         ),
       );
+
+  void _showGoalReportDialog() {
+    simpleBottomSheet(
+      height: MediaQuery.of(context).size.height * 0.95,
+      builder: (context, _) => ReportDialog(
+        categoriesAvailable: Report.forGoal(),
+        entityType: 'goal',
+        entityId: viewModel.goalId,
+      ),
+    );
+  }
+
+  void _showCommentReportDialog(String commentId) {
+    simpleBottomSheet(
+      height: MediaQuery.of(context).size.height * 0.95,
+      builder: (context, _) => ReportDialog(
+        categoriesAvailable: Report.forComment(),
+        entityType: 'comment',
+        entityId: commentId,
+      ),
+    );
+  }
 }
