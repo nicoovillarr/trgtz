@@ -40,6 +40,7 @@ class Comment extends ModelBase {
       'user': user.toJson(),
       'createdOn': createdOn.toString(),
       'lastEditedOn': lastEditedOn?.toString(),
+      'reactions': reactions.map((reaction) => reaction.toJson()).toList(),
     };
   }
 
@@ -50,6 +51,7 @@ class Comment extends ModelBase {
       user: user.deepCopy(),
       createdOn: createdOn,
       lastEditedOn: lastEditedOn,
+      reactions: reactions.map((reaction) => reaction.deepCopy()).toList(),
     );
   }
 }
