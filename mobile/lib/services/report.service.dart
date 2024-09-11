@@ -1,5 +1,6 @@
 import 'package:trgtz/api/index.dart';
 import 'package:trgtz/core/exceptions/index.dart';
+import 'package:trgtz/models/index.dart';
 
 class ReportService {
   final ReportApiService _reportApiService = ReportApiService();
@@ -25,7 +26,9 @@ class ReportService {
   Future getReports() async {
     ApiResponse response = await _reportApiService.getReports();
     if (response.status) {
-      return response.content;
+      return (response.content as List)
+          .map((report) => Report.fromJson(report))
+          .toList();
     } else {
       throw AppException(response.content);
     }
@@ -34,7 +37,7 @@ class ReportService {
   Future getReportById(String id) async {
     ApiResponse response = await _reportApiService.getReportById(id);
     if (response.status) {
-      return response.content;
+      return Report.fromJson(response.content);
     } else {
       throw AppException(response.content);
     }

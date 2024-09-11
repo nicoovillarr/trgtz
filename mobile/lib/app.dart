@@ -8,6 +8,9 @@ import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/base_screen.dart';
 import 'package:trgtz/screens/goal/providers/index.dart';
 import 'package:trgtz/screens/profile/index.dart';
+import 'package:trgtz/screens/report/index.dart';
+import 'package:trgtz/screens/report/providers/index.dart';
+import 'package:trgtz/screens/report/single_report_view.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:trgtz/screens/friends/providers/index.dart';
 
@@ -71,6 +74,14 @@ class MyApp extends StatelessWidget {
                   child: const FriendsListScreen(),
                 ),
             '/profile/app-info': (context) => const ProfileAppInfoScreen(),
+            '/reports': (context) => ChangeNotifierProvider(
+                  create: (context) => ReportsListProvider(),
+                  child: const ReportsListView(),
+                ),
+            '/reports/single': (context) => ChangeNotifierProvider(
+                  create: (context) => SingleReportProvider(),
+                  child: const SingleReportView(),
+                ),
           },
         ),
       );
