@@ -16,9 +16,7 @@ class MButton extends StatelessWidget {
     this.foregroundColor = Colors.white,
     this.child,
     this.text,
-  })  : assert(child != null && text != null,
-            'Cannot provide both child and text.'),
-        assert(child == null && text == null, 'Provide either child or text.');
+  });
 
   @override
   Widget build(BuildContext context) => ElevatedButton(

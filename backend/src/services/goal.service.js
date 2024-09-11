@@ -208,7 +208,7 @@ const reactToGoal = async (id, user, type) => {
     }
   }
 
-  const { firstName, email, avatar } = (
+  const { firstName, email, createdAt, avatar } = (
     await userService.getUserInfo(user)
   ).toJSON()
   const reaction = Object.assign(
@@ -219,6 +219,7 @@ const reactToGoal = async (id, user, type) => {
         _id: user,
         firstName,
         email,
+        createdAt,
         avatar
       }
     }
@@ -273,6 +274,7 @@ const createComment = async (goal, user, text) => {
             _id: 1,
             firstName: 1,
             email: 1,
+            createdAt: 1,
             avatar: {
               _id: 1,
               url: 1,
@@ -336,6 +338,7 @@ const editComment = async (goal, commentId, text) => {
             _id: 1,
             firstName: 1,
             email: 1,
+            createdAt: 1,
             avatar: {
               _id: 1,
               url: 1,
@@ -396,7 +399,7 @@ const reactToComment = async (goal, commentId, user, type) => {
     }
   }
 
-  const { firstName, email, avatar } = (
+  const { firstName, email, createdAt, avatar } = (
     await userService.getUserInfo(user)
   ).toJSON()
   const reaction = Object.assign(
@@ -412,6 +415,7 @@ const reactToComment = async (goal, commentId, user, type) => {
         _id: user,
         firstName,
         email,
+        createdAt,
         avatar
       }
     }
