@@ -66,3 +66,6 @@ DerivedData/
 project.xcworkspace/
 *.moved-aside
 *.xcuserstate
+
+# DevTools options
+devtools_options.yaml
