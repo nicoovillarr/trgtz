@@ -31,7 +31,7 @@ migrate_working_dir/
 .packages
 .pub-cache/
 .pub/
-/build/
+build/
 
 # Symbolication related
 app.*.symbols
@@ -43,3 +43,33 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# iOS specific rules:
+**/Pods/
+**/.symlinks/
+**/Flutter/Flutter.framework
+**/Flutter/App.framework
+**/Flutter/engine/
+**/Flutter/Generated.xcconfig
+**/Flutter/ephemeral/
+ios/Flutter/Flutter.podspec
+ios/Flutter/AppFrameworkInfo.plist
+ios/Flutter/Debug.xcconfig
+ios/Flutter/Release.xcconfig
+ios/Pods/
+ios/Runner.xcworkspace/
+ios/Flutter/GeneratedPluginRegistrant.*
+ios/Flutter/App.framework/
+*.xcworkspace/
+*.xcuserdata/
+DerivedData/
+project.xcworkspace/
+*.moved-aside
+*.xcuserstate
+
+# DevTools options
+devtools_options.yaml
+
+# Firebase configuration
+google-services.json
+GoogleService-Info.plist
