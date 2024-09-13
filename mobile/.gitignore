@@ -69,3 +69,7 @@ project.xcworkspace/
 
 # DevTools options
 devtools_options.yaml
+
+# Firebase configuration
+google-services.json
+GoogleService-Info.plist
