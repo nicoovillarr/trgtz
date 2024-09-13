@@ -51,7 +51,8 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
 
   @override
   void didPopNext() {
-    loader().then((_) {
+    loader().then((_) async {
+      await Future.delayed(const Duration(milliseconds: 500));
       suscribeToGoalChannel();
     });
   }
