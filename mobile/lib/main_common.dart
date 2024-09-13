@@ -79,13 +79,17 @@ void mainCommon({
   );
 }
 
-FirebaseOptions _buildFirebaseOptions() => FirebaseOptions(
-      apiKey: dotenv.env['FIREBASE_API_KEY']!,
-      appId: dotenv.env['FIREBASE_APP_ID']!,
-      messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID']!,
-      projectId: dotenv.env['FIREBASE_PROJECT_ID']!,
-      storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET']!,
-      iosBundleId: defaultTargetPlatform == TargetPlatform.iOS
-          ? dotenv.env['FIREBASE_IOS_BUNDLE_ID']!
-          : null,
-    );
+FirebaseOptions _buildFirebaseOptions() {
+  String platform =
+      defaultTargetPlatform == TargetPlatform.iOS ? 'IOS' : 'ANDROID';
+  return FirebaseOptions(
+    apiKey: dotenv.env['${platform}_FIREBASE_API_KEY']!,
+    appId: dotenv.env['${platform}_FIREBASE_APP_ID']!,
+    messagingSenderId: dotenv.env['${platform}_FIREBASE_MESSAGING_SENDER_ID']!,
+    projectId: dotenv.env['${platform}_FIREBASE_PROJECT_ID']!,
+    storageBucket: dotenv.env['${platform}_FIREBASE_STORAGE_BUCKET']!,
+    iosBundleId: defaultTargetPlatform == TargetPlatform.iOS
+        ? dotenv.env['IOS_FIREBASE_BUNDLE_ID']!
+        : null,
+  );
+}
