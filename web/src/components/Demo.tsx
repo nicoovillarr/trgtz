@@ -58,7 +58,7 @@ function DemoDots({
 
 export default function Demo() {
   const [activeIndex, setActiveIndex] = useState(1);
-  const [intervalId, setIntervalId] = useState(null);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout>();
 
   const items = [
     {
