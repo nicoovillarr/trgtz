@@ -18,12 +18,22 @@ const userSchema = new Schema(
     },
     password: {
       type: String,
-      required: true
+      required: false,
+      default: null
     },
     firstName: {
       type: String,
       required: true
     },
+    providers: [
+      {
+        type: String,
+        enum: ['email', 'google', 'apple'],
+        required: true,
+        default: ['email'],
+        unique: true
+      }
+    ],
     avatar: {
       type: Schema.Types.ObjectId,
       ref: 'Image'
