@@ -45,13 +45,15 @@ class Security {
         return null;
       }
 
-      final googleUser = await GoogleSignIn().signInSilently();
-      if (googleUser != null) {
-        final googleAuth = await googleUser.authentication;
-        final googleToken = googleAuth.idToken;
-        if (googleToken == null) {
-          await Security.logOut();
-          return null;
+      if (tickResponse.content['session']['provider'] == 'google') {
+        final googleUser = await GoogleSignIn().signInSilently();
+        if (googleUser != null) {
+          final googleAuth = await googleUser.authentication;
+          final googleToken = googleAuth.idToken;
+          if (googleToken == null) {
+            await Security.logOut();
+            return null;
+          }
         }
       }
     }
