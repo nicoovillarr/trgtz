@@ -1,4 +1,5 @@
 import 'package:encrypt/encrypt.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:trgtz/api/index.dart';
 import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/local_storage.dart';
@@ -47,6 +48,7 @@ class Security {
 
   static Future logOut() async {
     await AuthApiService().logout();
+    await GoogleSignIn().signOut();
     await LocalStorage.clear();
     WebSocketService.getInstance().close();
   }
