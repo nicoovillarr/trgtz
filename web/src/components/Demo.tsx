@@ -32,7 +32,13 @@ function DemoItem({
   );
 }
 
-function DemoDots({ activeIndex }: { activeIndex: number }) {
+function DemoDots({
+  activeIndex,
+  click,
+}: {
+  activeIndex: number;
+  click: (index: number) => void;
+}) {
   return (
     <div className="flex gap-x-2 justify-center">
       {Array(3)
@@ -43,6 +49,7 @@ function DemoDots({ activeIndex }: { activeIndex: number }) {
             className={`h-2 bg-primary rounded-full transition-all ${
               activeIndex === index ? "w-8" : "w-2 opacity-75"
             }`}
+            onClick={() => click(index)}
           ></div>
         ))}
     </div>
@@ -109,6 +116,7 @@ export default function Demo() {
   };
 
   const onCardClick = (index: number) => {
+    if (index === activeIndex) return;
     scrollToItem(index);
     setActiveIndex(index);
     startAutoScroll();
@@ -139,7 +147,10 @@ export default function Demo() {
         ))}
       </ul>
 
-      <DemoDots activeIndex={activeIndex} />
+      <DemoDots
+        activeIndex={activeIndex}
+        click={(index) => onCardClick(index)}
+      />
     </section>
   );
 }
