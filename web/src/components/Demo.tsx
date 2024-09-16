@@ -95,8 +95,6 @@ export default function Demo() {
   };
 
   const scrollToItem = (newIndex: number) => {
-    console.log(`scrolling to ${newIndex}`);
-
     const scrollElement = scrollRef.current! as HTMLElement;
     const itemWidth = (scrollElement.firstChild as HTMLElement).clientWidth;
     const viewportWidth = scrollElement.clientWidth;
@@ -111,6 +109,7 @@ export default function Demo() {
   };
 
   const onCardClick = (index: number) => {
+    scrollToItem(index);
     setActiveIndex(index);
     startAutoScroll();
   };
