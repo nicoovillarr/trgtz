@@ -14,6 +14,7 @@ import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:redux/redux.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart' as admob;
 
 void showErrorDialog(GlobalKey<NavigatorState> navigator, Object error) {
   BuildContext context = navigator.currentContext!;
@@ -34,6 +35,7 @@ void mainCommon({
   await dotenv.load(fileName: '.env.$flavor');
   await Firebase.initializeApp(options: _buildFirebaseOptions());
   await FirebaseHelperService.init();
+  await admob.MobileAds.instance.initialize();
   AppState initialState = AppState(
     date: DateTime.now(),
   );
