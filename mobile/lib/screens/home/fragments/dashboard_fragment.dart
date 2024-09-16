@@ -157,14 +157,7 @@ class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
             Radius.circular(8.0),
           ),
         ),
-        child: const Center(
-          child: Text(
-            'Ads',
-            style: TextStyle(
-              color: Colors.white,
-            ),
-          ),
-        ),
+        child: const BasicAdBanner(),
       );
 
   Widget _buildArrowButton(Function() onPressed, bool right) => TextButton(
