@@ -32,18 +32,31 @@ class Security {
   }
 
   static Future<String?> internalLogIn() async {
+    String userId = '';
+
     final authApiService = AuthApiService();
     String? token = await LocalStorage.getToken();
     if (token != null) {
       final tickResponse = await authApiService.tick(token);
       if (tickResponse.status) {
-        return tickResponse.content['_id'];
+        userId = tickResponse.content['_id'];
       } else {
-        await LocalStorage.clear();
+        await Security.logOut();
+        return null;
+      }
+
+      final googleUser = await GoogleSignIn().signInSilently();
+      if (googleUser != null) {
+        final googleAuth = await googleUser.authentication;
+        final googleToken = googleAuth.idToken;
+        if (googleToken == null) {
+          await Security.logOut();
+          return null;
+        }
       }
     }
 
-    return null;
+    return userId;
   }
 
   static Future logOut() async {
