@@ -126,10 +126,13 @@ const login = async (req, res) => {
   }
 }
 
-const tick = (req, res) => {
+const tick = async (req, res) => {
   try {
     if (req.user === null) res.status(401).json({ message: 'Unauthorized' })
-    else res.status(201).json({ message: 'User ticked', _id: req.user })
+    else {
+      const session = await sessionService.getSession(req.token)
+      res.status(201).json({ message: 'User ticked', _id: req.user, session })
+    }
   } catch (error) {
     res.status(500).json(error)
     console.error('Error ticking goal: ', error)
