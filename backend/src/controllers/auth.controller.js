@@ -1,11 +1,19 @@
+const User = require('../models/user.model')
 const authService = require('../services/auth.service')
 const sessionService = require('../services/session.service')
 
 const signup = async (req, res) => {
   try {
-    const { firstName, email, password, deviceInfo } = req.body
+    const { email, firstName, deviceInfo, photoUrl, password, provider } =
+      req.body
 
-    if (!firstName || !email || !password || !deviceInfo)
+    if (
+      !firstName ||
+      !email ||
+      !deviceInfo ||
+      !provider ||
+      (provider === 'email' && !password)
+    )
       return res.status(400).json({ message: 'Missing required fields' })
 
     if (await authService.checkEmailInUse(email)) {
@@ -33,10 +41,14 @@ const signup = async (req, res) => {
         .status(400)
         .json({ message: 'Missing required fields in device info' })
 
+    const hash =
+      provider === 'email' ? await authService.hashPassword(password) : null
     const user = await authService.signup(
       firstName,
       email,
-      await authService.hashPassword(password)
+      hash,
+      provider,
+      photoUrl
     )
 
     const token = await sessionService.createJWT(
@@ -48,7 +60,8 @@ const signup = async (req, res) => {
       model,
       isVirtual,
       serialNumber,
-      req.custom.ip
+      req.custom.ip,
+      provider
     )
     res.status(201).json({
       _id: user._id,
@@ -62,9 +75,9 @@ const signup = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { email, password, deviceInfo } = req.body
+    const { email, deviceInfo, password, provider = 'email' } = req.body
 
-    if (!email || !password || !deviceInfo)
+    if (!email || !deviceInfo || (provider === 'email' && !password))
       return res.status(400).json({ message: 'Missing required fields' })
 
     const {
@@ -133,9 +146,86 @@ const logout = async (req, res) => {
   }
 }
 
+const googleSignIn = async (req, res) => {
+  const { idToken, email, deviceInfo } = req.body
+
+  try {
+    const {
+      firebaseToken,
+      type,
+      version,
+      manufacturer,
+      model,
+      isVirtual,
+      serialNumber
+    } = deviceInfo
+    if (
+      !type ||
+      !version ||
+      !manufacturer ||
+      !model ||
+      isVirtual == null ||
+      !serialNumber
+    )
+      return res
+        .status(400)
+        .json({ message: 'Missing required fields in device info' })
+
+    const payload = await authService.verifyGoogleToken(idToken)
+    if (payload.email !== email) {
+      return res.status(401).json({ message: 'Token email does not match' })
+    }
+
+    if (await authService.checkEmailInUse(email)) {
+      const user = await User.findOne({ email })
+
+      const token = await sessionService.createJWT(
+        user._id,
+        firebaseToken,
+        type,
+        version,
+        manufacturer,
+        model,
+        isVirtual,
+        serialNumber,
+        req.custom.ip,
+        'google'
+      )
+
+      return res.status(200).json({ _id: user._id, token })
+    } else {
+      const user = await authService.signup(
+        payload.given_name,
+        email,
+        null,
+        'google',
+        payload.picture
+      )
+
+      const token = await sessionService.createJWT(
+        user._id,
+        firebaseToken,
+        type,
+        version,
+        manufacturer,
+        model,
+        isVirtual,
+        serialNumber,
+        req.custom.ip,
+        'google'
+      )
+
+      return res.status(201).json({ _id: user._id, token })
+    }
+  } catch (error) {
+    return res.status(401).json({ message: 'Invalid token' })
+  }
+}
+
 module.exports = {
   signup,
   login,
   tick,
-  logout
+  logout,
+  googleSignIn
 }
