@@ -27,18 +27,14 @@ class _BasicAdBannerState extends State<BasicAdBanner> {
     _bannerAd = BannerAd(
       adUnitId: adUnitId,
       request: const AdRequest(),
-      size: AdSize.banner,
+      size: AdSize.largeBanner,
       listener: BannerAdListener(
         onAdLoaded: (ad) {
-          debugPrint('$ad loaded.');
           setState(() {
             _isLoaded = true;
           });
         },
-        onAdFailedToLoad: (ad, err) {
-          debugPrint('BannerAd failed to load: $err');
-          ad.dispose();
-        },
+        onAdFailedToLoad: (ad, _) => ad.dispose(),
       ),
     )..load();
   }
@@ -46,11 +42,7 @@ class _BasicAdBannerState extends State<BasicAdBanner> {
   @override
   Widget build(BuildContext context) {
     if (_bannerAd != null && _isLoaded) {
-      return SizedBox(
-        width: _bannerAd!.size.width.toDouble(),
-        height: _bannerAd!.size.height.toDouble(),
-        child: AdWidget(ad: _bannerAd!),
-      );
+      return AdWidget(ad: _bannerAd!);
     }
 
     return const Center(
