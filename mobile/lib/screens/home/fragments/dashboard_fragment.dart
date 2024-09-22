@@ -149,22 +149,10 @@ class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
         ),
       );
 
-  Widget _buildAdsContainer() => Container(
+  Widget _buildAdsContainer() => const SizedBox(
         height: 100,
-        decoration: const BoxDecoration(
-          color: Colors.grey,
-          borderRadius: BorderRadius.all(
-            Radius.circular(8.0),
-          ),
-        ),
-        child: const Center(
-          child: Text(
-            'Ads',
-            style: TextStyle(
-              color: Colors.white,
-            ),
-          ),
-        ),
+        width: double.infinity,
+        child: BasicAdBanner(),
       );
 
   Widget _buildArrowButton(Function() onPressed, bool right) => TextButton(
