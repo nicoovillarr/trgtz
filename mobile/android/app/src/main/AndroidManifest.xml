@@ -35,6 +35,6 @@
             android:value="trgtz"/>
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-8197259688703499~4227124507"/>
+            android:value="${adMobApplicationId}"/>
     </application>
 </manifest>
