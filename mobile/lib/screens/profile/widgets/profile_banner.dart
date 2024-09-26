@@ -10,11 +10,14 @@ import 'package:trgtz/screens/profile/services/index.dart';
 import 'package:trgtz/store/index.dart';
 
 class ProfileBanner extends StatelessWidget {
+  final GlobalKey _contextMenuKey = GlobalKey();
+
   final User user;
   final int friendsCount;
   final int goalsCount;
   final bool itsMe;
   final EdgeInsetsGeometry padding;
+  final Function()? onReport;
 
   final ImagePicker _picker = ImagePicker();
 
@@ -25,6 +28,7 @@ class ProfileBanner extends StatelessWidget {
     required this.goalsCount,
     this.itsMe = false,
     this.padding = EdgeInsets.zero,
+    this.onReport,
   });
 
   @override
@@ -81,15 +85,45 @@ class ProfileBanner extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          user.firstName,
-                          style: const TextStyle(
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Text(
-                          user.email,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    user.firstName,
+                                    style: const TextStyle(
+                                      fontSize: 18.0,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    user.email,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 16.0),
+                            Container(
+                              key: _contextMenuKey,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                              ),
+                              height: 40.0,
+                              width: 40.0,
+                              clipBehavior: Clip.hardEdge,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () => _showContextMenu(context),
+                                  child: const Icon(
+                                    Icons.more_vert,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const Expanded(child: SizedBox.shrink()),
                         Row(
@@ -267,4 +301,42 @@ class ProfileBanner extends StatelessWidget {
           ),
         ),
       );
+
+  void _showContextMenu(BuildContext context) {
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
+    final RenderBox button =
+        _contextMenuKey.currentContext?.findRenderObject() as RenderBox;
+
+    final Offset buttonPosition =
+        button.localToGlobal(Offset.zero, ancestor: overlay);
+    final Size buttonSize = button.size;
+
+    final RelativeRect position = RelativeRect.fromRect(
+      Rect.fromPoints(
+        buttonPosition,
+        buttonPosition.translate(buttonSize.width, buttonSize.height),
+      ),
+      Offset.zero & overlay.size,
+    );
+
+    showMenu(
+      context: context,
+      position: position,
+      items: const [
+        PopupMenuItem(
+          value: 'report',
+          child: Text('Report'),
+        ),
+      ],
+    ).then((value) {
+      switch (value) {
+        case 'report':
+          if (onReport != null) {
+            onReport!();
+          }
+          break;
+      }
+    });
+  }
 }

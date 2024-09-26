@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-final _formKey = GlobalKey<FormState>();
-
 // ignore: must_be_immutable
 class NewGoalModal extends StatelessWidget {
+  final _formKey = GlobalKey<FormState>();
+
   String? _title;
 
   NewGoalModal({super.key});

@@ -96,4 +96,32 @@ class GoalService {
       throw AppException(response.content);
     }
   }
+
+  Future deleteComment(Goal goal, String commentId) async {
+    ApiResponse response =
+        await _goalsApiService.deleteComment(goal, commentId);
+    if (!response.status) {
+      throw AppException(response.content);
+    }
+  }
+
+  Future updateComment(Goal goal, String commentId, String value) async {
+    ApiResponse response =
+        await _goalsApiService.updateComment(goal, commentId, value);
+    if (!response.status) {
+      throw AppException(response.content);
+    }
+  }
+
+  Future reactToComment(
+      Goal goal, String commentId, String reactionType) async {
+    ApiResponse response = await _goalsApiService.reactToComment(
+      goal,
+      commentId,
+      reactionType,
+    );
+    if (!response.status) {
+      throw AppException(response.content);
+    }
+  }
 }

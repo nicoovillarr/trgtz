@@ -11,7 +11,8 @@ const createJWT = async (
   model,
   isVirtual,
   serialNumber,
-  ip
+  ip,
+  provider = 'email'
 ) => {
   const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: '15d'
@@ -21,6 +22,7 @@ const createJWT = async (
     userId: userId,
     token: token,
     lastIPAddress: ip,
+    provider,
     device: {
       firebaseToken,
       type,

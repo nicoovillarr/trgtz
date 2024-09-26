@@ -1,14 +1,34 @@
+const { OAuth2Client } = require('google-auth-library')
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
+
 const User = require('../models/user.model')
-const Session = require('../models/session.model')
-const jwt = require('jsonwebtoken')
+const Image = require('../models/image.model')
 const bcrypt = require('bcryptjs')
 
-const signup = async (firstName, email, password) => {
+const signup = async (
+  firstName,
+  email,
+  hash,
+  provider = 'email',
+  photoUrl = null
+) => {
   const user = new User({
     firstName,
     email,
-    password
+    password: hash,
+    providers: [provider]
   })
+
+  if (photoUrl) {
+    const image = new Image({
+      url: photoUrl,
+      user: user._id,
+      createdOn: new Date()
+    })
+    await image.save()
+    user.avatar = image._id
+  }
+
   await user.save()
   const json = user.toJSON()
   delete json.goals
@@ -19,6 +39,12 @@ const login = async (email, password) => {
   const user = await User.findOne({ email })
   if (user == null) return null
   if (!(await validatePassword(user, password))) return null
+
+  if (user.providers.indexOf('email') === -1) {
+    user.providers.push('email')
+    await user.save()
+  }
+
   return user
 }
 
@@ -33,10 +59,21 @@ const checkEmailInUse = async (email) =>
 const validatePassword = async (user, password) =>
   await bcrypt.compare(password, user.password).then((res) => res)
 
+const verifyGoogleToken = async (idToken) => {
+  const ticket = await client.verifyIdToken({
+    idToken: idToken,
+    audience: process.env.GOOGLE_CLIENT_ID
+  })
+
+  const payload = ticket.getPayload()
+  return payload
+}
+
 module.exports = {
   signup,
   login,
   checkEmailInUse,
   hashPassword,
-  validatePassword
+  validatePassword,
+  verifyGoogleToken
 }

@@ -24,6 +24,9 @@ if (keystorePropertiesFile.exists()) {
 def flutterMinSdkVersion = localProperties.getProperty('flutter.minSdkVersion', '28').toInteger()
 def flutterTargetSdkVersion = localProperties.getProperty('flutter.targetSdkVersion', '34').toInteger()
 
+def admobProperties = new Properties()
+rootProject.file("admob.properties").withInputStream { admobProperties.load(it) }
+
 android {
     namespace "com.marppa.trgtz"
     compileSdkVersion flutter.compileSdkVersion
@@ -80,17 +83,20 @@ android {
         live {
             dimension "default"
             resValue "string", "app_name", "trgtz"
+            manifestPlaceholders = [adMobApplicationId: admobProperties["admob_application_id"]]
         }
 
         staging {
             dimension "default"
             resValue "string", "app_name", "trgtz stg"
+            manifestPlaceholders = [adMobApplicationId: admobProperties["admob_application_id"]]
         }
 
         development {
             dimension "default"
             resValue "string", "app_name", "trgtz dev"
             applicationIdSuffix ".dev"
+            manifestPlaceholders = [adMobApplicationId: admobProperties["admob_application_id"]]
         }
     }
 }
@@ -99,4 +105,6 @@ flutter {
     source '../..'
 }
 
-dependencies {}
+dependencies {
+    implementation 'com.google.android.gms:play-services-auth:20.4.1'
+}

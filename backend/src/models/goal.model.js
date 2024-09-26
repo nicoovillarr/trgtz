@@ -97,7 +97,42 @@ const goalSchema = new mongoose.Schema({
       createdOn: {
         type: Date,
         required: true
-      }
+      },
+      deletedOn: {
+        type: Date,
+        required: false,
+        default: null
+      },
+      editions: [
+        {
+          oldText: {
+            type: String,
+            required: true
+          },
+          editedOn: {
+            type: Date,
+            required: true
+          }
+        }
+      ],
+      reactions: [
+        {
+          user: {
+            type: String,
+            ref: 'User',
+            required: true
+          },
+          type: {
+            type: String,
+            required: true,
+            enum: ['like', 'dislike']
+          },
+          createdOn: {
+            type: Date,
+            required: true
+          }
+        }
+      ]
     }
   ],
   createdOn: {

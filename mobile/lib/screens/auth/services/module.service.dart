@@ -19,4 +19,8 @@ class ModuleService {
 
   Future<Map<String, dynamic>> getUserProfile(String userId) async =>
       await _userService.getProfile(userId);
+
+  Future<Map<String, dynamic>> googleSignIn(String idToken, String email,
+          Map<String, dynamic> deviceInfo) async =>
+      await _authService.googleSignIn(idToken, email, deviceInfo);
 }

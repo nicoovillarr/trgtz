@@ -19,6 +19,11 @@ const sessionSchema = new Schema(
       type: Date,
       default: new Date()
     },
+    provider: {
+      type: String,
+      enum: ['email', 'google', 'apple'],
+      required: true
+    },
     createdOn: {
       type: Date,
       default: new Date()

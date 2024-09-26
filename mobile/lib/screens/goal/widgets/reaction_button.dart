@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:trgtz/models/index.dart';
 
 class ReactionButton extends StatefulWidget {
-  final ReactionType reactionTypeKey;
+  final GoalReactionType reactionTypeKey;
   final Function() onReaction;
   const ReactionButton({
     super.key,
@@ -106,8 +106,9 @@ class _ReactionButtonState extends State<ReactionButton>
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Icon(
-                    Reaction.getDisplayIcon(widget.reactionTypeKey),
-                    color: Reaction.getForegroundColor(widget.reactionTypeKey),
+                    GoalReaction.getDisplayIcon(widget.reactionTypeKey),
+                    color:
+                        GoalReaction.getForegroundColor(widget.reactionTypeKey),
                     size: 21.0,
                   ),
                 ),

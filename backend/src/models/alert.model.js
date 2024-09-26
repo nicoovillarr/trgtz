@@ -21,7 +21,10 @@ const alertSchema = new mongoose.Schema({
       'goal_completed',
       'milestone_completed',
       'goal_reaction',
-      'goal_comment'
+      'goal_comment',
+      'report_created',
+      'report_resolved',
+      'report_rejected'
     ]
   },
   seen: {

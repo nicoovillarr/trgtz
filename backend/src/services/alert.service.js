@@ -18,6 +18,8 @@ const sendAlertToFriends = async (userId, type) => {
 }
 
 const addAlert = async (sent_by, sent_to, type) => {
+  if (sent_by === sent_to) return
+
   const alert = new Alert({
     sent_by,
     sent_to,

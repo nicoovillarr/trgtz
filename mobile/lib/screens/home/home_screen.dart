@@ -182,6 +182,10 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         _openEmailEditor();
         break;
 
+      case goReports:
+        Navigator.of(context).pushNamed('/reports');
+        break;
+
       case editUserPassword:
         _openPasswordEditor();
         break;
