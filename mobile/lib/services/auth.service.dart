@@ -6,8 +6,11 @@ class AuthService {
 
   Future<Map<String, dynamic>> login(
       String email, String password, Map<String, dynamic> deviceInfo) async {
-    ApiResponse response =
-        await _authApiService.login(email, password, deviceInfo);
+    ApiResponse response = await _authApiService.login(
+      email,
+      deviceInfo,
+      password: password,
+    );
     if (response.status) {
       return response.content;
     } else {
@@ -17,8 +20,12 @@ class AuthService {
 
   Future<Map<String, dynamic>> signup(String firstName, String email,
       String password, Map<String, dynamic> deviceInfo) async {
-    ApiResponse response =
-        await _authApiService.signup(firstName, email, password, deviceInfo);
+    ApiResponse response = await _authApiService.signup(
+      email,
+      firstName,
+      deviceInfo,
+      password: password,
+    );
     if (response.status) {
       return response.content;
     } else {
@@ -32,4 +39,15 @@ class AuthService {
   }
 
   Future logout() async => await _authApiService.logout();
+
+  Future<Map<String, dynamic>> googleSignIn(
+      String idToken, String email, Map<String, dynamic> deviceInfo) async {
+    ApiResponse response =
+        await _authApiService.googleSignIn(idToken, email, deviceInfo);
+    if (response.status) {
+      return response.content;
+    } else {
+      throw AppException(response.content);
+    }
+  }
 }

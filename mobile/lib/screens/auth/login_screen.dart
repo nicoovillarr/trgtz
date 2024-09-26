@@ -10,10 +10,11 @@ import 'package:trgtz/logger.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/auth/services/index.dart';
 import 'package:trgtz/screens/auth/widgets/index.dart';
-import 'package:trgtz/security.dart';
 import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:trgtz/utils.dart';
+
+import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,6 +25,10 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends BaseScreen<LoginScreen>
     with SingleTickerProviderStateMixin {
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email'],
+  );
+
   bool ready = false;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -118,7 +123,7 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
           children: [
             _buildFormField(
               child: _simpleButton(
-                onPressed: () {},
+                onPressed: _handleGoogleSignIn,
                 children: [
                   SvgPicture.asset(
                     'assets/icons/google-logo.svg',
@@ -246,34 +251,7 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
               await DeviceInformationService.of(context).getDeviceInfo();
           ModuleService()
               .login(email, password, deviceInfo)
-              .then((response) async {
-            setIsLoading(false);
-            await Security.saveCredentials(
-                email, password, response['token'].toString());
-
-            final me = await ModuleService()
-                .getUserProfile(response['_id'].toString());
-            User u = me['user'];
-            store.dispatch(SetUserAction(user: u));
-            store.dispatch(SetGoalsAction(goals: me['goals']));
-            store.dispatch(SetFriendsAction(friends: me['friends']));
-            store.dispatch(SetAlertsAction(alerts: me['alerts']));
-
-            await LocalStorage.saveUserID(u.id);
-
-            final ws = WebSocketService.getInstance();
-            await ws.init();
-
-            Logger.logLogin().then((_) {
-              Navigator.of(context).popAndPushNamed('/home');
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Logged in'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            });
-          });
+              .then(_completeSignIn);
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: mainColor,
@@ -298,6 +276,32 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
           ],
         ),
       );
+
+  Future<void> _completeSignIn(Map<String, dynamic> response) async {
+    await LocalStorage.saveToken(response['token'].toString());
+
+    final me = await ModuleService().getUserProfile(response['_id'].toString());
+    User u = me['user'];
+    store.dispatch(SetUserAction(user: u));
+    store.dispatch(SetGoalsAction(goals: me['goals']));
+    store.dispatch(SetFriendsAction(friends: me['friends']));
+    store.dispatch(SetAlertsAction(alerts: me['alerts']));
+
+    await LocalStorage.saveUserID(u.id);
+
+    final ws = WebSocketService.getInstance();
+    await ws.init();
+
+    Logger.logLogin().then((_) {
+      Navigator.of(context).popAndPushNamed('/home');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Logged in'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    });
+  }
 
   Widget _buildFormField({
     required Widget child,
@@ -337,4 +341,50 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
 
   @override
   bool get useAppBar => false;
+
+  void _handleGoogleSignIn() async {
+    setIsLoading(true);
+
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        setIsLoading(false);
+        throw Exception("Google sign in failed");
+      }
+
+      final String email = googleUser.email;
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final String? idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        setIsLoading(false);
+        throw Exception("Google sign in failed");
+      }
+
+      await _completeGoogleSignIn(idToken, email);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+
+      rethrow;
+    }
+  }
+
+  Future _completeGoogleSignIn(String idToken, String email) async {
+    final deviceInfo =
+        await DeviceInformationService.of(context).getDeviceInfo();
+    ModuleService()
+        .googleSignIn(idToken, email, deviceInfo)
+        .then(_completeSignIn);
+  }
 }

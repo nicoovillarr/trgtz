@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:trgtz/core/widgets/index.dart';
 
-final _formKey = GlobalKey<FormState>();
-final _textEditKey = GlobalKey<TextEditState>();
-
 // ignore: must_be_immutable
 class TextEditModal extends StatelessWidget {
+  final _formKey = GlobalKey<FormState>();
+  final _textEditKey = GlobalKey<TextEditState>();
+
   final String placeholder;
   final Function(String?) onSave;
   final String? Function(String?)? validate;
