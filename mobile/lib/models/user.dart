@@ -4,12 +4,14 @@ class User extends ModelBase {
   String id;
   String firstName;
   String email;
+  DateTime createdOn;
   Image? avatar;
 
   User({
     required this.id,
     required this.firstName,
     required this.email,
+    required this.createdOn,
     this.avatar,
   });
 
@@ -18,6 +20,7 @@ class User extends ModelBase {
       id: json['_id'],
       firstName: json['firstName'],
       email: json['email'],
+      createdOn: ModelBase.tryParseDateTime('createdAt', json)!,
       avatar: json['avatar'] != null ? Image.fromJson(json['avatar']) : null,
     );
   }
@@ -26,6 +29,7 @@ class User extends ModelBase {
         '_id': id,
         'firstName': firstName,
         'email': email,
+        'createdAt': createdOn.toIso8601String(),
         'avatar': avatar?.toJson(),
       };
 
@@ -33,6 +37,7 @@ class User extends ModelBase {
     return User(
       id: id,
       firstName: firstName,
+      createdOn: createdOn,
       email: email,
     );
   }

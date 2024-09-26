@@ -7,6 +7,7 @@ import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
+import 'package:trgtz/screens/goal/goal_constants.dart';
 import 'package:trgtz/screens/goal/providers/index.dart';
 import 'package:trgtz/screens/goal/widgets/comment_card.dart';
 import 'package:trgtz/screens/goal/widgets/index.dart';
@@ -24,7 +25,9 @@ class SingleGoalScreen extends StatefulWidget {
 }
 
 class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
-  late final String goalId;
+  final GlobalKey<TextEditState> commentTextEditKey =
+      GlobalKey<TextEditState>();
+
   late ConfettiController _centerController;
 
   @override
@@ -48,7 +51,8 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
 
   @override
   void didPopNext() {
-    loader().then((_) {
+    loader().then((_) async {
+      await Future.delayed(const Duration(milliseconds: 500));
       suscribeToGoalChannel();
     });
   }
@@ -87,30 +91,6 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
                 gravity: 0.05,
               ),
             ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.0),
-                      Colors.black.withOpacity(0.4),
-                    ],
-                  ),
-                ),
-                padding: const EdgeInsets.only(
-                    left: 24.0, right: 24.0, bottom: 40.0),
-                child: MButton(
-                  onPressed: _showComments,
-                  borderRadius: 16.0,
-                  text: 'Comment',
-                ),
-              ),
-            )
           ],
         );
       },
@@ -121,54 +101,60 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
   List<Widget> get actions => [
         CustomPopUpMenuButton(
           items: [
-            MenuItem(
-              title: 'Complete',
-              enabled: viewModel.canComplete,
-              onTap: () {
-                showMessage(
-                  'Complete goal',
-                  'Are you sure you want to complete this goal?',
-                  negativeText: 'Cancel',
-                  onPositiveTap: () async {
-                    Navigator.of(context).pop();
-                    setIsLoading(true);
-                    await viewModel.completeGoal();
-                    setIsLoading(false);
-                  },
-                );
-              },
-            ),
-            MenuItem(
-              title: 'Change title',
-              onTap: () => simpleBottomSheet(
+            if (viewModel.model!.goal.canEdit)
+              MenuItem(
+                title: 'Complete',
+                enabled: viewModel.canComplete,
+                onTap: () {
+                  showMessage(
+                    'Complete goal',
+                    'Are you sure you want to complete this goal?',
+                    negativeText: 'Cancel',
+                    onPositiveTap: () async {
+                      Navigator.of(context).pop();
+                      setIsLoading(true);
+                      await viewModel.completeGoal();
+                      setIsLoading(false);
+                    },
+                  );
+                },
+              ),
+            if (viewModel.model!.goal.canEdit)
+              MenuItem(
                 title: 'Change title',
-                height: 0,
-                child: TextEditModal(
-                  placeholder: 'I wanna...',
-                  initialValue: viewModel.model!.goal.title,
-                  maxLength: 50,
-                  maxLines: 1,
-                  validate: (title) => title != null && title.isNotEmpty
-                      ? null
-                      : 'Title cannot be empty',
-                  onSave: (s) => _onSaveField(
-                    goal: viewModel.model!.goal,
-                    field: 'title',
-                    newValue: Utils.sanitize(s ?? ''),
+                onTap: () => simpleBottomSheet(
+                  title: 'Change title',
+                  height: 0,
+                  child: TextEditModal(
+                    placeholder: 'I wanna...',
+                    initialValue: viewModel.model!.goal.title,
+                    maxLength: 50,
+                    maxLines: 1,
+                    validate: (title) => title != null && title.isNotEmpty
+                        ? null
+                        : 'Title cannot be empty',
+                    onSave: (s) => _onSaveField(
+                      goal: viewModel.model!.goal,
+                      field: 'title',
+                      newValue: Utils.sanitize(s ?? ''),
+                    ),
                   ),
                 ),
               ),
-            ),
             MenuItem(
-                title: 'Milestones',
-                onTap: () => Navigator.of(context).pushNamed('/goal/milestones',
-                    arguments: viewModel.model!.goal.id)
-                // .then((_) => loader()),
-                ),
-            MenuItem(
-              title: 'Delete',
-              onTap: _onDeleteGoal,
+              title: 'Milestones',
+              onTap: () => Navigator.of(context).pushNamed(
+                '/goal/milestones',
+                arguments: viewModel.model!.goal.id,
+              ),
             ),
+            if (!viewModel.model!.goal.canEdit)
+              MenuItem(title: 'Report', onTap: _showGoalReportDialog),
+            if (viewModel.model!.goal.canEdit)
+              MenuItem(
+                title: 'Delete',
+                onTap: _onDeleteGoal,
+              ),
           ],
         ),
       ];
@@ -188,12 +174,17 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
                 if (goal.milestones.isEmpty && goal.canEdit)
                   _buildNewMilestoneButton(goal),
                 if (goal.milestones.isNotEmpty) _buildMilestonesSummary(goal),
+                const SizedBox(height: 4.0),
                 GoalInteractions(
                   goal: goal,
                   onReaction: _onReaction,
                   onRemoveReaction: _onRemoveReaction,
                 ),
                 const Divider(),
+                _buildFooterTypeSelector(),
+                if ([FooterType.all, FooterType.comments]
+                    .contains(viewModel.footerType))
+                  _buildAddComment(goal),
                 _buildFooter(goal),
               ],
             ),
@@ -566,109 +557,96 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
     }
   }
 
-  void _showComments() {
-    GlobalKey<FormState> key = GlobalKey();
-    String text = '';
-    simpleBottomSheet(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: key,
-          child: Column(
-            children: [
-              TextEdit(
-                placeholder: 'Write a comment',
-                maxLines: 2,
-                maxLength: 200,
-                validate: (s) => s != null && s.isNotEmpty
-                    ? null
-                    : 'Your comment cannot be empty',
-                onSaved: (value) {
-                  text = value ?? '';
-                },
-              ),
-              const SizedBox(height: 4.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  MButton(
-                    onPressed: () {
-                      if (key.currentState!.validate()) {
-                        setIsLoading(true);
-                        key.currentState!.save();
-                        viewModel.createComment(text).then((_) {
-                          showSnackBar('Comment added!');
-                          key.currentState!.reset();
-                          Navigator.of(context).pop();
-                          setIsLoading(false);
-                        }).catchError((_) {
-                          showSnackBar('An error occurred');
-                          setIsLoading(false);
-                        });
-                      }
-                    },
-                    text: 'Send',
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildFooter(Goal goal) {
-    List<ModelBase> input;
+    List<Map<DateTime, ModelBase>> aux;
     switch (viewModel.footerType) {
       case FooterType.comments:
-        input = goal.comments;
+        aux = goal.comments.map((e) => {e.createdOn: e as ModelBase}).toList();
         break;
       case FooterType.events:
-        input = goal.events;
+        aux = goal.events.map((e) => {e.createdOn: e as ModelBase}).toList();
         break;
       case FooterType.all:
-        List<Map<DateTime, ModelBase>> aux = goal.comments
+        aux = goal.comments
             .map((e) => {e.createdOn: e as ModelBase})
             .followedBy(goal.events.map((e) => {e.createdOn: e as ModelBase}))
             .toList();
-        aux.sort((a, b) => b.keys.first.compareTo(a.keys.first));
-        input = aux.map((e) => e.values.first).toList();
         break;
       default:
-        input = [];
+        aux = [];
     }
 
+    aux.sort((a, b) => b.keys.first.compareTo(a.keys.first));
+    final List<ModelBase> input = aux.map((e) => e.values.first).toList();
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: input.length,
       itemBuilder: (context, index) => _buildFooterItem(input[index]),
-      separatorBuilder: (context, index) => Row(
-        children: [
-          Container(
-            margin: const EdgeInsets.symmetric(
-              vertical: 8.0,
-              horizontal: 16.0,
-            ),
-            height:
-                input[index] is Event && input[index + 1] is Event ? 8.0 : 20.0,
-            width: 1.0,
-            decoration: BoxDecoration(
-              color: Colors.grey,
-              borderRadius: BorderRadius.circular(4.0),
-            ),
-          ),
-        ],
-      ),
+      separatorBuilder: (context, index) => SizedBox(
+          height: input[index] is Event && input[index + 1] is Event
+              ? 0.0
+              : input[index] is Comment && input[index + 1] is Event
+                  ? 8.0
+                  : 16.0),
     );
   }
 
   Widget _buildFooterItem(ModelBase item) {
     if (item is Comment) {
+      bool isMine = item.user.id == store.state.user!.id;
+
+      List<BottomModalOption> options;
+      if (isMine) {
+        options = [
+          BottomModalOption(
+            title: 'Edit',
+            onTap: () => _editComment(item),
+          ),
+          BottomModalOption(
+            title: 'Delete',
+            onTap: () => _deleteComment(item),
+          ),
+        ];
+      } else {
+        options = [
+          BottomModalOption(
+            title: 'Report',
+            onTap: () => _showCommentReportDialog(item.id),
+          ),
+        ];
+      }
+
       return CommentCard(
         comment: item,
-        mine: item.user.id == store.state.user!.id,
+        me: store.state.user!,
+        onLongPress: () {
+          simpleBottomSheetOptions(
+            title: 'Options',
+            options: options,
+          );
+        },
+        onLike: () {
+          setIsLoading(true);
+          viewModel.reactToComment(item, 'like').then((_) {
+            showSnackBar('Comment liked!');
+            setIsLoading(false);
+          }).catchError((_) {
+            showSnackBar('An error occurred');
+            setIsLoading(false);
+          });
+        },
+        onDislike: () {
+          setIsLoading(true);
+          viewModel.reactToComment(item, 'dislike').then((_) {
+            showSnackBar('Comment disliked!');
+            setIsLoading(false);
+          }).catchError((_) {
+            showSnackBar('An error occurred');
+            setIsLoading(false);
+          });
+        },
+        onReport: () => _showCommentReportDialog(item.id),
       );
     } else if (item is Event) {
       return ListTile(
@@ -704,10 +682,162 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
     }
   }
 
+  void _editComment(Comment item) {
+    simpleBottomSheet(
+      child: TextEditModal(
+        placeholder: 'Edit comment',
+        initialValue: item.text,
+        maxLength: maxCommentLength,
+        validate: (s) =>
+            s != null && s.isNotEmpty ? null : 'Your comment cannot be empty',
+        onSave: (s) {
+          if (s == null || s.isEmpty || s == item.text) return;
+
+          setIsLoading(true);
+          viewModel.updateComment(item, s).then((_) {
+            showSnackBar('Comment edited!');
+            setIsLoading(false);
+          }).catchError((_) {
+            showSnackBar('An error occurred');
+            setIsLoading(false);
+          });
+        },
+      ),
+    );
+  }
+
+  void _deleteComment(Comment item) {
+    showMessage(
+      'Delete comment',
+      'Are you sure you want to delete this comment?',
+      negativeText: 'Cancel',
+      onPositiveTap: () {
+        Navigator.of(context).pop();
+
+        setIsLoading(true);
+        viewModel.deleteComment(item).then((_) {
+          showSnackBar('Comment deleted!');
+          setIsLoading(false);
+        }).catchError((_) {
+          showSnackBar('An error occurred');
+          setIsLoading(false);
+        });
+      },
+    );
+  }
+
   void suscribeToGoalChannel() {
     subscribeToChannel('GOAL', viewModel.model!.goal.id, (message) {
       viewModel.processMessage(message);
       setState(() {});
     });
+  }
+
+  Widget _buildAddComment(Goal goal) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: TextEdit(
+              key: commentTextEditKey,
+              placeholder: 'Write a comment',
+              maxLength: maxCommentLength,
+              showMaxLength: false,
+              validate: (s) => s != null && s.isNotEmpty
+                  ? null
+                  : 'Your comment cannot be empty',
+              onSaved: (value) {
+                setIsLoading(true);
+                viewModel.createComment(value ?? '').then((_) {
+                  commentTextEditKey.currentState!.clear();
+                  commentTextEditKey.currentState!.unfocus();
+
+                  setIsLoading(false);
+                }).catchError((_) {
+                  commentTextEditKey.currentState!.unfocus();
+                  showSnackBar('An error occurred');
+
+                  setIsLoading(false);
+                });
+              },
+            ),
+          ),
+          const SizedBox(width: 8.0),
+          Container(
+            decoration: BoxDecoration(
+              color: mainColor,
+              borderRadius: BorderRadius.circular(4.0),
+            ),
+            child: IconButton(
+              icon: const Icon(
+                Icons.send,
+                size: 18,
+              ),
+              color: Colors.white,
+              onPressed: () => commentTextEditKey.currentState!.save(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFooterTypeSelector() => Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4.0),
+          color: mainColor.withOpacity(0.1),
+        ),
+        height: 32,
+        child: DropdownButton(
+          focusColor: mainColor,
+          value: viewModel.footerType,
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          items: const [
+            DropdownMenuItem(
+              value: FooterType.all,
+              child: Text('All'),
+            ),
+            DropdownMenuItem(
+              value: FooterType.comments,
+              child: Text('Comments'),
+            ),
+            DropdownMenuItem(
+              value: FooterType.events,
+              child: Text('History'),
+            ),
+          ],
+          onChanged: (value) => viewModel.footerType = value as FooterType,
+          icon: const Icon(Icons.keyboard_arrow_down),
+          underline: Container(),
+          style: const TextStyle(
+            color: Colors.black,
+            fontSize: 12.0,
+          ),
+          iconSize: 14.0,
+        ),
+      );
+
+  void _showGoalReportDialog() {
+    simpleBottomSheet(
+      height: MediaQuery.of(context).size.height * 0.95,
+      builder: (context, _) => ReportDialog(
+        categoriesAvailable: Report.forGoal(),
+        entityType: 'goal',
+        entityId: viewModel.goalId,
+      ),
+    );
+  }
+
+  void _showCommentReportDialog(String commentId) {
+    simpleBottomSheet(
+      height: MediaQuery.of(context).size.height * 0.95,
+      builder: (context, _) => ReportDialog(
+        categoriesAvailable: Report.forComment(),
+        entityType: 'comment',
+        entityId: commentId,
+      ),
+    );
   }
 }

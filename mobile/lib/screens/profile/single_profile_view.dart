@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:trgtz/core/base/index.dart';
+import 'package:trgtz/core/widgets/report_dialog.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/profile/providers/index.dart';
 import 'package:trgtz/screens/profile/widgets/index.dart';
@@ -17,7 +19,7 @@ class SingleProfileView extends StatefulWidget {
   State<SingleProfileView> createState() => _SingleProfileViewState();
 }
 
-class _SingleProfileViewState extends State<SingleProfileView> {
+class _SingleProfileViewState extends BaseScreen<SingleProfileView> {
   bool _loaded = false;
   late ProfileModel model;
 
@@ -53,6 +55,7 @@ class _SingleProfileViewState extends State<SingleProfileView> {
               goalsCount: model.goals.length,
               itsMe: widget.user.id == widget.me,
               padding: const EdgeInsets.all(16.0),
+              onReport: _showUserReportDialog,
             ),
           ),
           ProfileGoalsList(goals: model.goals),
@@ -73,5 +76,16 @@ class _SingleProfileViewState extends State<SingleProfileView> {
         ],
       );
     }
+  }
+
+  void _showUserReportDialog() {
+    simpleBottomSheet(
+      height: MediaQuery.of(context).size.height * 0.95,
+      builder: (context, _) => ReportDialog(
+        categoriesAvailable: Report.forGoal(),
+        entityType: 'user',
+        entityId: model.user.id,
+      ),
+    );
   }
 }

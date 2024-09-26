@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trgtz/constants.dart';
 
 class TextEdit extends StatefulWidget {
   final String placeholder;
@@ -8,6 +9,7 @@ class TextEdit extends StatefulWidget {
   final int? maxLines;
   final int? maxLength;
   final bool isPassword;
+  final bool showMaxLength;
 
   const TextEdit({
     super.key,
@@ -18,6 +20,7 @@ class TextEdit extends StatefulWidget {
     this.maxLines,
     this.maxLength,
     this.isPassword = false,
+    this.showMaxLength = true,
   });
 
   @override
@@ -28,6 +31,9 @@ class TextEditState extends State<TextEdit> {
   final GlobalKey<FormFieldState<String>> _key =
       GlobalKey<FormFieldState<String>>();
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+
+  String get value => _key.currentState?.value ?? '';
 
   @override
   void initState() {
@@ -51,14 +57,18 @@ class TextEditState extends State<TextEdit> {
             fontSize: 16.0,
           ),
           filled: true,
-          fillColor: const Color(0xFFC0C0C0),
+          fillColor: mainColor.withOpacity(0.2),
           focusedBorder: _buildBorder(const Color(0xFF003E4B)),
           errorBorder: _buildBorder(Colors.red),
           enabledBorder: _buildBorder(Colors.transparent),
           focusedErrorBorder: _buildBorder(Colors.redAccent),
+          counterText: widget.showMaxLength ? null : '',
         ),
         validator: widget.validate,
+        focusNode: _focusNode,
+        autofocus: false,
         onSaved: widget.onSaved,
+        onTapOutside: (_) => unfocus(),
       );
 
   InputBorder _buildBorder(Color color) => OutlineInputBorder(
@@ -68,5 +78,13 @@ class TextEditState extends State<TextEdit> {
         ),
       );
 
-  String get value => _key.currentState?.value ?? '';
+  void unfocus() => _focusNode.unfocus();
+
+  void save() {
+    if (_key.currentState!.validate()) {
+      _key.currentState!.save();
+    }
+  }
+
+  void clear() => _controller.clear();
 }

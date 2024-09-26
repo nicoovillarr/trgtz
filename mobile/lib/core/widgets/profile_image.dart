@@ -3,9 +3,13 @@ import 'package:trgtz/models/index.dart';
 
 class ProfileImage extends StatefulWidget {
   final User user;
+  final double size;
+  final double? borderRadius;
   const ProfileImage({
     super.key,
     required this.user,
+    this.size = 64,
+    this.borderRadius,
   });
 
   @override
@@ -45,10 +49,14 @@ class _ProfileImageState extends State<ProfileImage> {
             : null;
 
     return Container(
-      width: 64,
-      height: 64,
+      width: widget.size,
+      height: widget.size,
       decoration: BoxDecoration(
-        shape: BoxShape.circle, // Forma circular
+        shape:
+            widget.borderRadius == null ? BoxShape.circle : BoxShape.rectangle,
+        borderRadius: widget.borderRadius != null
+            ? BorderRadius.circular(widget.borderRadius!)
+            : null,
         image: image == null
             ? null
             : DecorationImage(

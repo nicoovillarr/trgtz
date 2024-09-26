@@ -10,5 +10,12 @@ const String broadcastTypeGoalReacted = 'GOAL_REACTED';
 const String broadcastTypeGoalReactDeleted = 'GOAL_REACT_DELETED';
 
 const String broadcastTypeGoalCommentCreated = 'GOAL_COMMENT_CREATED';
+const String broadcastTypeGoalCommentUpdated = 'GOAL_COMMENT_UPDATED';
+const String broadcastTypeGoalCommentDeleted = 'GOAL_COMMENT_DELETED';
+const String broadcastTypeGoalCommentReacted = 'GOAL_COMMENT_REACTED';
+const String broadcastTypeGoalCommentReactDeleted =
+    'GOAL_COMMENT_REACT_DELETED';
 
 const String broadcastTypeGoalEventAdded = 'GOAL_EVENT_ADDED';
+
+const int maxCommentLength = 200;
