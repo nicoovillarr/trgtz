@@ -8,5 +8,6 @@ app.post('/signup', authController.signup)
 app.post('/login', authController.login)
 app.get('/tick', protect, authController.tick)
 app.post('/logout', protect, authController.logout)
+app.post('/google', authController.googleSignIn)
 
 module.exports = app

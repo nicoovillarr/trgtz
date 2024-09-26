@@ -21,5 +21,14 @@ module.exports = {
       { _id: mongoose.Types.ObjectId },
       { collection: 'view_goal' }
     )
+  ),
+  viewReports: mongoose.model(
+    'view_report',
+    new mongoose.Schema(
+      {
+        _id: mongoose.Types.ObjectId
+      },
+      { collection: 'view_report' }
+    )
   )
 }

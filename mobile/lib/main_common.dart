@@ -1,7 +1,6 @@
-import 'dart:ui';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -14,8 +13,8 @@ import 'package:trgtz/security.dart';
 import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:redux/redux.dart';
-
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart' as admob;
 
 void showErrorDialog(GlobalKey<NavigatorState> navigator, Object error) {
   BuildContext context = navigator.currentContext!;
@@ -29,14 +28,14 @@ void showErrorDialog(GlobalKey<NavigatorState> navigator, Object error) {
 
 void mainCommon({
   required String flavor,
-  required FirebaseOptions options,
 }) async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   await dotenv.load(fileName: '.env.$flavor');
-  await Firebase.initializeApp(options: options);
+  await Firebase.initializeApp(options: _buildFirebaseOptions());
   await FirebaseHelperService.init();
+  await admob.MobileAds.instance.initialize();
   AppState initialState = AppState(
     date: DateTime.now(),
   );
@@ -79,5 +78,20 @@ void mainCommon({
         initialRoute: loggedIn ? '/home' : '/login',
       ),
     ),
+  );
+}
+
+FirebaseOptions _buildFirebaseOptions() {
+  String platform =
+      defaultTargetPlatform == TargetPlatform.iOS ? 'IOS' : 'ANDROID';
+  return FirebaseOptions(
+    apiKey: dotenv.env['${platform}_FIREBASE_API_KEY']!,
+    appId: dotenv.env['${platform}_FIREBASE_APP_ID']!,
+    messagingSenderId: dotenv.env['${platform}_FIREBASE_MESSAGING_SENDER_ID']!,
+    projectId: dotenv.env['${platform}_FIREBASE_PROJECT_ID']!,
+    storageBucket: dotenv.env['${platform}_FIREBASE_STORAGE_BUCKET']!,
+    iosBundleId: defaultTargetPlatform == TargetPlatform.iOS
+        ? dotenv.env['IOS_FIREBASE_BUNDLE_ID']!
+        : null,
   );
 }
