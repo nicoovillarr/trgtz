@@ -54,4 +54,22 @@ class Comment extends ModelBase {
       reactions: reactions.map((reaction) => reaction.deepCopy()).toList(),
     );
   }
+
+  Comment copyWith({
+    String? id,
+    String? text,
+    User? user,
+    DateTime? createdOn,
+    DateTime? lastEditedOn,
+    List<CommentReaction>? reactions,
+  }) {
+    return Comment(
+      id: id ?? this.id,
+      text: text ?? this.text,
+      user: user ?? this.user,
+      createdOn: createdOn ?? this.createdOn,
+      lastEditedOn: lastEditedOn ?? this.lastEditedOn,
+      reactions: reactions ?? this.reactions,
+    );
+  }
 }

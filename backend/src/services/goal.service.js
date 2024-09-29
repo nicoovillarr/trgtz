@@ -253,38 +253,44 @@ const createComment = async (goal, user, text) => {
 
   await goal.save()
 
-  const comment = goal.comments[goal.comments.length - 1].toJSON()
-  Object.assign(comment, {
-    user: (
-      await User.aggregate([
-        { $match: { _id: comment.user } },
-        {
-          $lookup: {
-            from: 'images',
-            localField: 'avatar',
-            foreignField: '_id',
-            as: 'avatar'
-          }
-        },
-        {
-          $unwind: '$avatar'
-        },
-        {
-          $project: {
-            _id: 1,
-            firstName: 1,
-            email: 1,
-            createdAt: 1,
-            avatar: {
+  const comment = Object.assign(
+    {},
+    goal.comments[goal.comments.length - 1].toJSON(),
+    {
+      user: (
+        await User.aggregate([
+          { $match: { _id: user } },
+          {
+            $lookup: {
+              from: 'images',
+              localField: 'avatar',
+              foreignField: '_id',
+              as: 'avatar'
+            }
+          },
+          {
+            $unwind: {
+              path: '$avatar',
+              preserveNullAndEmptyArrays: true
+            }
+          },
+          {
+            $project: {
               _id: 1,
-              url: 1,
-              createdOn: 1
+              firstName: 1,
+              email: 1,
+              createdAt: 1,
+              avatar: {
+                _id: 1,
+                url: 1,
+                createdOn: 1
+              }
             }
           }
-        }
-      ])
-    )[0]
-  })
+        ])
+      )[0]
+    }
+  )
   sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_CREATED', comment)
 
   return comment
@@ -308,7 +314,7 @@ const setGoalView = async (id, user) => {
 
 const editComment = async (goal, commentId, text) => {
   const comment = goal.comments.id(commentId)
-  if (comment == null) return null
+  if (comment == null) return false
 
   comment.editions.push({
     oldText: comment.text,
@@ -317,41 +323,9 @@ const editComment = async (goal, commentId, text) => {
   comment.text = text
   await goal.save()
 
-  const editedComment = goal.comments.id(commentId).toJSON()
-  Object.assign(editedComment, {
-    user: (
-      await User.aggregate([
-        { $match: { _id: editedComment.user } },
-        {
-          $lookup: {
-            from: 'images',
-            localField: 'avatar',
-            foreignField: '_id',
-            as: 'avatar'
-          }
-        },
-        {
-          $unwind: '$avatar'
-        },
-        {
-          $project: {
-            _id: 1,
-            firstName: 1,
-            email: 1,
-            createdAt: 1,
-            avatar: {
-              _id: 1,
-              url: 1,
-              createdOn: 1
-            }
-          }
-        }
-      ])
-    )[0]
-  })
-  sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_UPDATED', editedComment)
+  sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_UPDATED', { _id: commentId, text })
 
-  return editedComment
+  return true
 }
 
 const deleteComment = async (goal, commentId) => {
