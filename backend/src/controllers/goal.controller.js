@@ -288,7 +288,7 @@ const editComment = async (req, res) => {
     }
 
     if (await goalService.editComment(goal, commentId, text)) {
-      res.status(200).json(comment)
+      res.status(200).end()
     } else{
       res.status(400).json({ message: `Comment with id ${commentId} not found.` })
     }
