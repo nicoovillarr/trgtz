@@ -121,7 +121,8 @@ class _SingleReportViewState extends BaseScreen<SingleReportView> {
         ),
       ),
       subtitle: Text(
-        entity['description'].toString().isNotEmpty
+        entity['description'] != null &&
+                entity['description'].toString().isNotEmpty
             ? entity['description']
             : '-',
       ),
