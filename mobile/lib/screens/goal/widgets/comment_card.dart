@@ -77,6 +77,7 @@ class CommentCard extends StatelessWidget {
                             fontSize: 12.0,
                           ),
                         ),
+                        if (comment.lastEditedOn != null) _buildEditedText(),
                       ],
                     ),
                     Text(
@@ -88,7 +89,6 @@ class CommentCard extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        if (comment.lastEditedOn != null) _buildEditedText(),
                         Text(likes.toString()),
                         IconButton(
                           visualDensity: VisualDensity.compact,
@@ -132,12 +132,10 @@ class CommentCard extends StatelessWidget {
   }
 
   Widget _buildEditedText() => const Padding(
-        padding: EdgeInsets.only(right: 8.0),
-        child: Text(
-          'Edited',
-          style: TextStyle(
-            fontSize: 10.0,
-          ),
+        padding: EdgeInsets.only(left: 8.0),
+        child: Icon(
+          Icons.edit_outlined,
+          size: 16.0,
         ),
       );
 }
