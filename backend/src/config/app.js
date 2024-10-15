@@ -9,6 +9,7 @@ const compression = require('compression')
 const express = require('express')
 const cors = require('cors')
 const info = require('../middlewares/info.middleware')
+const { authenticate } = require('../middlewares/auth.middleware')
 
 const app = express()
 
@@ -17,6 +18,7 @@ app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(info)
+app.use(authenticate)
 
 app.use('/', require('../routes'))
 

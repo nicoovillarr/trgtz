@@ -32,6 +32,11 @@ const patchUser = async (id, updates) => {
 
 const updatePassword = async (user, newHash) => {
   user.password = newHash
+
+  if (!user.providers.includes('email')) {
+    user.providers.push('email')
+  }
+
   await user.save()
 }
 

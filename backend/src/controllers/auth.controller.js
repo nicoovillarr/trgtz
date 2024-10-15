@@ -150,37 +150,46 @@ const logout = async (req, res) => {
 }
 
 const googleSignIn = async (req, res) => {
-  const { idToken, email, deviceInfo } = req.body
+  const { idToken, deviceInfo } = req.body
+  if (!idToken || !deviceInfo) {
+    return res.status(400).json({ message: 'Missing required fields' })
+  }
+
+  const {
+    firebaseToken,
+    type,
+    version,
+    manufacturer,
+    model,
+    isVirtual,
+    serialNumber
+  } = deviceInfo
+  if (
+    !type ||
+    !version ||
+    !manufacturer ||
+    !model ||
+    isVirtual == null ||
+    !serialNumber
+  ) {
+    return res
+      .status(400)
+      .json({ message: 'Missing required fields in device info' })
+  }
 
   try {
-    const {
-      firebaseToken,
-      type,
-      version,
-      manufacturer,
-      model,
-      isVirtual,
-      serialNumber
-    } = deviceInfo
-    if (
-      !type ||
-      !version ||
-      !manufacturer ||
-      !model ||
-      isVirtual == null ||
-      !serialNumber
-    )
-      return res
-        .status(400)
-        .json({ message: 'Missing required fields in device info' })
-
     const payload = await authService.verifyGoogleToken(idToken)
-    if (payload.email !== email) {
-      return res.status(401).json({ message: 'Token email does not match' })
+    if (payload == null) {
+      return res.status(401).json({ message: 'Invalid token' })
     }
 
-    if (await authService.checkEmailInUse(email)) {
-      const user = await User.findOne({ email })
+    const user = await User.findOne({ email: payload.email })
+    if (user != null) {
+      if (user.providers.indexOf('google') === -1) {
+        return res
+          .status(401)
+          .json({ message: 'You must log in using your password' })
+      }
 
       const token = await sessionService.createJWT(
         user._id,
@@ -199,7 +208,7 @@ const googleSignIn = async (req, res) => {
     } else {
       const user = await authService.signup(
         payload.given_name,
-        email,
+        payload.email,
         null,
         'google',
         payload.picture
@@ -225,10 +234,44 @@ const googleSignIn = async (req, res) => {
   }
 }
 
+const addProvider = async (req, res) => {
+  try {
+    const userId = req.user
+    const { provider, idToken } = req.body
+
+    if (!provider) {
+      return res.status(400).json({ message: 'Missing required fields' })
+    }
+
+    const user = await User.findById(userId)
+    if (user == null) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    if (await authService.addProvider(user, provider)) {
+      if (idToken != null) {
+        const payload = await authService.verifyGoogleToken(idToken)
+        if (payload == null) {
+          return res.status(401).json({ message: 'Invalid token' })
+        }
+
+        await sessionService.updateSessionProvider(req.token, provider)
+      }
+      res.status(204).end()
+    } else {
+      res.status(400).json({ message: 'Provider already added' })
+    }
+  } catch (error) {
+    res.status(500).json(error)
+    console.error('Error adding provider: ', error)
+  }
+}
+
 module.exports = {
   signup,
   login,
   tick,
   logout,
-  googleSignIn
+  googleSignIn,
+  addProvider
 }

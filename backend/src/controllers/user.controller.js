@@ -4,6 +4,7 @@ const alertService = require('../services/alert.service')
 const pushNotificationService = require('../services/push-notification.service')
 const imageService = require('../services/image.service')
 const goalService = require('../services/goal.service')
+const User = require('../models/user.model')
 
 const getUserProfile = async (req, res) => {
   try {
@@ -20,7 +21,7 @@ const getUserProfile = async (req, res) => {
     if (me == user) {
       await alertService.markAlertsAsSeen(user)
     } else {
-      json.goals = json.goals.filter(g => g.deletedOn == null)
+      json.goals = json.goals.filter((g) => g.deletedOn == null)
       delete json.alerts
       delete json.sessions
       delete json.firebaseTokens
@@ -48,14 +49,23 @@ const patchUser = async (req, res) => {
 const updatePassword = async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body
-    const user = await userService.getUserInfo(req.user)
-    const validPassword = await authService.validatePassword(user, oldPassword)
-    if (!validPassword) {
-      res.status(400).json({ message: 'Invalid credentials.' })
-      return
+
+    const user = await User.findOne({ _id: req.user })
+    if (user.providers.includes('email')) {
+      const validPassword = await authService.validatePassword(
+        user,
+        oldPassword
+      )
+
+      if (!validPassword) {
+        res.status(400).json({ message: 'Invalid credentials.' })
+        return
+      }
     }
+
     const hash = await authService.hashPassword(newPassword)
     await userService.updatePassword(user, hash)
+
     res.status(204).end()
   } catch (error) {
     res.status(500).json(error)
@@ -221,7 +231,11 @@ const getUserFriends = async (req, res) => {
     const { user } = req.params
     const { status } = req.query
 
-    if (me != user && (!(await userService.hasAccess(me, user)) || status != null && status != '' && status != 'accepted')) {
+    if (
+      me != user &&
+      (!(await userService.hasAccess(me, user)) ||
+        (status != null && status != '' && status != 'accepted'))
+    ) {
       res.status(403).end()
       return
     }

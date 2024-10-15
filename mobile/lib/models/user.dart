@@ -1,11 +1,17 @@
 import 'package:trgtz/models/index.dart';
 
+enum AuthProvider {
+  email,
+  google,
+}
+
 class User extends ModelBase {
   String id;
   String firstName;
   String email;
   DateTime createdOn;
   Image? avatar;
+  List<AuthProvider> authProviders;
 
   User({
     required this.id,
@@ -13,6 +19,7 @@ class User extends ModelBase {
     required this.email,
     required this.createdOn,
     this.avatar,
+    this.authProviders = const [],
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -22,6 +29,10 @@ class User extends ModelBase {
       email: json['email'],
       createdOn: ModelBase.tryParseDateTime('createdAt', json)!,
       avatar: json['avatar'] != null ? Image.fromJson(json['avatar']) : null,
+      authProviders: json['providers'] != null
+          ? List<AuthProvider>.from(json['providers'].map((provider) =>
+              ModelBase.enumFromString(AuthProvider.values, provider)))
+          : [],
     );
   }
 
@@ -41,4 +52,21 @@ class User extends ModelBase {
       email: email,
     );
   }
+
+  User copyWith({
+    String? id,
+    String? firstName,
+    String? email,
+    DateTime? createdOn,
+    Image? avatar,
+    List<AuthProvider>? authProviders,
+  }) =>
+      User(
+        id: id ?? this.id,
+        firstName: firstName ?? this.firstName,
+        email: email ?? this.email,
+        createdOn: createdOn ?? this.createdOn,
+        avatar: avatar ?? this.avatar,
+        authProviders: authProviders ?? this.authProviders,
+      );
 }
