@@ -19,13 +19,13 @@ class GoalsListView extends StatefulWidget {
 }
 
 class _GoalsListViewState extends State<GoalsListView> {
-  late final Store<AppState> store;
+  late final Store<ApplicationState> store;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      store = StoreProvider.of<AppState>(context);
+      store = StoreProvider.of<ApplicationState>(context);
     });
   }
 
