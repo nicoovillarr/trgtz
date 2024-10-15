@@ -65,10 +65,17 @@ const deleteSession = async (token) => {
   await session.save()
 }
 
+const updateSessionProvider = async (token, provider) => {
+  const session = await Session.findOne({ token })
+  session.provider = provider
+  await session.save()
+}
+
 module.exports = {
   createJWT,
   updateSession,
   updateFirebaseToken,
   getSession,
-  deleteSession
+  deleteSession,
+  updateSessionProvider
 }

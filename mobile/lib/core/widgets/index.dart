@@ -10,4 +10,5 @@ export './profile_image.dart';
 export './dots.dart';
 export './report_dialog.dart';
 export './basic_ad_banner.dart';
+export './lazy_image.dart';
 export './lazy_banner.dart';

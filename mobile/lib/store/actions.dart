@@ -268,3 +268,19 @@ class AddAlertAction implements ReducerActionBase {
     );
   }
 }
+
+class SetUserProvider implements ReducerActionBase {
+  final AuthProvider provider;
+
+  const SetUserProvider({required this.provider});
+
+  @override
+  execute(AppState currentState) {
+    final User user = currentState.user!;
+    final User updatedUser = user.copyWith(authProviders: [
+      ...user.authProviders,
+      provider,
+    ]);
+    return currentState.copyWith(user: updatedUser);
+  }
+}

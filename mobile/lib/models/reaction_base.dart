@@ -16,13 +16,6 @@ abstract class ReactionBase<T> extends ModelBase {
   IconData get displayIcon;
   Color get foregroundColor;
 
-  static T enumFromString<T>(List<T> enumValues, String enumString) {
-    return enumValues.firstWhere(
-      (e) => e.toString().split('.').last == enumString,
-      orElse: () => throw ArgumentError('Invalid enum value: $enumString'),
-    );
-  }
-
   Map<String, dynamic> toJson() {
     return {
       '_id': id,
