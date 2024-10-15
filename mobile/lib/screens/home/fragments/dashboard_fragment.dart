@@ -76,7 +76,7 @@ class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
         width: 120,
         height: 120,
         child: TCard(
-          child: StoreConnector<AppState, List<Goal>>(
+          child: StoreConnector<ApplicationState, List<Goal>>(
             converter: (store) => store.state.goals
                 .where((g) =>
                     g.year == store.state.date.year && g.deletedOn == null)
@@ -118,7 +118,7 @@ class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
         child: SizedBox(
           height: 120,
           child: TCard(
-            child: StoreConnector<AppState, DateTime>(
+            child: StoreConnector<ApplicationState, DateTime>(
               builder: (ctx, date) => SizedBox(
                 width: double.infinity,
                 child: Row(
@@ -126,7 +126,7 @@ class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _buildArrowButton(
-                        () => StoreProvider.of<AppState>(context)
+                        () => StoreProvider.of<ApplicationState>(context)
                             .dispatch(const AddDateYearAction(years: -1)),
                         false),
                     Text(
@@ -137,7 +137,7 @@ class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
                       ),
                     ),
                     _buildArrowButton(
-                        () => StoreProvider.of<AppState>(context)
+                        () => StoreProvider.of<ApplicationState>(context)
                             .dispatch(const AddDateYearAction(years: 1)),
                         true),
                   ],
@@ -168,7 +168,8 @@ class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
         ),
       );
 
-  Widget _buildGoalsListView() => StoreConnector<AppState, AppState>(
+  Widget _buildGoalsListView() =>
+      StoreConnector<ApplicationState, ApplicationState>(
         builder: (ctx, state) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

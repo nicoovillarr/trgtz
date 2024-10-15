@@ -1,6 +1,6 @@
 import 'package:trgtz/store/index.dart';
 
-AppState reduce(AppState currentState, dynamic action) {
+ApplicationState reduce(ApplicationState currentState, dynamic action) {
   if (action is ReducerActionBase) {
     return action.execute(currentState);
   }
