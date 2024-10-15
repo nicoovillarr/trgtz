@@ -14,7 +14,7 @@ class ModuleService {
 
   static Future deleteGoal(String id) async => _goalService.deleteGoal(id);
 
-  static Future updateUser(User user, Store<AppState> store) async {
+  static Future updateUser(User user, Store<ApplicationState> store) async {
     dynamic response = await _userService.patchUser(user);
     store.dispatch(SetUserAction(user: response['user']));
     store.dispatch(SetGoalsAction(goals: response['goals']));

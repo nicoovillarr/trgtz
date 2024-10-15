@@ -50,7 +50,7 @@ class ProfileBanner extends StatelessWidget {
                       ),
                     ),
                     if (user.id ==
-                        StoreProvider.of<AppState>(context).state.user?.id)
+                        StoreProvider.of<ApplicationState>(context).state.user?.id)
                       Positioned(
                         bottom: 0,
                         right: 0,

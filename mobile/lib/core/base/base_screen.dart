@@ -50,7 +50,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
     customInitState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _userId = StoreProvider.of<AppState>(context).state.user?.id;
+      _userId = StoreProvider.of<ApplicationState>(context).state.user?.id;
       setIsLoading(true);
       loader().then((_) {
         setIsLoading(false);
@@ -336,7 +336,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
 
   Color get backgroundColor => const Color(0xFFF5F5F5);
 
-  Store<AppState> get store => StoreProvider.of<AppState>(context);
+  Store<ApplicationState> get store => StoreProvider.of<ApplicationState>(context);
 
   bool get useAppBar => true;
 
