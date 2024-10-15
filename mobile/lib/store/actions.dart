@@ -275,7 +275,7 @@ class SetUserProvider implements ReducerActionBase {
   const SetUserProvider({required this.provider});
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     final User user = currentState.user!;
     final User updatedUser = user.copyWith(authProviders: [
       ...user.authProviders,
