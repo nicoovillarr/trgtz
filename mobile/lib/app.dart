@@ -23,9 +23,9 @@ final navigatorKey = GlobalKey<NavigatorState>();
 
 class MyApp extends StatelessWidget {
   final String flavor;
-  final AppState initialState;
+  final ApplicationState initialState;
   final String initialRoute;
-  late final Store<AppState> _store = Store<AppState>(
+  late final Store<ApplicationState> _store = Store<ApplicationState>(
     reduce,
     initialState: initialState,
   );

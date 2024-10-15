@@ -18,7 +18,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart' as admob;
 
 void showErrorDialog(GlobalKey<NavigatorState> navigator, Object error) {
   BuildContext context = navigator.currentContext!;
-  Store<AppState> store = StoreProvider.of<AppState>(context);
+  Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
   store.dispatch(const SetIsLoadingAction(isLoading: false));
   WidgetsBinding.instance.addPostFrameCallback((_) => showDialog(
       context: navigator.currentContext!,
@@ -36,7 +36,7 @@ void mainCommon({
   await Firebase.initializeApp(options: _buildFirebaseOptions());
   await FirebaseHelperService.init();
   await admob.MobileAds.instance.initialize();
-  AppState initialState = AppState(
+  ApplicationState initialState = ApplicationState(
     date: DateTime.now(),
   );
 

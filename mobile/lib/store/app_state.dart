@@ -2,7 +2,7 @@ import 'package:flutter/material.dart' as x;
 import 'package:trgtz/models/index.dart';
 
 @x.immutable
-class AppState {
+class ApplicationState {
   final DateTime date;
   final List<Goal> goals;
   final dynamic currentEditorObject;
@@ -12,7 +12,7 @@ class AppState {
   final bool? isLoading;
   final List<Alert>? alerts;
 
-  const AppState({
+  const ApplicationState({
     required this.date,
     this.goals = const [],
     this.user,
@@ -23,7 +23,7 @@ class AppState {
     this.alerts,
   });
 
-  AppState copyWith({
+  ApplicationState copyWith({
     DateTime? date,
     List<Goal>? goals,
     dynamic currentEditorObject,
@@ -33,7 +33,7 @@ class AppState {
     bool? isLoading,
     List<Alert>? alerts,
   }) {
-    AppState state = AppState(
+    ApplicationState state = ApplicationState(
       date: date ?? this.date,
       goals: goals ?? this.goals,
       currentEditorObject: currentEditorObject ?? this.currentEditorObject,

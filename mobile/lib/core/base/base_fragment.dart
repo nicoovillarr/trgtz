@@ -30,5 +30,5 @@ abstract class BaseFragmentState<T extends BaseFragment> extends State<T> {
 
   String? get userId => _userId;
 
-  Store<AppState> get store => StoreProvider.of<AppState>(context);
+  Store<ApplicationState> get store => StoreProvider.of<ApplicationState>(context);
 }

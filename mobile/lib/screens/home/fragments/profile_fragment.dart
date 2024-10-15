@@ -25,7 +25,7 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
 
   @override
   Widget build(BuildContext context) {
-    return StoreConnector<AppState, Map<String, dynamic>>(
+    return StoreConnector<ApplicationState, Map<String, dynamic>>(
       converter: (store) => {
         "user": store.state.user,
         "friendsCount": store.state.friends
