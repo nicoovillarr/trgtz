@@ -2,7 +2,7 @@ import 'package:trgtz/models/index.dart';
 import 'package:trgtz/store/index.dart';
 
 abstract class ReducerActionBase {
-  execute(AppState currentState);
+  execute(ApplicationState currentState);
 }
 
 class AddDateYearAction implements ReducerActionBase {
@@ -11,7 +11,7 @@ class AddDateYearAction implements ReducerActionBase {
   const AddDateYearAction({required this.years});
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     final DateTime newDate = DateTime(currentState.date.year + years,
         currentState.date.month, currentState.date.day);
     return currentState.copyWith(date: newDate);
@@ -24,7 +24,7 @@ class SetGoalsAction implements ReducerActionBase {
   const SetGoalsAction({required this.goals});
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     return currentState.copyWith(goals: goals);
   }
 }
@@ -35,7 +35,7 @@ class CreateGoalAction implements ReducerActionBase {
   const CreateGoalAction({required this.goal});
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     return currentState.copyWith(goals: [
       ...currentState.goals,
       goal,
@@ -49,7 +49,7 @@ class UpdateGoalAction implements ReducerActionBase {
   const UpdateGoalAction({required this.goal});
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     return currentState.copyWith(
       goals: currentState.goals.map((e) => e.id == goal.id ? goal : e).toList(),
     );
@@ -63,7 +63,7 @@ class UpdateGoalFieldsAction implements ReducerActionBase {
   const UpdateGoalFieldsAction({required this.goal, required this.fields});
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     final Goal updatedGoal = Goal.fromJson({
       ...goal.toJson(),
       ...fields,
@@ -82,7 +82,7 @@ class DeleteGoalAction implements ReducerActionBase {
   const DeleteGoalAction({required this.goal});
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     return currentState.copyWith(
       goals:
           currentState.goals.where((element) => element.id != goal.id).toList(),
@@ -96,7 +96,7 @@ class SetUserAction implements ReducerActionBase {
   const SetUserAction({required this.user});
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     return currentState.copyWith(user: user);
   }
 }
@@ -107,7 +107,7 @@ class SetIsLoadingAction implements ReducerActionBase {
   const SetIsLoadingAction({required this.isLoading});
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     return currentState.copyWith(isLoading: isLoading);
   }
 }
@@ -118,7 +118,7 @@ class SetCurrentEditorObjectAction implements ReducerActionBase {
   const SetCurrentEditorObjectAction({required this.obj});
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     return currentState.copyWith(currentEditorObject: obj);
   }
 }
@@ -129,7 +129,7 @@ class SetAlertsAction implements ReducerActionBase {
   const SetAlertsAction({required this.alerts});
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     return currentState.copyWith(alerts: alerts);
   }
 }
@@ -140,7 +140,7 @@ class SetFriendsAction implements ReducerActionBase {
   const SetFriendsAction({required this.friends});
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     return currentState.copyWith(friends: friends);
   }
 }
@@ -151,7 +151,7 @@ class UpdateUserFields implements ReducerActionBase {
   const UpdateUserFields({required this.fields});
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     final User user = currentState.user!;
     final Map<String, dynamic> updatedFields = {
       ...user.toJson(),
@@ -173,7 +173,7 @@ class UpdateCurrentEditorObjectFields implements ReducerActionBase {
   });
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     final obj = currentState.currentEditorObject.toJson();
     for (final key in fields.keys) {
       if (key.contains('.')) {
@@ -208,7 +208,7 @@ class SetPendingFriendRequestsAction implements ReducerActionBase {
   const SetPendingFriendRequestsAction({required this.count});
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     return currentState.copyWith(pendingFriendRequests: count);
   }
 }
@@ -217,7 +217,7 @@ class AddPendingFriendRequestAction implements ReducerActionBase {
   const AddPendingFriendRequestAction();
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     return currentState.copyWith(
       pendingFriendRequests: (currentState.pendingFriendRequests ?? 0) + 1,
     );
@@ -229,7 +229,7 @@ class AddFriendAction implements ReducerActionBase {
   const AddFriendAction({required this.newFriend});
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     return currentState.copyWith(
       friends: [
         ...currentState.friends!,
@@ -244,7 +244,7 @@ class DeleteFriend implements ReducerActionBase {
   const DeleteFriend({required this.friendId});
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     return currentState.copyWith(
       friends: currentState.friends!
           .where((element) => element.otherUserId != friendId)
@@ -259,7 +259,7 @@ class AddAlertAction implements ReducerActionBase {
   const AddAlertAction({required this.alert});
 
   @override
-  execute(AppState currentState) {
+  execute(ApplicationState currentState) {
     return currentState.copyWith(
       alerts: [
         alert,
