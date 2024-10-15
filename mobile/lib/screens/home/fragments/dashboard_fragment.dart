@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
@@ -20,6 +21,7 @@ class DashboardFragment extends BaseFragment {
 
 class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
   bool sortAscending = false;
+  bool _showAd = true;
   late DateTime endYear;
 
   @override
@@ -41,7 +43,7 @@ class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
   List<Widget> _buildRows() => [
         _buildProgressBar(DateTime.now()),
         _buildStatsAndSelector(),
-        _buildAdsContainer(),
+        if (_showAd) _buildAdsContainer(),
         _buildGoalsListView(),
       ];
 
@@ -149,10 +151,17 @@ class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
         ),
       );
 
-  Widget _buildAdsContainer() => const SizedBox(
+  Widget _buildAdsContainer() => SizedBox(
         height: 100,
-        width: double.infinity,
-        child: BasicAdBanner(),
+        width: MediaQuery.of(context).size.width,
+        child: LazyBanner(
+          size: AdSize.fluid,
+          onAdFailed: () {
+            setState(() {
+              _showAd = false;
+            });
+          },
+        ),
       );
 
   Widget _buildArrowButton(Function() onPressed, bool right) => TextButton(
