@@ -354,6 +354,8 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
 
   RefreshCallback? get onRefresh => null;
 
+  Size get size => MediaQuery.of(context).size;
+
   void addSubscription(String name, StreamSubscription subscription) {
     _subscriptions[name] = subscription;
   }

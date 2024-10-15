@@ -4,7 +4,7 @@ const express = require('express')
 
 const app = express()
 
-const protect = require('../middlewares/auth.middleware')
+const { protect } = require('../middlewares/auth.middleware')
 
 app.post('/', protect, reportController.createReport)
 app.put('/:id', protect, reportController.resolveReport)

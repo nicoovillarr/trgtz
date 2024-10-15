@@ -21,12 +21,7 @@ class ModuleService {
   }
 
   static Future changePassword(
-      String oldPassword, String newPassword, Store<AppState> store) async {
-    dynamic response =
-        await _userService.changePassword(oldPassword, newPassword);
-    store.dispatch(SetUserAction(user: response['user']));
-    store.dispatch(SetGoalsAction(goals: response['goals']));
-  }
+      String oldPassword, String newPassword) async => await _userService.changePassword(oldPassword, newPassword);
 
   static Future setProfileImage(File image) async =>
       await _userService.setProfileImage(image);

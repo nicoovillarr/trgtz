@@ -191,8 +191,10 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         break;
 
       case logout:
-        Security.logOut()
-            .then((_) => Navigator.of(context).pushReplacementNamed('/login'));
+        Security.logOut().then((_) {
+          Navigator.of(context).popUntil((route) => false);
+          Navigator.of(context).pushNamed('/login');
+        });
         break;
 
       default:
@@ -267,6 +269,10 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
     GlobalKey<TextEditState> oldPassKey = GlobalKey();
     GlobalKey<TextEditState> newPassKey = GlobalKey();
     GlobalKey<TextEditState> repeatPassKey = GlobalKey();
+
+    bool hasPassword =
+        store.state.user!.authProviders.contains(AuthProvider.email);
+
     simpleBottomSheet(
       title: 'Change your password',
       child: Form(
@@ -282,9 +288,10 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
                 placeholder: 'Current password',
                 isPassword: true,
                 maxLines: 1,
-                validate: (s) => s == null || s.isEmpty
+                validate: (s) => hasPassword && (s == null || s.isEmpty)
                     ? 'You must enter the current password.'
                     : null,
+                enabled: hasPassword,
               ),
               TextEdit(
                 key: newPassKey,
@@ -319,7 +326,12 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
                     String newPassword = newPassKey.currentState!.value;
                     setIsLoading(true);
                     await ModuleService.changePassword(
-                        oldPassword, newPassword, store);
+                        oldPassword, newPassword);
+                    if (!store.state.user!.authProviders
+                        .contains(AuthProvider.email)) {
+                      store.dispatch(
+                          SetUserProvider(provider: AuthProvider.email));
+                    }
                     navigator.pop();
                     setIsLoading(false);
                   }
