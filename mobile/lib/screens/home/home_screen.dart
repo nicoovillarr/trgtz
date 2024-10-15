@@ -102,7 +102,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
                     : 'Title cannot be empty',
                 onSave: (s) {
                   if (s != null && s.isNotEmpty) {
-                    Store<AppState> store = StoreProvider.of<AppState>(context);
+                    Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
                     final newGoal = Goal(
                       id: const Uuid().v4(),
                       title: s,
@@ -214,7 +214,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
   }
 
   void _openNameEditor() {
-    Store<AppState> store = StoreProvider.of<AppState>(context);
+    Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
     String original = store.state.user!.firstName;
     simpleBottomSheet(
       title: 'Change your name',
@@ -227,7 +227,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
             s == null || s.isEmpty ? 'You must enter a name.' : null,
         onSave: (s) {
           setIsLoading(true);
-          Store<AppState> store = StoreProvider.of(context);
+          Store<ApplicationState> store = StoreProvider.of(context);
           User user = store.state.user!.deepCopy();
           user.firstName = s!;
           ModuleService.updateUser(user, store)
@@ -238,7 +238,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
   }
 
   void _openEmailEditor() {
-    Store<AppState> store = StoreProvider.of<AppState>(context);
+    Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
     String original = store.state.user!.email;
     simpleBottomSheet(
       title: 'Change your email',
@@ -252,7 +252,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
             : null,
         onSave: (s) {
           setIsLoading(true);
-          Store<AppState> store = StoreProvider.of(context);
+          Store<ApplicationState> store = StoreProvider.of(context);
           User user = store.state.user!.deepCopy();
           user.email = s!;
           ModuleService.updateUser(user, store)

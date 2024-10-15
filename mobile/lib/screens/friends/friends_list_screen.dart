@@ -265,7 +265,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
 
   void _deleteFriend(Friendship friend) async {
     setIsLoading(true);
-    Store<AppState> store = StoreProvider.of<AppState>(context);
+    Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
     await ModuleService.deleteFriend(store.state.user!.id, friend);
     setIsLoading(false);
   }
@@ -289,7 +289,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
 
   void _showQRCodeDialog(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    Store<AppState> store = StoreProvider.of<AppState>(context);
+    Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
     simpleBottomSheet(
       height: size.height * 0.6,
       child: Column(
