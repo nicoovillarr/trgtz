@@ -194,14 +194,9 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
             final ws = WebSocketService.getInstance();
             await ws.init();
 
-            Logger.logSignup().then((_) {
-              Navigator.of(context).popAndPushNamed('/home');
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Signed up'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
+            Logger.logLogin().then((_) {
+              Navigator.of(context).popUntil((route) => false);
+              Navigator.of(context).pushNamed('/home');
             });
           });
         },

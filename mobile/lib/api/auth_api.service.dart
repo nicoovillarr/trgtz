@@ -39,4 +39,10 @@ class AuthApiService extends ApiBaseService {
         'email': email,
         'deviceInfo': deviceInfo,
       });
+
+ Future<ApiResponse> addAuthProvider(String provider, String token) async =>
+      await put ('add-provider', {
+        'provider': provider,
+        'idToken': token,
+      });
 }

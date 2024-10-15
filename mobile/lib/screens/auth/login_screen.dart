@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
+import 'package:trgtz/core/exceptions/sso_login_exception.dart';
 import 'package:trgtz/core/index.dart';
 import 'package:trgtz/logger.dart';
 import 'package:trgtz/models/index.dart';
@@ -293,13 +294,8 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
     await ws.init();
 
     Logger.logLogin().then((_) {
-      Navigator.of(context).popAndPushNamed('/home');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Logged in'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      Navigator.of(context).popUntil((route) => false);
+      Navigator.of(context).pushNamed('/home');
     });
   }
 
@@ -353,8 +349,6 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
         throw Exception("Google sign in failed");
       }
 
-      final String email = googleUser.email;
-
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
@@ -365,7 +359,7 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
         throw Exception("Google sign in failed");
       }
 
-      await _completeGoogleSignIn(idToken, email);
+      await _completeGoogleSignIn(idToken, googleUser);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.maybeOf(context)?.showSnackBar(
@@ -380,11 +374,32 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
     }
   }
 
-  Future _completeGoogleSignIn(String idToken, String email) async {
+  Future _completeGoogleSignIn(
+      String idToken, GoogleSignInAccount googleUser) async {
     final deviceInfo =
         await DeviceInformationService.of(context).getDeviceInfo();
     ModuleService()
-        .googleSignIn(idToken, email, deviceInfo)
-        .then(_completeSignIn);
+        .googleSignIn(idToken, googleUser.email, deviceInfo)
+        .then(_completeSignIn)
+        .catchError((e) {
+      setIsLoading(false);
+      if (e is SsoLoginException) {
+        final String email = googleUser.email;
+        final String displayName = googleUser.displayName ?? '';
+        final String photoUrl = googleUser.photoUrl ?? '';
+        simpleBottomSheet(
+          height: size.height * 0.85,
+          title: 'Use your password to log in before linking your account',
+          child: SsoIntermediatePassword(
+            email: email,
+            idToken: idToken,
+            displayName: displayName,
+            photoUrl: photoUrl,
+          ),
+        );
+      } else {
+        throw e;
+      }
+    });
   }
 }
