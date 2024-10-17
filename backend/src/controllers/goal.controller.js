@@ -101,10 +101,6 @@ const updateMilestone = async (req, res) => {
         )
       }
 
-      if (wasGoalCompleted == false && goal.completedOn != null) {
-        await alertService.sendAlertToFriends(user, 'goal_completed')
-      }
-
       res.status(200).json(goal)
     }
   } catch (error) {
