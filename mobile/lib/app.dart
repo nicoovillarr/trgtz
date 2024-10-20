@@ -10,7 +10,6 @@ import 'package:trgtz/screens/goal/providers/index.dart';
 import 'package:trgtz/screens/profile/index.dart';
 import 'package:trgtz/screens/report/index.dart';
 import 'package:trgtz/screens/report/providers/index.dart';
-import 'package:trgtz/screens/report/single_report_view.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:trgtz/screens/friends/providers/index.dart';
 
@@ -57,11 +56,9 @@ class MyApp extends StatelessWidget {
             ),
           ),
           initialRoute: initialRoute,
-          // initialRoute: '/forgot-password',
           routes: {
             '/login': (context) => const LoginScreen(),
             '/signup': (context) => const SignupScreen(),
-            '/forgot-password': (context) => const PasswordResetScreen(),
             '/home': (context) => const HomeScreen(),
             '/goal': (context) => ChangeNotifierProvider(
                   create: (context) => SingleGoalProvider(),
