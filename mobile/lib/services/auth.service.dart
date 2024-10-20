@@ -58,4 +58,11 @@ class AuthService {
     ApiResponse response = await _authApiService.addAuthProvider(provider, token);
     return response.status;
   }
+
+  Future sendResetLink(String email) async {
+    ApiResponse response = await _authApiService.sendResetLink(email);
+    if (!response.status) {
+      throw AppException(response.content);
+    }
+  }
 }

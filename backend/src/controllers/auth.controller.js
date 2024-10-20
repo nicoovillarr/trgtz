@@ -1,6 +1,8 @@
 const User = require('../models/user.model')
 const authService = require('../services/auth.service')
 const sessionService = require('../services/session.service')
+const mailService = require('../services/mail.service')
+const tokenService = require('../services/token.service')
 
 const signup = async (req, res) => {
   try {
@@ -267,11 +269,76 @@ const addProvider = async (req, res) => {
   }
 }
 
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body
+    if (!email)
+      return res.status(400).json({ message: 'Missing required fields' })
+
+    const user = await User.findOne({ email })
+    if (user == null) return res.status(204).end()
+
+    const token = await tokenService.createToken('password_reset', user._id)
+    if (token == null)
+      return res.status(500).json({ message: 'Error creating token' })
+
+    const resetUrl = `${
+      process.env.FRONTEND_URL
+    }/forgot-password?token=${encodeURIComponent(token)}`
+    const subject = 'Reset your password'
+    const text = `Click the following link to reset your password: ${resetUrl}`
+    const html = `<p>Click the following link to reset your password: <a href="${resetUrl}">${resetUrl}</a></p>`
+
+    const sent = await mailService.sendNoReplyEmail(email, subject, text, html)
+    if (!sent) return res.status(500).json({ message: 'Error sending email' })
+
+    res.status(204).end()
+  } catch (error) {
+    res.status(500).json(error)
+    console.error('Error sending email: ', error)
+  }
+}
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body
+    if (!token || !password)
+      return res.status(400).json({ message: 'Missing required fields' })
+
+    const userId = await tokenService.consumeToken(
+      decodeURIComponent(token),
+      'password_reset'
+    )
+    if (userId == null)
+      return res.status(401).json({ message: 'Invalid token' })
+
+    const user = await User.findById(userId)
+    if (user == null) return res.status(404).json({ message: 'User not found' })
+
+    const hash = await authService.hashPassword(password)
+    await User.findByIdAndUpdate(userId, { password: hash }).exec()
+
+    const subject = 'Password reset successful'
+    const text = 'Your password has been successfully reset'
+    const html = '<p>Your password has been successfully reset</p>'
+    
+    const sent = await mailService.sendNoReplyEmail(user.email, subject, text, html)
+    if (!sent) return res.status(500).json({ message: 'Error sending email' })
+
+    res.status(204).end()
+  } catch (error) {
+    res.status(500).json(error)
+    console.error('Error resetting password: ', error)
+  }
+}
+
 module.exports = {
   signup,
   login,
   tick,
   logout,
   googleSignIn,
-  addProvider
+  addProvider,
+  forgotPassword,
+  resetPassword
 }

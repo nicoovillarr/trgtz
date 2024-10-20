@@ -166,7 +166,7 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
             ),
             _buildFormField(child: _buildLoginButton()),
             _simpleButton(
-              onPressed: () {},
+              onPressed: _forgotPassword,
               border: false,
               children: [
                 const Text(
@@ -401,5 +401,27 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
         throw e;
       }
     });
+  }
+
+  void _forgotPassword() {
+    simpleBottomSheet(
+      title: 'Forgot your password?',
+      child: ForgotPasswordForm(
+        onSend: (email) {
+          setIsLoading(true);
+          ModuleService().sendResetLink(email).then((_) {
+            setIsLoading(false);
+
+            Navigator.of(context).pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Reset link sent to your email.'),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          });
+        },
+      ),
+    );
   }
 }
