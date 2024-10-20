@@ -26,4 +26,7 @@ class ModuleService {
 
   Future<bool> addAuthProvider(String provider, String token) async =>
       await _authService.addAuthProvider(provider, token);
+
+  Future sendResetLink(String email) async =>
+      await _authService.sendResetLink(email);
 }
