@@ -57,9 +57,11 @@ class MyApp extends StatelessWidget {
             ),
           ),
           initialRoute: initialRoute,
+          // initialRoute: '/forgot-password',
           routes: {
             '/login': (context) => const LoginScreen(),
             '/signup': (context) => const SignupScreen(),
+            '/forgot-password': (context) => const PasswordResetScreen(),
             '/home': (context) => const HomeScreen(),
             '/goal': (context) => ChangeNotifierProvider(
                   create: (context) => SingleGoalProvider(),

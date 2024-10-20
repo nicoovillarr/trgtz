@@ -55,7 +55,7 @@ class TextEditState extends State<TextEdit> {
           key: _key,
           controller: _controller,
           keyboardType: TextInputType.multiline,
-          maxLines: widget.maxLines,
+          maxLines: !widget.isPassword ? widget.maxLines : 1,
           maxLength: widget.maxLength,
           obscureText: widget.isPassword,
           enabled: widget.enabled,
@@ -101,7 +101,14 @@ class TextEditState extends State<TextEdit> {
 
   void clear() => _controller.clear();
 
-  void addError(String message) => setState(() {
-        _errorText = message;
-      });
+  bool validate() {
+    if (widget.validate != null) {
+      final String? error = widget.validate!(value);
+      if (error != null) {
+        setState(() => _errorText = error);
+        return false;
+      }
+    }
+    return true;
+  }
 }
