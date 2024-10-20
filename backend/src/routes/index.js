@@ -11,5 +11,6 @@ app.use('/auth', require('./auth.route'))
 app.use('/users', require('./user.route'))
 app.use('/sessions', require('./session.route'))
 app.use('/reports', require('./report.route'))
+app.use('/tokens', require('./token.route'))
 
 module.exports = app

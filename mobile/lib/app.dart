@@ -10,7 +10,6 @@ import 'package:trgtz/screens/goal/providers/index.dart';
 import 'package:trgtz/screens/profile/index.dart';
 import 'package:trgtz/screens/report/index.dart';
 import 'package:trgtz/screens/report/providers/index.dart';
-import 'package:trgtz/screens/report/single_report_view.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:trgtz/screens/friends/providers/index.dart';
 
