@@ -181,6 +181,8 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
               .then((response) async {
             setIsLoading(false);
 
+            LocalStorage.saveToken(response['token'].toString());
+
             final Map<String, dynamic> me = await ModuleService()
                 .getUserProfile(response['_id'].toString());
             User u = me['user'];

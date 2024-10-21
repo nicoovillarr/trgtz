@@ -29,6 +29,10 @@ const signup = async (
     user.avatar = image._id
   }
 
+  if (provider === 'google') {
+    user.emailVerified = true
+  }
+
   await user.save()
   const json = user.toJSON()
   delete json.goals

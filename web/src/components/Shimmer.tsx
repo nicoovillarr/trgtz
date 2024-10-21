@@ -6,7 +6,7 @@ interface Props {
 }
 
 export default function Shimmer({
-  className,
+  className = '',
   width,
   height,
   rounded = "md",
@@ -16,7 +16,7 @@ export default function Shimmer({
 
   return (
     <div
-      className={`animate-pulse bg-gray-200 w-${widthStr} h-${heightStr} rounded-${rounded} ${className}`}
+      className={`animate-pulse bg-gray-200 w-${widthStr} h-${heightStr} rounded-${rounded} ${className}`.trim()}
     ></div>
   );
 }

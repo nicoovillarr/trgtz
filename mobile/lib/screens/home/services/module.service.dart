@@ -25,4 +25,6 @@ class ModuleService {
 
   static Future setProfileImage(File image) async =>
       await _userService.setProfileImage(image);
+
+  static Future validateEmail() async => await _userService.validateEmail();
 }
