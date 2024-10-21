@@ -5,6 +5,7 @@ const pushNotificationService = require('../services/push-notification.service')
 const imageService = require('../services/image.service')
 const goalService = require('../services/goal.service')
 const User = require('../models/user.model')
+const { sendUserChannelMessage } = require('../config/websocket')
 
 const getUserProfile = async (req, res) => {
   try {
@@ -251,6 +252,41 @@ const getUserFriends = async (req, res) => {
   }
 }
 
+const sendValidationEmail = async (req, res) => {
+  try {
+    const _id = req.user
+    const user = await User.findById(_id)
+    if (user.emailValidated) {
+      res.status(400).json({ message: 'Email already validated.' })
+      return
+    }
+
+    if (await userService.sendValidationEmail(user)) res.status(204).end()
+    else throw new Error('Error sending validation email.')
+  } catch (error) {
+    res.status(500).json(error)
+    console.error('Error sending validation email: ', error)
+  }
+}
+
+const validateEmail = async (req, res) => {
+  try {
+    const { token } = req.query
+    const userId = await userService.validateEmail(token)
+    if (userId != null) {
+      const user = await User.findById(userId)
+
+      await userService.sendUserEmailVerified(user._id, user.email)
+      sendUserChannelMessage(userId, 'USER_EMAIL_VERIFIED', true)
+      res.status(204).end()
+    }
+    else throw new Error('Error validating email.')
+  } catch (error) {
+    res.status(500).json(error)
+    console.error('Error validating email: ', error)
+  }
+}
+
 module.exports = {
   getUserProfile,
   patchUser,
@@ -262,5 +298,7 @@ module.exports = {
   getPendingFriends,
   setProfileImage,
   getUserGoals,
-  getUserFriends
+  getUserFriends,
+  sendValidationEmail,
+  validateEmail
 }
