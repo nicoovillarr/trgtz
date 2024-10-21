@@ -72,9 +72,7 @@ const getAllReports = async () => await viewReports.find()
 
 const getReport = async (id) => await viewReports.findById(id)
 
-const getUserReports = async (user) => {
-  return await Report.find({ user: user._id })
-}
+const getAllUserReports = async (user) => await viewReports.find({ "user._id": user })
 
 const getEntityReports = async (entity_type, entity_id) => {
   return await Report.find({ entity_type, entity_id })
@@ -85,6 +83,6 @@ module.exports = {
   resolveReport,
   getAllReports,
   getReport,
-  getUserReports,
+  getAllUserReports,
   getEntityReports
 }
