@@ -53,7 +53,8 @@ const resolveReport = async (req, res) => {
 
 const getAllReports = async (req, res) => {
   try {
-    const reports = await reportService.getAllReports()
+    const user = req.user
+    const reports = await reportService.getAllUserReports(user)
     res.status(200).json(reports)
   } catch (error) {
     res.status(500).json(error)
