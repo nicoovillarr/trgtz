@@ -1,0 +1,13 @@
+---
+import ValidateEmail from "../components/ValidateEmail";
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="Trgtz - Validate Account"
+  description="Fill the following form to validate your Trgtz account."
+>
+  <main class="pt-28 pb-8 bg-gray-100">
+    <ValidateEmail client:load />
+  </main>
+</Layout>

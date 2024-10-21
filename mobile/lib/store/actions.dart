@@ -163,6 +163,19 @@ class UpdateUserFields implements ReducerActionBase {
   }
 }
 
+class SetUserEmailVerifiedAction implements ReducerActionBase {
+  final bool isEmailVerified;
+
+  const SetUserEmailVerifiedAction({required this.isEmailVerified});
+
+  @override
+  execute(ApplicationState currentState) {
+    final User user = currentState.user!;
+    final User updatedUser = user.copyWith(emailVerified: isEmailVerified);
+    return currentState.copyWith(user: updatedUser);
+  }
+}
+
 class UpdateCurrentEditorObjectFields implements ReducerActionBase {
   final Map<String, dynamic> fields;
   final dynamic Function(Map<String, dynamic>) converter;
