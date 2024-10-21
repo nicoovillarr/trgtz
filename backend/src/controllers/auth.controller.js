@@ -7,16 +7,9 @@ const userService = require('../services/user.service')
 
 const signup = async (req, res) => {
   try {
-    const { email, firstName, deviceInfo, photoUrl, password, provider } =
-      req.body
+    const { email, firstName, deviceInfo, photoUrl, password } = req.body
 
-    if (
-      !firstName ||
-      !email ||
-      !deviceInfo ||
-      !provider ||
-      (provider === 'email' && !password)
-    )
+    if (!firstName || !email || !deviceInfo || !password)
       return res.status(400).json({ message: 'Missing required fields' })
 
     if (await authService.checkEmailInUse(email)) {
@@ -44,13 +37,12 @@ const signup = async (req, res) => {
         .status(400)
         .json({ message: 'Missing required fields in device info' })
 
-    const hash =
-      provider === 'email' ? await authService.hashPassword(password) : null
+    const hash = await authService.hashPassword(password)
     const user = await authService.signup(
       firstName,
       email,
       hash,
-      provider,
+      'email',
       photoUrl
     )
 
@@ -68,8 +60,9 @@ const signup = async (req, res) => {
       isVirtual,
       serialNumber,
       req.custom.ip,
-      provider
+      'email'
     )
+
     res.status(201).json({
       _id: user._id,
       token
