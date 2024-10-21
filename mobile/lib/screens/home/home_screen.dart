@@ -56,6 +56,15 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
           store.dispatch(UpdateUserFields(fields: message.data));
           setState(() {});
           break;
+
+        case broadcastTypeUserEmailVerified:
+          store.dispatch(SetUserEmailVerifiedAction(isEmailVerified: message.data));
+          setState(() {});
+
+          if (message.data) {
+            showSnackBar('Your email has been verified!');
+          }
+          break;
       }
     });
 
@@ -188,6 +197,10 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
 
       case editUserPassword:
         _openPasswordEditor();
+        break;
+
+      case validateEmail:
+        _validateEmail();
         break;
 
       case logout:
@@ -343,6 +356,14 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         ),
       ),
     );
+  }  
+
+  void _validateEmail() {
+    setIsLoading(true);
+    ModuleService.validateEmail().then((_) {
+      setIsLoading(false);
+      showSnackBar('Email validation sent!');
+    });
   }
 
   Future<void> _openImagePicker() async {

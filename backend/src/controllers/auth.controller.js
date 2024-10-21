@@ -3,6 +3,7 @@ const authService = require('../services/auth.service')
 const sessionService = require('../services/session.service')
 const mailService = require('../services/mail.service')
 const tokenService = require('../services/token.service')
+const userService = require('../services/user.service')
 
 const signup = async (req, res) => {
   try {
@@ -52,6 +53,10 @@ const signup = async (req, res) => {
       provider,
       photoUrl
     )
+
+    if (!(await userService.sendValidationEmail(user))) {
+      console.error('Error sending validation email')
+    }
 
     const token = await sessionService.createJWT(
       user._id,
@@ -321,9 +326,17 @@ const resetPassword = async (req, res) => {
     const subject = 'Password reset successful'
     const text = 'Your password has been successfully reset'
     const html = '<p>Your password has been successfully reset</p>'
-    
-    const sent = await mailService.sendNoReplyEmail(user.email, subject, text, html)
+
+    const sent = await mailService.sendNoReplyEmail(
+      user.email,
+      subject,
+      text,
+      html
+    )
     if (!sent) return res.status(500).json({ message: 'Error sending email' })
+
+    user.validatedEmail = true
+    await user.save()
 
     res.status(204).end()
   } catch (error) {
