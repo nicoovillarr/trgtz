@@ -1,7 +1,15 @@
-const nodemailer = require('nodemailer')
+const { createTransport } = require('nodemailer')
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
+const transporter = createTransport({
+  host: 'smtp.hostinger.com',
+  secure: true,
+  secureConnection: false,
+  tls: {
+    ciphers: 'SSLv3'
+  },
+  requireTLS: true,
+  port: 465,
+  connectionTimeout: 10000,
   auth: {
     user: process.env.PERSONAL_EMAIL_ADDRESS,
     pass: process.env.PERSONAL_EMAIL_PASSWORD
@@ -26,6 +34,15 @@ const sendNoReplyEmail = async (to, subject, text, html) => {
   }
 }
 
+const sendReportEmail = async (admins, report) => {
+  const subject = `Report ${report.status}`
+  const text = `Report ${report.status} for ${report.entity_type} with id ${report.entity_id}`
+  const html = `<p>Report ${report.status} for ${report.entity_type} with id ${report.entity_id}</p><p>Category: ${report.category}</p><p>Reason: ${report.reason}</p><p>Report ID: ${report._id}</p>`
+
+  return await sendNoReplyEmail(admins.join(','), subject, text, html)
+}
+
 module.exports = {
-  sendNoReplyEmail
+  sendNoReplyEmail,
+  sendReportEmail
 }
