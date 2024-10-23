@@ -12,3 +12,8 @@ export './report_dialog.dart';
 export './basic_ad_banner.dart';
 export './lazy_image.dart';
 export './lazy_banner.dart';
+export './report_info_card.dart';
+export './report_info_field.dart';
+export './report_card.dart';
+export './report_resolution_dialog.dart';
+export './community_guidelines.dart';

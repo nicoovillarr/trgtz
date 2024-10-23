@@ -1,38 +1,31 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
-import 'package:trgtz/services/index.dart';
 
-class ReportDialog extends StatefulWidget {
-  final List<ReportCategory> categoriesAvailable;
-  final String entityType;
-  final String entityId;
-  final Function() showCommunityGuidelines;
-  const ReportDialog({
+class ReportResolutionDialog extends StatefulWidget {
+  final void Function(ReportStatus status, String reason,
+      void Function(String error) setError) onResolution;
+  const ReportResolutionDialog({
     super.key,
-    required this.categoriesAvailable,
-    required this.entityType,
-    required this.entityId,
-    required this.showCommunityGuidelines,
+    required this.onResolution,
   });
 
   @override
-  State<ReportDialog> createState() => _ReportDialogState();
+  State<ReportResolutionDialog> createState() => _ReportResolutionDialogState();
 }
 
-class _ReportDialogState extends State<ReportDialog> {
-  GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  final ReportService _reportService = ReportService();
+class _ReportResolutionDialogState extends State<ReportResolutionDialog> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   late PageController _pageController;
   int _currentPage = 0;
 
   bool _isSubmitting = false;
 
-  ReportCategory? _selectedCategory;
-  String? reason;
+  ReportStatus? _selectedStatus;
+  String? _reason;
+  String _error = '';
 
   @override
   void initState() {
@@ -59,7 +52,7 @@ class _ReportDialogState extends State<ReportDialog> {
             top: 50,
             left: 0,
             right: 0,
-            bottom: 0,
+            bottom: 50,
             child: PageView.builder(
               controller: _pageController,
               physics: const NeverScrollableScrollPhysics(),
@@ -97,7 +90,7 @@ class _ReportDialogState extends State<ReportDialog> {
             const Align(
               alignment: Alignment.center,
               child: Text(
-                'Report menu',
+                'Resolve report menu',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
@@ -122,53 +115,44 @@ class _ReportDialogState extends State<ReportDialog> {
   }
 
   List<Widget> _loadPages() => [
-        _buildCategoryPickerPage(),
+        _buildResolutionPickerPage(),
         _buildReasonPage(),
         _buildConfirmationPage(),
       ];
 
-  Widget _buildCategoryPickerPage() => Column(
+  Widget _buildResolutionPickerPage() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'What do you want to report?',
+            'What do you want to do?',
             style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 8),
-          RichText(
-            text: TextSpan(
-              text: 'Make sure to check our ',
-              children: [
-                TextSpan(
-                  text: 'community guidelines',
-                  style: TextStyle(
-                    color: textButtonColor.withOpacity(0.75),
-                    fontWeight: FontWeight.w500,
-                  ),
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () => widget.showCommunityGuidelines(),
-                ),
-                const TextSpan(text: ' before reporting.'),
-              ],
-              style: TextStyle(color: mainColor.withOpacity(0.75)),
-            ),
-          ),
           const SizedBox(height: 20),
-          ...widget.categoriesAvailable
-              .map((category) => _buildReportOption(category: category)),
+          _buildReportOption(
+              title: 'Approve',
+              description: 'Approve this report to take action',
+              status: ReportStatus.resolved),
+          _buildReportOption(
+              title: 'Reject',
+              description: 'Rejected reports will be closed',
+              status: ReportStatus.rejected),
         ],
       );
 
-  Widget _buildReportOption({required ReportCategory category}) => Container(
+  Widget _buildReportOption(
+          {required ReportStatus status,
+          required String title,
+          required String description}) =>
+      Container(
+        width: double.infinity,
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8.0),
-          color: _selectedCategory == category
+          color: _selectedStatus == status
               ? mainColor.withOpacity(0.075)
               : Colors.transparent,
           border: Border.all(
-            color:
-                _selectedCategory == category ? mainColor : Colors.transparent,
+            color: _selectedStatus == status ? mainColor : Colors.transparent,
           ),
         ),
         clipBehavior: Clip.hardEdge,
@@ -177,8 +161,8 @@ class _ReportDialogState extends State<ReportDialog> {
           child: InkWell(
             onTap: () {
               setState(() {
-                reason = null;
-                _selectedCategory = category;
+                _reason = null;
+                _selectedStatus = status;
               });
 
               _goNext();
@@ -189,13 +173,13 @@ class _ReportDialogState extends State<ReportDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    Report.getDisplayText(category),
+                    title,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  Text(Report.getCategoryDescription(category)),
+                  Text(description),
                 ],
               ),
             ),
@@ -205,24 +189,27 @@ class _ReportDialogState extends State<ReportDialog> {
 
   Widget _buildReasonPage() {
     return Form(
-      key: formKey,
+      key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Please provide a reason for your report',
+            'Please, provide a reason for your resolution',
             style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          const Text('This will help us understand the issue better'),
+          const Text(
+              'This will help the user understand the resolution better'),
           const SizedBox(height: 24),
           TextEdit(
             placeholder: 'Reason',
-            initialValue: reason,
+            initialValue: _reason,
             maxLength: 150,
+            validate: (s) =>
+                s == null || s.isEmpty ? 'Please provide a reason' : null,
             onSaved: (s) {
               setState(() {
-                reason = s ?? '';
+                _reason = s ?? '';
               });
 
               _goNext();
@@ -234,8 +221,8 @@ class _ReportDialogState extends State<ReportDialog> {
             children: [
               MButton(
                 onPressed: () {
-                  if (formKey.currentState!.validate()) {
-                    formKey.currentState!.save();
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
                   }
                 },
                 text: 'Next',
@@ -264,10 +251,11 @@ class _ReportDialogState extends State<ReportDialog> {
                 fontWeight: FontWeight.w600,
               ),
               children: [
-                const TextSpan(text: 'Category: '),
+                const TextSpan(text: 'Resolution: '),
                 TextSpan(
-                  text: Report.getDisplayText(
-                      _selectedCategory ?? ReportCategory.other),
+                  text: _selectedStatus != null
+                      ? Report.getStatusText(_selectedStatus!)
+                      : '',
                   style: const TextStyle(fontWeight: FontWeight.normal),
                 ),
               ],
@@ -283,7 +271,7 @@ class _ReportDialogState extends State<ReportDialog> {
               children: [
                 const TextSpan(text: 'Reason: '),
                 TextSpan(
-                  text: reason ?? '-',
+                  text: _reason ?? '-',
                   style: const TextStyle(fontWeight: FontWeight.normal),
                 ),
               ],
@@ -298,12 +286,22 @@ class _ReportDialogState extends State<ReportDialog> {
                 text: 'Submit',
               ),
             ],
-          )
+          ),
+          const SizedBox(height: 8.0),
+          if (_error.isNotEmpty)
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                _error,
+                textAlign: TextAlign.end,
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
         ],
       );
 
   void _submitReport() {
-    if (_selectedCategory == null || reason == null) {
+    if (_selectedStatus == null || _reason == null) {
       return;
     }
 
@@ -311,23 +309,13 @@ class _ReportDialogState extends State<ReportDialog> {
       _isSubmitting = true;
     });
 
-    _reportService
-        .createReport(
-          widget.entityType,
-          widget.entityId,
-          _selectedCategory!.toString().split('.').last,
-          reason!,
-        )
-        .then((_) => _close())
-        .catchError((e) {
-      setState(() {
-        _isSubmitting = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('An error occurred while submitting the report'),
-        ),
-      );
+    widget.onResolution(_selectedStatus!, _reason!, setError);
+  }
+
+  void setError(String error) {
+    setState(() {
+      _error = error;
+      _isSubmitting = false;
     });
   }
 

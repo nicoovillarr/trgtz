@@ -10,7 +10,6 @@ app.post('/', protect, reportController.createReport)
 app.put('/:id', protect, reportController.resolveReport)
 app.get('/', protect, reportController.getAllReports)
 app.get('/:id', protect, reportController.getReport)
-app.get('/user', protect, reportController.getUserReports)
 app.get('/:entity_type/:entity_id', protect, reportController.getEntityReports)
 
 module.exports = app
