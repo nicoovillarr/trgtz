@@ -17,13 +17,14 @@ const sendAlertToFriends = async (userId, type) => {
   }
 }
 
-const addAlert = async (sent_by, sent_to, type) => {
-  if (sent_by === sent_to) return
+const addAlert = async (sent_by, sent_to, type, isSystemAlert = false) => {
+  if (sent_by === sent_to && !isSystemAlert) return
 
   const alert = new Alert({
     sent_by,
     sent_to,
     type,
+    isSystemAlert,
     createdOn: new Date()
   })
 

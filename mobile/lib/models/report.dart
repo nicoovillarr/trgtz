@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/icon_data.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/utils.dart';
 
@@ -9,7 +8,7 @@ enum ReportCategory { spam, harassment, hateSpeech, violence, nudity, other }
 
 enum ReportStatus {
   pending,
-  approved,
+  resolved,
   rejected,
 }
 
@@ -76,8 +75,8 @@ class Report extends ModelBase {
   Map<String, dynamic> toJson() => {
         '_id': id,
         'user': user.toJson(),
-        'entityType': entityType.toString().split('.').last,
-        'entityId': entityId,
+        'entity_type': entityType.toString().split('.').last,
+        'entity_id': entityId,
         'category': category.toString().split('.').last,
         'reason': reason,
         'status': status.toString().split('.').last,
@@ -143,10 +142,23 @@ class Report extends ModelBase {
     switch (status) {
       case ReportStatus.pending:
         return 'Pending';
-      case ReportStatus.approved:
+      case ReportStatus.resolved:
         return 'Approved';
       case ReportStatus.rejected:
         return 'Rejected';
+      default:
+        throw UnimplementedError();
+    }
+  }
+
+  static String getStatusDetail(ReportStatus status) {
+    switch (status) {
+      case ReportStatus.pending:
+        return 'This report is pending review.';
+      case ReportStatus.resolved:
+        return 'Approve this report to take action.';
+      case ReportStatus.rejected:
+        return 'Rejected reports will be closed.';
       default:
         throw UnimplementedError();
     }
