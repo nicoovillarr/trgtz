@@ -112,11 +112,12 @@ jobs:
       - name: Build Android bundle
         run: |
           cd mobile
+
+          touch .env.development
+          touch .env.staging
+          touch .env.live
           
           echo "${{ secrets.ENV_CONTENT }}" | base64 -d > .env.${{ env.ENV_NAME }}
-
-          ls -la
-          cat .env.${{ env.ENV_NAME }}
 
           flutter clean
           flutter pub get
