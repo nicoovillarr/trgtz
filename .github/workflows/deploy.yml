@@ -91,7 +91,10 @@ jobs:
         shell: bash
 
       - name: Decode google-services.json
-        run: echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 -d > mobile/android/app/src/${{ env.ENV_NAME }}/google-services.json
+        run: |
+          FLAVOR_PATH=mobile/android/app/src/${{ env.ENV_NAME }}
+          mkdir -p $FLAVOR_PATH
+          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 -d > $FLAVOR_PATH/google-services.json
 
       - name: Decode keystore
         run: echo "${{ secrets.GOOGLE_PLAY_KEY_STORE }}" | base64 -d > mobile/keystore.jks
@@ -106,8 +109,7 @@ jobs:
       - name: Build Android bundle
         run: |
           cd mobile
-
-          ENV_NAME=${{ github.ref == 'refs/heads/main' && 'staging' || github.ref == 'refs/heads/live' && 'live' }}
+          
           echo ${{ secrets.ENV_CONTENT }} | base64 -d > .env.${{ env.ENV_NAME }}
 
           ls -la
