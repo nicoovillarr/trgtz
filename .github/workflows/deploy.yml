@@ -90,12 +90,14 @@ jobs:
           echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
         shell: bash
 
+      - name: Decode google-services.json
+        run: echo ${{ secrets.GOOGLE_SERVICES_JSON }} | base64 -d > mobile/android/app/src/${{ env.ENV_NAME }}/google-services.json
+
       - name: Decode keystore
         run: echo ${{ secrets.GOOGLE_PLAY_KEY_STORE }} | base64 -d > mobile/keystore.jks
 
       - name: Install keystore
         run: |
-          echo ${{ secrets.GOOGLE_PLAY_KEY_STORE }} | base64 -d > mobile/keystore.jks
           echo "storeFile=${{ github.workspace }}/mobile/keystore.jks" > mobile/android/key.properties
           echo "storePassword=${{ secrets.GOOGLE_PLAY_KEY_STORE_PASSWORD }}" >> mobile/android/key.properties
           echo "keyPassword=${{ secrets.GOOGLE_PLAY_KEY_PASSWORD }}" >> mobile/android/key.properties
@@ -105,14 +107,11 @@ jobs:
         run: |
           cd mobile
 
-          touch .env.development
-          touch .env.staging
-          touch .env.live
+          ENV_NAME=${{ github.ref == 'refs/heads/main' && 'staging' || github.ref == 'refs/heads/live' && 'live' }}
+          echo ${{ secrets.ENV_CONTENT }} | base64 -d > .env.${{ env.ENV_NAME }}
 
-          echo "Selected Flavor: ${{ env.ENV_NAME }}"
-
-          echo "ENDPOINT=$ENDPOINT" > .env.${{ env.ENV_NAME }}
-          echo "WS_ENDPOINT=$WS_ENDPOINT" >> .env.${{ env.ENV_NAME }}
+          ls -la
+          cat .env.${{ env.ENV_NAME }}
 
           flutter clean
           flutter pub get
