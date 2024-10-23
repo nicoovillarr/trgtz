@@ -24,15 +24,13 @@ class FriendsListScreen extends StatefulWidget {
 }
 
 class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
-  @override
   late String userId;
 
-  bool get itsMe => userId == store.state.user!.id;
+  bool get itsMe => userId == user!.id;
 
   @override
   Future afterFirstBuild(BuildContext context) async {
-    userId = ModalRoute.of(context)?.settings.arguments as String? ??
-        store.state.user!.id;
+    userId = ModalRoute.of(context)?.settings.arguments as String? ?? user!.id;
     context.read<FriendsListScreenProvider>().populate(userId, itsMe);
   }
 

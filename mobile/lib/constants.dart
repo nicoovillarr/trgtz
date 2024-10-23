@@ -27,3 +27,6 @@ const String broadcastTypeFriendDeleted = 'FRIEND_DELETED';
 
 const String broadcastChannelTypeAlerts = 'ALERTS';
 const String broadcastTypeNewAlert = 'NEW_ALERT';
+
+const String broadcastChannelTypeReport = 'REPORT';
+const String broadcastTypeReportUpdate = 'REPORT_UPDATE';

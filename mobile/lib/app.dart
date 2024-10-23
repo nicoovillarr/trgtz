@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:redux/redux.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/base_screen.dart';
+import 'package:trgtz/screens/admin/index.dart';
+import 'package:trgtz/screens/admin/providers/index.dart';
 import 'package:trgtz/screens/goal/providers/index.dart';
 import 'package:trgtz/screens/profile/index.dart';
 import 'package:trgtz/screens/report/index.dart';
@@ -50,9 +52,6 @@ class MyApp extends StatelessWidget {
             useMaterial3: true,
             floatingActionButtonTheme: FloatingActionButtonThemeData(
               backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(80.0),
-              ),
             ),
           ),
           initialRoute: initialRoute,
@@ -80,6 +79,10 @@ class MyApp extends StatelessWidget {
             '/reports/single': (context) => ChangeNotifierProvider(
                   create: (context) => SingleReportProvider(),
                   child: const SingleReportView(),
+                ),
+            '/admin': (context) => ChangeNotifierProvider(
+                  create: (context) => PendingReportsProvider(),
+                  child: const PendingReportsScreen(),
                 ),
           },
         ),

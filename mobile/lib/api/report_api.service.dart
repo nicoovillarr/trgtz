@@ -27,4 +27,8 @@ class ReportApiService extends ApiBaseService {
   Future<ApiResponse> getReports() async => get('');
 
   Future<ApiResponse> getReportById(String id) async => get(id);
+
+  Future<ApiResponse> getAdminReports() async => get('', params: {
+        'showAll': true.toString(),
+      });
 }

@@ -6,7 +6,8 @@ const channels = {
   USER: {},
   ALERTS: {},
   FRIENDS: {},
-  GOAL: {}
+  GOAL: {},
+  REPORT: {}
 }
 
 const clients = {}
@@ -123,6 +124,9 @@ const sendFriendsChannelMessage = (userId, type, data) =>
 const sendGoalChannelMessage = (goalId, type, data) =>
   sendMessage('GOAL', goalId, type, data)
 
+const sendReportChannelMessage = (reportId, type, data) =>
+  sendMessage('REPORT', reportId, type, data)
+
 const sendMessage = (channelType, documentId, type, data) => {
   if (
     channels[channelType] == null ||
@@ -156,5 +160,6 @@ module.exports = {
   sendUserChannelMessage,
   sendAlertsChannelMessage,
   sendFriendsChannelMessage,
-  sendGoalChannelMessage
+  sendGoalChannelMessage,
+  sendReportChannelMessage
 }

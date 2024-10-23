@@ -11,6 +11,7 @@ class User extends ModelBase {
   String email;
   DateTime createdOn;
   bool emailVerified;
+  bool isSuperAdmin;
   Image? avatar;
   List<AuthProvider> authProviders;
 
@@ -19,7 +20,8 @@ class User extends ModelBase {
     required this.firstName,
     required this.email,
     required this.createdOn,
-    required this.emailVerified,
+    this.emailVerified = false,
+    this.isSuperAdmin = false,
     this.avatar,
     this.authProviders = const [],
   });
@@ -32,6 +34,8 @@ class User extends ModelBase {
       createdOn: ModelBase.tryParseDateTime('createdAt', json)!,
       emailVerified:
           json.containsKey('emailVerified') ? json['emailVerified'] : false,
+      isSuperAdmin:
+          json.containsKey('isSuperAdmin') ? json['isSuperAdmin'] : false,
       avatar: json['avatar'] != null ? Image.fromJson(json['avatar']) : null,
       authProviders: json['providers'] != null
           ? List<AuthProvider>.from(json['providers'].map((provider) =>
@@ -46,6 +50,7 @@ class User extends ModelBase {
         'email': email,
         'createdAt': createdOn.toIso8601String(),
         'emailVerified': emailVerified,
+        'isSuperAdmin': isSuperAdmin,
         'avatar': avatar?.toJson(),
       };
 
@@ -56,6 +61,7 @@ class User extends ModelBase {
       createdOn: createdOn,
       email: email,
       emailVerified: emailVerified,
+      isSuperAdmin: isSuperAdmin,
     );
   }
 
@@ -65,6 +71,7 @@ class User extends ModelBase {
     String? email,
     DateTime? createdOn,
     bool? emailVerified,
+    bool? isSuperAdmin,
     Image? avatar,
     List<AuthProvider>? authProviders,
   }) =>
@@ -74,6 +81,7 @@ class User extends ModelBase {
         email: email ?? this.email,
         createdOn: createdOn ?? this.createdOn,
         emailVerified: emailVerified ?? this.emailVerified,
+        isSuperAdmin: isSuperAdmin ?? this.isSuperAdmin,
         avatar: avatar ?? this.avatar,
         authProviders: authProviders ?? this.authProviders,
       );
