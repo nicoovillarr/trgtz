@@ -27,6 +27,11 @@ const alertSchema = new mongoose.Schema({
       'report_rejected'
     ]
   },
+  isSystemAlert: {
+    type: Boolean,
+    required: true,
+    default: false
+  },
   seen: {
     type: Boolean,
     required: true,

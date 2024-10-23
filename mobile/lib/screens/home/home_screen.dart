@@ -203,6 +203,10 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         _validateEmail();
         break;
 
+      case adminReports:
+        Navigator.of(context).pushNamed('/admin');
+        break;
+
       case logout:
         Security.logOut().then((_) {
           Navigator.of(context).popUntil((route) => false);
