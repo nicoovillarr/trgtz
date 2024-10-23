@@ -99,6 +99,9 @@ jobs:
       - name: Decode keystore
         run: echo "${{ secrets.GOOGLE_PLAY_KEY_STORE }}" | base64 -d > mobile/keystore.jks
 
+      - name: Decode admob properties
+        run: echo "${{ secrets.GOOGLE_ADMOB }}" | base64 -d > mobile/android/admob.properties
+
       - name: Install keystore
         run: |
           echo "storeFile=${{ github.workspace }}/mobile/keystore.jks" > mobile/android/key.properties
