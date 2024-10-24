@@ -371,7 +371,34 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
   }
 
   Future<void> _openImagePicker() async {
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    simpleBottomSheet(
+      title: 'Change your profile picture',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.camera_alt),
+            title: const Text('Take a photo'),
+            onTap: () {
+              Navigator.of(context).pop();
+              _pickImage(ImageSource.camera);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.photo),
+            title: const Text('Choose from gallery'),
+            onTap: () {
+              Navigator.of(context).pop();
+              _pickImage(ImageSource.gallery);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Future _pickImage(ImageSource source)  async {
+    final pickedFile = await picker.pickImage(source: source);
 
     if (pickedFile != null) {
       File? file = File(pickedFile.path);
