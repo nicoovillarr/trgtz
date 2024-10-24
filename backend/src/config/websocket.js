@@ -49,6 +49,12 @@ const init = () => {
           )
 
           console.log(`${userId} authenticated and connected to websocket...`)
+        } else if (type === 'PING') {
+          ws.send(JSON.stringify({ type: 'PONG' }), (error) => {
+            if (error) {
+              console.error('Error sending PONG:', error)
+            }
+          })        
         } else {
           const { channelType, documentId } = data
 

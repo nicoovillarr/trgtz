@@ -12,6 +12,7 @@ import 'package:trgtz/screens/goal/providers/index.dart';
 import 'package:trgtz/screens/profile/index.dart';
 import 'package:trgtz/screens/report/index.dart';
 import 'package:trgtz/screens/report/providers/index.dart';
+import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:trgtz/screens/friends/providers/index.dart';
 
@@ -22,21 +23,39 @@ import 'package:trgtz/screens/friends/index.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   final String flavor;
   final ApplicationState initialState;
   final String initialRoute;
-  late final Store<ApplicationState> _store = Store<ApplicationState>(
-    reduce,
-    initialState: initialState,
-  );
 
-  MyApp({
+  const MyApp({
     super.key,
     required this.initialState,
     required this.initialRoute,
     this.flavor = 'development',
   });
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  late final Store<ApplicationState> _store = Store<ApplicationState>(
+    reduce,
+    initialState: widget.initialState,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
 
   // This widget is the root of your application.
   @override
@@ -54,7 +73,7 @@ class MyApp extends StatelessWidget {
               backgroundColor: Colors.white,
             ),
           ),
-          initialRoute: initialRoute,
+          initialRoute: widget.initialRoute,
           routes: {
             '/login': (context) => const LoginScreen(),
             '/signup': (context) => const SignupScreen(),
@@ -87,4 +106,21 @@ class MyApp extends StatelessWidget {
           },
         ),
       );
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.paused) {
+      WebSocketService.getInstance().close();
+    } else if (state == AppLifecycleState.resumed) {
+      final store = StoreProvider.of<ApplicationState>(navigatorKey.currentContext!);
+      UserService().getProfile(store.state.user!.id).then((user) {
+        store.dispatch(SetUserAction(user: user['user']));
+        store.dispatch(SetGoalsAction(goals: user['goals']));
+        store.dispatch(SetFriendsAction(friends: user['friends']));
+        store.dispatch(SetAlertsAction(alerts: user['alerts']));
+        WebSocketService.getInstance().init();
+      });
+    }
+  }
 }
