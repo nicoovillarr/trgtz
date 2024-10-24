@@ -1,5 +1,3 @@
-import Shimmer from "./Shimmer";
-
 interface Props {
   horizontalAlign?: "left" | "center" | "right";
   verticalAlign?: "top" | "center" | "bottom";
