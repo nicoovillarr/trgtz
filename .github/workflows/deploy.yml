@@ -3,14 +3,16 @@ name: Deploy
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        description: "Deployment environment"
+      version:
+        description: "Version"
         required: true
-        default: "staging"
+        default: "auto"
         type: choice
         options:
-          - live
-          - staging
+          - auto
+          - patch
+          - minor
+          - major
       pre-release:
         description: "Mark as pre-release"
         required: true
@@ -55,18 +57,21 @@ jobs:
 
       - name: Run standard-version
         run: |
-          if [[ "${{ github.event.inputs.pre-release }}" == "true" && "${{ github.event.inputs.environment }}" == "staging" ]]; then
-            param="-p stg"
-          elif [[ "${{ github.event.inputs.pre-release }}" == "true" && "${{ github.event.inputs.environment }}" == "live" ]]; then
-            param="-p live"
+          prerelease=""          
+          if [[ "${{ github.event.inputs.pre-release }}" == "true" && "${{ env.ENV_NAME }}" == "staging" ]]; then
+            prerelease="-p stg"
+          elif [[ "${{ github.event.inputs.pre-release }}" == "true" && "${{ env.ENV_NAME }}" == "live" ]]; then
+            prerelease="-p live"
           elif [[ "${{ github.event.inputs.pre-release }}" == "true" ]]; then
-            param="-p"
-          else
-            param=""
+            prerelease="-p"
           fi
-          npx standard-version $param
 
-          git pull origin
+          version_flag = ""          
+          if [[ "${{ github.event.inputs.version }}" != "auto" ]]; then
+            version_flag = "--release-as ${{ github.event.inputs.version }}"
+          fi
+          
+          npx standard-version $version_flag $prerelease
 
       - name: Set Android version
         run: |
