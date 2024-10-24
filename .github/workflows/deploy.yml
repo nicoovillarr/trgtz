@@ -104,6 +104,9 @@ jobs:
       - name: Decode admob properties
         run: echo "${{ secrets.GOOGLE_ADMOB }}" | base64 -d > mobile/android/admob.properties
 
+      - name: Decode keystore
+        run: echo "${{ secrets.GOOGLE_PLAY_KEY_STORE }}" | base64 -d > mobile/keystore.jks
+
       - name: Install keystore
         run: |
           echo "storeFile=${{ github.workspace }}/mobile/keystore.jks" > mobile/android/key.properties
@@ -121,14 +124,18 @@ jobs:
           
           echo "${{ secrets.ENV_CONTENT }}" | base64 -d > .env.${{ env.ENV_NAME }}
 
-          flutter clean
+          # flutter clean
           flutter pub get
           flutter build appbundle --flavor ${{ env.ENV_NAME }} -t lib/main_${{ env.ENV_NAME }}.dart
-          
-          echo "BUNDLE_PATH=${{ github.workspace }}/mobile/build/app/outputs/bundle/${{ env.ENV_NAME }}Release/trgtz-${{ env.ENV_NAME }}-${{ env.VERSION_NAME }}-${{ env.VERSION_CODE }}.aab" >> $GITHUB_ENV
-          mv ${{ github.workspace }}/mobile/build/app/outputs/bundle/${{ env.ENV_NAME }}Release/app-${{ env.ENV_NAME }}-release.aab ${{ env.BUNDLE_PATH }}
 
-          echo "Bundle saved in: ${{ env.BUNDLE_PATH }}"
+          BUNDLE_FILE_NAME="trgtz-${{ env.ENV_NAME }}-${{ env.VERSION_NAME }}-${{ env.VERSION_CODE }}.aab"
+          BUNDLE_FOLDER="${{ github.workspace }}/mobile/build/app/outputs/bundle/${{ env.ENV_NAME }}Release"
+          
+          cd $BUNDLE_FOLDER || exit 1
+          mv app-${{ env.ENV_NAME }}-release.aab $BUNDLE_FILE_NAME
+          
+          echo "BUNDLE_PATH=$BUNDLE_FOLDER/$BUNDLE_FILE_NAME" >> $GITHUB_ENV
+          echo "Bundle saved in: $BUNDLE_PATH"
         shell: bash
         env:
           ENDPOINT: ${{ vars.ENDPOINT }}
