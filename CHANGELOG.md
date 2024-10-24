@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.4](https://github.com/nicoovillarr/trgtz/compare/v0.1.3...v0.1.4) (2024-10-24)
+
+
+### Features
+
+* allow opening camera for profile image ([b6ac89e](https://github.com/nicoovillarr/trgtz/commit/b6ac89e0213c833b4fe70e030442ba93f5cd8183))
+* improve websockets lifecycle ([d241d06](https://github.com/nicoovillarr/trgtz/commit/d241d06a4ff290f06d1df2afdd7d94d91ff0e9cf))
+
 ### [0.1.3](https://github.com/nicoovillarr/trgtz/compare/v0.1.2...v0.1.3) (2024-10-24)
 
 ### [0.1.2](https://github.com/nicoovillarr/trgtz/compare/v0.1.1...v0.1.2) (2024-10-24)
