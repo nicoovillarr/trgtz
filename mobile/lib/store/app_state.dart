@@ -11,6 +11,7 @@ class ApplicationState {
   final int? pendingFriendRequests;
   final bool? isLoading;
   final List<Alert>? alerts;
+  final bool isProduction;
 
   const ApplicationState({
     required this.date,
@@ -21,6 +22,7 @@ class ApplicationState {
     this.isLoading = false,
     this.currentEditorObject,
     this.alerts,
+    this.isProduction = false,
   });
 
   ApplicationState copyWith({
@@ -32,6 +34,7 @@ class ApplicationState {
     int? pendingFriendRequests,
     bool? isLoading,
     List<Alert>? alerts,
+    bool? isProduction,
   }) {
     ApplicationState state = ApplicationState(
       date: date ?? this.date,
@@ -44,6 +47,7 @@ class ApplicationState {
           _calculateDefaultPendingFriendRequests(user, friends),
       isLoading: isLoading ?? this.isLoading,
       alerts: alerts ?? this.alerts,
+      isProduction: isProduction ?? this.isProduction,
     );
 
     return state;
