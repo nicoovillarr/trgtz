@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:redux/redux.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/index.dart';
@@ -48,23 +51,26 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
   Widget _buildBanner() => Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text.rich(
-            const TextSpan(
-              text: appName,
-              children: [
-                TextSpan(
-                  text: '.',
-                  style: TextStyle(
-                    height: 1,
-                    color: accentColor,
+          GestureDetector(
+            onTap: _printAppEndpoint,
+            child: Text.rich(
+              const TextSpan(
+                text: appName,
+                children: [
+                  TextSpan(
+                    text: '.',
+                    style: TextStyle(
+                      height: 1,
+                      color: accentColor,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            style: GoogleFonts.josefinSans(
-              color: mainColor,
-              fontSize: 48,
-              fontWeight: FontWeight.bold,
+                ],
+              ),
+              style: GoogleFonts.josefinSans(
+                color: mainColor,
+                fontSize: 48,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           Text(
@@ -254,4 +260,11 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
 
   @override
   bool get useAppBar => false;
+
+  void _printAppEndpoint() {
+    Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
+    if (!store.state.isProduction) {
+      showSnackBar('Endpoint: ${dotenv.env['ENDPOINT']}');
+    }
+  }
 }

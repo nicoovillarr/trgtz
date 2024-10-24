@@ -28,6 +28,7 @@ void showErrorDialog(GlobalKey<NavigatorState> navigator, Object error) {
 
 void mainCommon({
   required String flavor,
+  bool isProduction = false,
 }) async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
@@ -38,6 +39,7 @@ void mainCommon({
   await admob.MobileAds.instance.initialize();
   ApplicationState initialState = ApplicationState(
     date: DateTime.now(),
+    isProduction: isProduction,
   );
 
   bool loggedIn = false;
