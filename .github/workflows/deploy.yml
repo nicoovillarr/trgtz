@@ -66,9 +66,9 @@ jobs:
             prerelease="-p"
           fi
 
-          version_flag = ""          
+          version_flag=""          
           if [[ "${{ github.event.inputs.version }}" != "auto" ]]; then
-            version_flag = "--release-as ${{ github.event.inputs.version }}"
+            version_flag="--release-as ${{ github.event.inputs.version }}"
           fi
           
           npx standard-version $version_flag $prerelease
