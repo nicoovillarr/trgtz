@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.2](https://github.com/nicoovillarr/trgtz/compare/v0.1.1...v0.1.2) (2024-10-24)
+
+
+### Features
+
+* show api endpoint ([c017398](https://github.com/nicoovillarr/trgtz/commit/c017398dbbe690ac32b957eb4854b32d684721cc))
+
 ### [0.1.1](https://github.com/nicoovillarr/trgtz/compare/v0.1.1-stg.5...v0.1.1) (2024-10-23)
 
 
