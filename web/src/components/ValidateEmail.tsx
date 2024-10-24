@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import Card from "./Card";
-import Shimmer from "./Shimmer";
 
 export default function ValidateEmail() {
   const [loading, setLoading] = useState(true);
