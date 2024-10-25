@@ -23,4 +23,10 @@ class ModuleService {
   Future<Map<String, dynamic>> googleSignIn(String idToken, String email,
           Map<String, dynamic> deviceInfo) async =>
       await _authService.googleSignIn(idToken, email, deviceInfo);
+
+  Future<bool> addAuthProvider(String provider, String token) async =>
+      await _authService.addAuthProvider(provider, token);
+
+  Future sendResetLink(String email) async =>
+      await _authService.sendResetLink(email);
 }

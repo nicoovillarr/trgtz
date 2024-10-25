@@ -15,8 +15,12 @@ class WebSocketMessage {
   final String? documentId;
   final dynamic data;
 
-  const WebSocketMessage(
-      {this.type, this.data, this.channelType, this.documentId});
+  WebSocketMessage({
+    this.type,
+    this.data,
+    this.channelType,
+    this.documentId,
+  });
 
   factory WebSocketMessage.fromJson(Map<String, dynamic> json) {
     return WebSocketMessage(
@@ -81,6 +85,8 @@ class WebSocketService {
   Stream<WebSocketMessage>? _broadcastStream;
   StreamSubscription<dynamic>? _rootSubscription;
   bool connected = false;
+  Timer? _pingTimer;
+  bool _waitingForPong = false;
 
   final List<WebSocketChannelSubscription> _channelsSubscribed = [];
 
@@ -115,6 +121,10 @@ class WebSocketService {
           print('[WebSocket] Received message: ${message.type}');
         }
 
+        if (message.type == 'PONG') {
+          _waitingForPong = false;
+        }
+
         return message;
       }).asBroadcastStream();
 
@@ -126,12 +136,35 @@ class WebSocketService {
           connected = true;
           completer.complete();
           authAux?.cancel();
+
+          if (_pingTimer != null && !_pingTimer!.isActive) {
+            _pingTimer!.cancel();
+            _pingTimer = null;
+          }
+
+          _pingTimer = Timer.periodic(Duration(seconds: 30), (timer) {
+            if (_channel != null) {
+              if (_waitingForPong) {
+                restart();
+                return;
+              }
+
+              sendMessage(WebSocketMessage(type: 'PING', data: {}));
+              _waitingForPong = true;
+            }
+          });
         }
       });
 
       await completer.future;
-    } else {
-      throw StateError('WebSocketService is already initialized');
+
+      if (_channelsSubscribed.isNotEmpty) {
+        for (var sub in _channelsSubscribed) {
+          sub.init();
+        }
+      }
+    } else if (kDebugMode) {
+      print('WebSocketService is already initialized');
     }
   }
 
@@ -200,8 +233,6 @@ class WebSocketService {
       ));
     }
 
-    _channelsSubscribed.clear();
-
     if (kDebugMode) {
       print('[WebSocket] Unsubscribed from all channels');
     }
@@ -222,6 +253,8 @@ class WebSocketService {
   void dispose() {
     _channel?.sink.close();
     _channel = null;
+    _pingTimer?.cancel();
+    _pingTimer = null;
   }
 
   void close() {
@@ -230,9 +263,20 @@ class WebSocketService {
     _controller?.close();
     _channel?.sink.close();
     _channel = null;
+    _pingTimer?.cancel();
+    _pingTimer = null;
   }
 
   void restart() {
+    if (!connected) {
+      return;
+    }
+
+    if (_pingTimer != null && _pingTimer!.isActive) {
+      _pingTimer!.cancel();
+      _pingTimer = null;
+    }
+
     BuildContext context = navigatorKey.currentContext!;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(

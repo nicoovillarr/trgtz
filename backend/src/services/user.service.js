@@ -5,6 +5,8 @@ const {
   sendFriendsChannelMessage
 } = require('../config/websocket')
 const { viewUsers, viewFriends } = require('../config/views')
+const mailService = require('./mail.service')
+const tokenService = require('./token.service')
 
 const getUsers = async () => await User.find()
 
@@ -32,6 +34,11 @@ const patchUser = async (id, updates) => {
 
 const updatePassword = async (user, newHash) => {
   user.password = newHash
+
+  if (!user.providers.includes('email')) {
+    user.providers.push('email')
+  }
+
   await user.save()
 }
 
@@ -193,6 +200,42 @@ const hasAccess = async (me, other) => {
   )
 }
 
+const sendValidationEmail = async (user) => {
+  const token = await tokenService.createToken('email_validation', user._id)
+
+  const subject = 'Email validation'
+  const link = `${process.env.FRONTEND_URL}/validate?token=${token}`
+  const text = `Click here to validate your email: ${link}`
+  const html = `<a href="${link}">Click here to validate your email</a>`
+
+  return await mailService.sendNoReplyEmail(user.email, subject, text, html)
+}
+
+const validateEmail = async (token) => {
+  const userId = await tokenService.consumeToken(token, 'email_validation')
+  if (!userId) return null
+
+  const user = await User.findById(userId)
+  if (user.emailVerified) return null
+
+  user.emailVerified = true
+  await user.save()
+
+  return userId
+}
+
+const sendUserEmailVerified = async (userId, email) => {
+  const subject = 'Email validated'
+  const text = 'Your email has been successfully validated'
+  const html = '<p>Your email has been successfully validated</p>'
+  return await mailService.sendNoReplyEmail(
+    email,
+    subject,
+    text,
+    html
+  )
+}
+
 module.exports = {
   getUsers,
   getUserInfo,
@@ -208,5 +251,8 @@ module.exports = {
   getUserFirebaseTokens,
   getPendingFriends,
   setAvatarImage,
-  hasAccess
+  hasAccess,
+  sendValidationEmail,
+  validateEmail,
+  sendUserEmailVerified
 }

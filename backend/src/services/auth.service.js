@@ -29,6 +29,10 @@ const signup = async (
     user.avatar = image._id
   }
 
+  if (provider === 'google') {
+    user.emailVerified = true
+  }
+
   await user.save()
   const json = user.toJSON()
   delete json.goals
@@ -38,6 +42,9 @@ const signup = async (
 const login = async (email, password) => {
   const user = await User.findOne({ email })
   if (user == null) return null
+
+  if (!user.providers.includes('email') || user.password == null) return null
+
   if (!(await validatePassword(user, password))) return null
 
   if (user.providers.indexOf('email') === -1) {
@@ -65,8 +72,17 @@ const verifyGoogleToken = async (idToken) => {
     audience: process.env.GOOGLE_CLIENT_ID
   })
 
-  const payload = ticket.getPayload()
-  return payload
+  return ticket.getPayload()
+}
+
+const addProvider = async (user, provider) => {
+  if (user.providers.indexOf(provider) !== -1) {
+    return false
+  }
+
+  user.providers.push(provider)
+  await user.save()
+  return true
 }
 
 module.exports = {
@@ -75,5 +91,6 @@ module.exports = {
   checkEmailInUse,
   hashPassword,
   validatePassword,
-  verifyGoogleToken
+  verifyGoogleToken,
+  addProvider
 }

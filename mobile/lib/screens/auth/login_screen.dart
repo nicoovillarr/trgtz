@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:redux/redux.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
+import 'package:trgtz/core/exceptions/sso_login_exception.dart';
 import 'package:trgtz/core/index.dart';
 import 'package:trgtz/logger.dart';
 import 'package:trgtz/models/index.dart';
@@ -85,23 +89,26 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text.rich(
-              const TextSpan(
-                text: appName,
-                children: [
-                  TextSpan(
-                    text: '.',
-                    style: TextStyle(
-                      height: 1,
-                      color: accentColor,
+            GestureDetector(
+              onTap: _printAppEndpoint,
+              child: Text.rich(
+                const TextSpan(
+                  text: appName,
+                  children: [
+                    TextSpan(
+                      text: '.',
+                      style: TextStyle(
+                        height: 1,
+                        color: accentColor,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              style: GoogleFonts.josefinSans(
-                color: mainColor,
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
+                  ],
+                ),
+                style: GoogleFonts.josefinSans(
+                  color: mainColor,
+                  fontSize: 48,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             Text(
@@ -165,7 +172,7 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
             ),
             _buildFormField(child: _buildLoginButton()),
             _simpleButton(
-              onPressed: () {},
+              onPressed: _forgotPassword,
               border: false,
               children: [
                 const Text(
@@ -293,13 +300,8 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
     await ws.init();
 
     Logger.logLogin().then((_) {
-      Navigator.of(context).popAndPushNamed('/home');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Logged in'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      Navigator.of(context).popUntil((route) => false);
+      Navigator.of(context).pushNamed('/home');
     });
   }
 
@@ -353,8 +355,6 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
         throw Exception("Google sign in failed");
       }
 
-      final String email = googleUser.email;
-
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
@@ -365,7 +365,7 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
         throw Exception("Google sign in failed");
       }
 
-      await _completeGoogleSignIn(idToken, email);
+      await _completeGoogleSignIn(idToken, googleUser);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.maybeOf(context)?.showSnackBar(
@@ -380,11 +380,61 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
     }
   }
 
-  Future _completeGoogleSignIn(String idToken, String email) async {
+  Future _completeGoogleSignIn(
+      String idToken, GoogleSignInAccount googleUser) async {
     final deviceInfo =
         await DeviceInformationService.of(context).getDeviceInfo();
     ModuleService()
-        .googleSignIn(idToken, email, deviceInfo)
-        .then(_completeSignIn);
+        .googleSignIn(idToken, googleUser.email, deviceInfo)
+        .then(_completeSignIn)
+        .catchError((e) {
+      setIsLoading(false);
+      if (e is SsoLoginException) {
+        final String email = googleUser.email;
+        final String displayName = googleUser.displayName ?? '';
+        final String photoUrl = googleUser.photoUrl ?? '';
+        simpleBottomSheet(
+          height: size.height * 0.85,
+          title: 'Use your password to log in before linking your account',
+          child: SsoIntermediatePassword(
+            email: email,
+            idToken: idToken,
+            displayName: displayName,
+            photoUrl: photoUrl,
+          ),
+        );
+      } else {
+        throw e;
+      }
+    });
+  }
+
+  void _forgotPassword() {
+    simpleBottomSheet(
+      title: 'Forgot your password?',
+      child: ForgotPasswordForm(
+        onSend: (email) {
+          setIsLoading(true);
+          ModuleService().sendResetLink(email).then((_) {
+            setIsLoading(false);
+
+            Navigator.of(context).pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Reset link sent to your email.'),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          });
+        },
+      ),
+    );
+  }
+
+  void _printAppEndpoint() {
+    Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
+    if (!store.state.isProduction) {
+      showSnackBar('Endpoint: ${dotenv.env['ENDPOINT']}');
+    }
   }
 }

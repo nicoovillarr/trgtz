@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/index.dart';
+import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/report/providers/index.dart';
-import 'package:trgtz/screens/report/widgets/index.dart';
 import 'package:trgtz/utils.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -23,25 +23,48 @@ class _SingleReportViewState extends BaseScreen<SingleReportView> {
   String? get title => 'Report details';
 
   @override
+  RefreshCallback? get onRefresh => () => loader();
+
+  @override
+  FloatingActionButton? get fab =>
+      user!.isSuperAdmin && viewModel.report?.resolvedOn == null
+          ? FloatingActionButton.extended(
+              onPressed: _showResolutionDialog,
+              label: const Text('Resolve report'),
+            )
+          : null;
+
+  @override
   Future afterFirstBuild(BuildContext context) async {
+    subscribeToChannel('REPORT', viewModel.report!.id, (message) {
+      viewModel.processMessage(message);
+      setState(() {});
+    });
+  }
+
+  @override
+  Future loader() async {
     final reportId = ModalRoute.of(context)!.settings.arguments as String;
-    viewModel.populate(reportId).then((_) => setState(() {}));
+    await viewModel.populate(reportId);
   }
 
   @override
   Widget body(BuildContext context) => Selector<SingleReportProvider, Report?>(
         selector: (_, provider) => provider.report,
         builder: (_, report, __) => report != null
-            ? Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: SeparatedColumn(
-                  spacing: 8.0,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildReportSummary(report),
-                    const Divider(),
-                    _buildReportedEntityContainer(report),
-                  ],
+            ? SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SeparatedColumn(
+                    spacing: 8.0,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildReportSummary(report),
+                      const Divider(),
+                      _buildReportedEntityContainer(report),
+                      if (user!.isSuperAdmin) _buildReportedUserInfo(report),
+                    ],
+                  ),
                 ),
               )
             : const Center(child: CircularProgressIndicator()),
@@ -93,19 +116,6 @@ class _SingleReportViewState extends BaseScreen<SingleReportView> {
     }
   }
 
-  // Column _buildReportedUser(User user) {
-  //   return Column(
-  //       children: [
-  //         ReportInfoField(fieldName: 'ID', value: user.id),
-  //         ReportInfoField(fieldName: 'Name', value: user.firstName),
-  //         ReportInfoField(fieldName: 'Email', value: user.email),
-  //         ReportInfoField(
-  //             fieldName: 'Joined on',
-  //             value: Utils.formatDateTime(user.createdOn)),
-  //       ],
-  //     );
-  // }
-
   Widget _buildReportedGoal(Report report) {
     Map<String, dynamic> entity = report.entity;
     return ReportInfoCard(
@@ -121,7 +131,8 @@ class _SingleReportViewState extends BaseScreen<SingleReportView> {
         ),
       ),
       subtitle: Text(
-        entity['description'].toString().isNotEmpty
+        entity['description'] != null &&
+                entity['description'].toString().isNotEmpty
             ? entity['description']
             : '-',
       ),
@@ -135,6 +146,7 @@ class _SingleReportViewState extends BaseScreen<SingleReportView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const Divider(),
         const Text('Reported user',
             style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w700)),
         const SizedBox(height: 8.0),
@@ -228,6 +240,27 @@ class _SingleReportViewState extends BaseScreen<SingleReportView> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showResolutionDialog() {
+    simpleBottomSheet(
+      height: MediaQuery.of(context).size.height * 0.95,
+      builder: (context, _) =>
+          ReportResolutionDialog(onResolution: (status, reason, setError) {
+        viewModel
+            .resolveReport(
+          viewModel.report!.id,
+          status,
+          reason,
+        )
+            .then((_) {
+          showSnackBar('Report resolved successfully');
+          Navigator.of(context).pop();
+        }).catchError((error) {
+          setError(error.toString());
+        });
+      }),
     );
   }
 }

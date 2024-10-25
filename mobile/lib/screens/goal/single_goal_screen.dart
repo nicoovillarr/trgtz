@@ -826,6 +826,7 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
         categoriesAvailable: Report.forGoal(),
         entityType: 'goal',
         entityId: viewModel.goalId,
+        showCommunityGuidelines: _showCommunityGuidelines,
       ),
     );
   }
@@ -837,7 +838,15 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
         categoriesAvailable: Report.forComment(),
         entityType: 'comment',
         entityId: commentId,
+        showCommunityGuidelines: _showCommunityGuidelines,
       ),
+    );
+  }
+
+  void _showCommunityGuidelines() {
+    simpleBottomSheet(
+      height: MediaQuery.of(context).size.height * 0.825,
+      builder: (context, _) => const CommunityGuidelines(),
     );
   }
 }

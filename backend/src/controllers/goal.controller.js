@@ -287,8 +287,11 @@ const editComment = async (req, res) => {
       res.status(400).json({ message: `Goal with id ${id} not found.` })
     }
 
-    const comment = await goalService.editComment(goal, commentId, text)
-    res.status(200).json(comment)
+    if (await goalService.editComment(goal, commentId, text)) {
+      res.status(200).end()
+    } else{
+      res.status(400).json({ message: `Comment with id ${commentId} not found.` })
+    }
   } catch (error) {
     res.status(500).json(error)
     console.error(error)

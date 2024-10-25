@@ -3,14 +3,16 @@ name: Deploy
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        description: "Deployment environment"
+      version:
+        description: "Version"
         required: true
-        default: "staging"
+        default: "auto"
         type: choice
         options:
-          - live
-          - staging
+          - auto
+          - patch
+          - minor
+          - major
       pre-release:
         description: "Mark as pre-release"
         required: true
@@ -55,18 +57,21 @@ jobs:
 
       - name: Run standard-version
         run: |
-          if [[ "${{ github.event.inputs.pre-release }}" == "true" && "${{ github.event.inputs.environment }}" == "staging" ]]; then
-            param="-p stg"
-          elif [[ "${{ github.event.inputs.pre-release }}" == "true" && "${{ github.event.inputs.environment }}" == "live" ]]; then
-            param="-p live"
+          prerelease=""          
+          if [[ "${{ github.event.inputs.pre-release }}" == "true" && "${{ env.ENV_NAME }}" == "staging" ]]; then
+            prerelease="-p stg"
+          elif [[ "${{ github.event.inputs.pre-release }}" == "true" && "${{ env.ENV_NAME }}" == "live" ]]; then
+            prerelease="-p live"
           elif [[ "${{ github.event.inputs.pre-release }}" == "true" ]]; then
-            param="-p"
-          else
-            param=""
+            prerelease="-p"
           fi
-          npx standard-version $param
 
-          git pull origin
+          version_flag=""          
+          if [[ "${{ github.event.inputs.version }}" != "auto" ]]; then
+            version_flag="--release-as ${{ github.event.inputs.version }}"
+          fi
+          
+          npx standard-version $version_flag $prerelease
 
       - name: Set Android version
         run: |
@@ -90,12 +95,20 @@ jobs:
           echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
         shell: bash
 
+      - name: Decode google-services.json
+        run: |
+          FLAVOR_PATH=mobile/android/app/src/${{ env.ENV_NAME }}
+          mkdir -p $FLAVOR_PATH
+          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 -d > $FLAVOR_PATH/google-services.json
+
+      - name: Decode admob properties
+        run: echo "${{ secrets.GOOGLE_ADMOB }}" | base64 -d > mobile/android/admob.properties
+
       - name: Decode keystore
-        run: echo ${{ secrets.GOOGLE_PLAY_KEY_STORE }} | base64 -d > mobile/keystore.jks
+        run: echo "${{ secrets.GOOGLE_PLAY_KEY_STORE }}" | base64 -d > mobile/keystore.jks
 
       - name: Install keystore
         run: |
-          echo ${{ secrets.GOOGLE_PLAY_KEY_STORE }} | base64 -d > mobile/keystore.jks
           echo "storeFile=${{ github.workspace }}/mobile/keystore.jks" > mobile/android/key.properties
           echo "storePassword=${{ secrets.GOOGLE_PLAY_KEY_STORE_PASSWORD }}" >> mobile/android/key.properties
           echo "keyPassword=${{ secrets.GOOGLE_PLAY_KEY_PASSWORD }}" >> mobile/android/key.properties
@@ -108,19 +121,21 @@ jobs:
           touch .env.development
           touch .env.staging
           touch .env.live
+          
+          echo "${{ secrets.ENV_CONTENT }}" | base64 -d > .env.${{ env.ENV_NAME }}
 
-          echo "Selected Flavor: ${{ env.ENV_NAME }}"
-
-          echo "ENDPOINT=$ENDPOINT" > .env.${{ env.ENV_NAME }}
-          echo "WS_ENDPOINT=$WS_ENDPOINT" >> .env.${{ env.ENV_NAME }}
-
-          flutter clean
+          # flutter clean
           flutter pub get
           flutter build appbundle --flavor ${{ env.ENV_NAME }} -t lib/main_${{ env.ENV_NAME }}.dart
 
-          echo "Flavor: ${{ env.ENV_NAME }}"
-          echo "Bundle saved in: ${{ github.workspace }}/mobile/build/app/outputs/bundle/${{ env.ENV_NAME }}Release/app-${{ env.ENV_NAME }}-release.aab"
-          echo "BUNDLE_PATH=${{ github.workspace }}/mobile/build/app/outputs/bundle/${{ env.ENV_NAME }}Release/app-${{ env.ENV_NAME }}-release.aab" >> $GITHUB_ENV
+          BUNDLE_FILE_NAME="trgtz-${{ env.ENV_NAME }}-${{ env.VERSION_NAME }}-${{ env.VERSION_CODE }}.aab"
+          BUNDLE_FOLDER="${{ github.workspace }}/mobile/build/app/outputs/bundle/${{ env.ENV_NAME }}Release"
+          
+          cd $BUNDLE_FOLDER || exit 1
+          mv app-${{ env.ENV_NAME }}-release.aab $BUNDLE_FILE_NAME
+          
+          echo "BUNDLE_PATH=$BUNDLE_FOLDER/$BUNDLE_FILE_NAME" >> $GITHUB_ENV
+          echo "Bundle saved in: $BUNDLE_PATH"
         shell: bash
         env:
           ENDPOINT: ${{ vars.ENDPOINT }}

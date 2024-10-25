@@ -1,5 +1,6 @@
 import 'package:trgtz/api/index.dart';
 import 'package:trgtz/core/exceptions/index.dart';
+import 'package:trgtz/core/exceptions/sso_login_exception.dart';
 
 class AuthService {
   final AuthApiService _authApiService = AuthApiService();
@@ -46,7 +47,21 @@ class AuthService {
         await _authApiService.googleSignIn(idToken, email, deviceInfo);
     if (response.status) {
       return response.content;
+    } else if (response.statusCode == 401) {
+      throw SsoLoginException();
     } else {
+      throw AppException(response.content);
+    }
+  }
+
+  Future<bool> addAuthProvider(String provider, String token) async {
+    ApiResponse response = await _authApiService.addAuthProvider(provider, token);
+    return response.status;
+  }
+
+  Future sendResetLink(String email) async {
+    ApiResponse response = await _authApiService.sendResetLink(email);
+    if (!response.status) {
       throw AppException(response.content);
     }
   }

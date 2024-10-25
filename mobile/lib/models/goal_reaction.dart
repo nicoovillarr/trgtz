@@ -5,16 +5,16 @@ enum GoalReactionType { like, love, happy, cheer }
 
 class GoalReaction extends ReactionBase<GoalReactionType> {
   GoalReaction({
-    required String id,
-    required User user,
-    required GoalReactionType type,
-  }) : super(id: id, user: user, type: type);
+    required super.id,
+    required super.user,
+    required super.type,
+  });
 
   factory GoalReaction.fromJson(Map<String, dynamic> json) {
     return GoalReaction(
       id: json['_id'],
       user: User.fromJson(json['user']),
-      type: ReactionBase.enumFromString(GoalReactionType.values, json['type']),
+      type: ModelBase.enumFromString(GoalReactionType.values, json['type']),
     );
   }
 

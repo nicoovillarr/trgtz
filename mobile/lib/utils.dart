@@ -90,12 +90,24 @@ class Utils {
     }
   }
 
+  static final Set<String> _loadedFonts = {};
   static Future preloadFonts(List<String> fontFamilies) async {
-    final fontsReady =
-        _systemFontsStream(fontsToLoad: fontFamilies.length).last;
+    if (fontFamilies.isEmpty) {
+      return;
+    }
+
+    final fontsToLoad =
+        fontFamilies.where((font) => !_loadedFonts.contains(font)).toList();
+
+    if (fontsToLoad.isEmpty) {
+      return;
+    }
+
+    final fontsReady = _systemFontsStream(fontsToLoad: fontsToLoad.length).last;
     GoogleFonts.asMap().forEach((key, value) {
-      if (fontFamilies.any((element) => element == key)) {
+      if (fontsToLoad.any((element) => element == key)) {
         value();
+        _loadedFonts.add(key);
       }
     });
 

@@ -39,4 +39,14 @@ class AuthApiService extends ApiBaseService {
         'email': email,
         'deviceInfo': deviceInfo,
       });
+
+ Future<ApiResponse> addAuthProvider(String provider, String token) async =>
+      await put ('add-provider', {
+        'provider': provider,
+        'idToken': token,
+      });
+
+  Future<ApiResponse> sendResetLink(String email) async => await post('forgot-password', {
+        'email': email,
+      });
 }

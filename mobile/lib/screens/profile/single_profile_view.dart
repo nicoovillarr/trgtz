@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trgtz/core/base/index.dart';
+import 'package:trgtz/core/widgets/community_guidelines.dart';
 import 'package:trgtz/core/widgets/report_dialog.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/profile/providers/index.dart';
@@ -85,7 +86,15 @@ class _SingleProfileViewState extends BaseScreen<SingleProfileView> {
         categoriesAvailable: Report.forGoal(),
         entityType: 'user',
         entityId: model.user.id,
+        showCommunityGuidelines: _showCommunityGuidelines,
       ),
+    );
+  }
+
+  void _showCommunityGuidelines() {
+    simpleBottomSheet(
+      height: MediaQuery.of(context).size.height * 0.825,
+      builder: (context, _) => const CommunityGuidelines(),
     );
   }
 }

@@ -1,8 +1,11 @@
 const express = require('express')
 const app = express()
-const protect = require('../middlewares/auth.middleware')
+const { protect } = require('../middlewares/auth.middleware')
 
 const userController = require('../controllers/user.controller')
+
+app.get('/validate', userController.sendValidationEmail)
+app.post('/validate', userController.validateEmail)
 
 app.patch('/', protect, userController.patchUser)
 app.post('/profile-image', protect, userController.setProfileImage)

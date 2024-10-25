@@ -16,6 +16,11 @@ const userSchema = new Schema(
       type: String,
       required: true
     },
+    emailVerified: {
+      type: Boolean,
+      required: false,
+      default: false
+    },
     password: {
       type: String,
       required: false,
@@ -86,7 +91,13 @@ const userSchema = new Schema(
         type: Schema.Types.ObjectId,
         ref: 'Session'
       }
-    ]
+    ],
+    isSuperAdmin: {
+      type: Boolean,
+      required: false,
+      default: false,
+      readonly: true
+    }
   },
   {
     timestamps: true,
