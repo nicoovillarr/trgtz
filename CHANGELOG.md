@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.5-stg.0](https://github.com/nicoovillarr/trgtz/compare/v0.1.4...v0.1.5-stg.0) (2024-10-25)
+
+
+### Bug Fixes
+
+* invert physical device bool ([78e9cbe](https://github.com/nicoovillarr/trgtz/commit/78e9cbeeb19d7a47fb15b1c11209eae27773a348))
+* try to fix image upload ([feca147](https://github.com/nicoovillarr/trgtz/commit/feca14768346a6a058592cc9ccc8c221ea9bace7))
+
 ### [0.1.4](https://github.com/nicoovillarr/trgtz/compare/v0.1.3...v0.1.4) (2024-10-24)
 
 
