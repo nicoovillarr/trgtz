@@ -30,7 +30,7 @@ class DeviceInformationService {
       'version': build.version.release,
       'manufacturer': build.manufacturer,
       'model': build.model,
-      'isVirtual': build.isPhysicalDevice,
+      'isVirtual': !build.isPhysicalDevice,
       'serialNumber': build.serialNumber,
     };
   }
