@@ -20,7 +20,7 @@ class NotificationsFragment extends BaseFragment {
 class _NotificationsFragmentState
     extends BaseFragmentState<NotificationsFragment> {
   @override
-  Widget build(BuildContext context) => StoreConnector<AppState, List<Alert>>(
+  Widget build(BuildContext context) => StoreConnector<ApplicationState, List<Alert>>(
         converter: (store) => store.state.alerts ?? [],
         builder: (context, alerts) => ListView.builder(
           itemCount: alerts.length,

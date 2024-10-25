@@ -51,4 +51,6 @@ class UserApiService extends ApiBaseService {
   Future<ApiResponse> getUserFriends(String userId) => get('/$userId/friends');
 
   Future<ApiResponse> getProfile(String userId) => get('/$userId');
+
+  Future<ApiResponse> validateEmail() => get('/validate');
 }

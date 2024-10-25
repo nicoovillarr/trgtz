@@ -41,7 +41,7 @@ dependencies:
   uuid: ^4.2.2
   pie_chart: ^5.4.0
   timeago: ^3.6.1
-  confetti: ^0.7.0
+  confetti: ^0.8.0
   google_fonts: ^6.2.1
   flutter_svg: ^2.0.10+1
   http: ^1.2.1
@@ -54,7 +54,7 @@ dependencies:
   firebase_analytics: ^11.2.0
   firebase_messaging: ^15.0.3
   flutter_local_notifications: ^17.2.1+2
-  device_info_plus: ^10.1.0
+  device_info_plus: ^11.0.0
   web_socket_channel: ^3.0.1
   flutter_dotenv: ^5.1.0
   image_picker: ^1.1.2
@@ -75,7 +75,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
+  flutter_lints: ^5.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

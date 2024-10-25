@@ -14,20 +14,17 @@ class ModuleService {
 
   static Future deleteGoal(String id) async => _goalService.deleteGoal(id);
 
-  static Future updateUser(User user, Store<AppState> store) async {
+  static Future updateUser(User user, Store<ApplicationState> store) async {
     dynamic response = await _userService.patchUser(user);
     store.dispatch(SetUserAction(user: response['user']));
     store.dispatch(SetGoalsAction(goals: response['goals']));
   }
 
   static Future changePassword(
-      String oldPassword, String newPassword, Store<AppState> store) async {
-    dynamic response =
-        await _userService.changePassword(oldPassword, newPassword);
-    store.dispatch(SetUserAction(user: response['user']));
-    store.dispatch(SetGoalsAction(goals: response['goals']));
-  }
+      String oldPassword, String newPassword) async => await _userService.changePassword(oldPassword, newPassword);
 
   static Future setProfileImage(File image) async =>
       await _userService.setProfileImage(image);
+
+  static Future validateEmail() async => await _userService.validateEmail();
 }

@@ -6,7 +6,8 @@ const channels = {
   USER: {},
   ALERTS: {},
   FRIENDS: {},
-  GOAL: {}
+  GOAL: {},
+  REPORT: {}
 }
 
 const clients = {}
@@ -48,6 +49,12 @@ const init = () => {
           )
 
           console.log(`${userId} authenticated and connected to websocket...`)
+        } else if (type === 'PING') {
+          ws.send(JSON.stringify({ type: 'PONG' }), (error) => {
+            if (error) {
+              console.error('Error sending PONG:', error)
+            }
+          })        
         } else {
           const { channelType, documentId } = data
 
@@ -123,6 +130,9 @@ const sendFriendsChannelMessage = (userId, type, data) =>
 const sendGoalChannelMessage = (goalId, type, data) =>
   sendMessage('GOAL', goalId, type, data)
 
+const sendReportChannelMessage = (reportId, type, data) =>
+  sendMessage('REPORT', reportId, type, data)
+
 const sendMessage = (channelType, documentId, type, data) => {
   if (
     channels[channelType] == null ||
@@ -156,5 +166,6 @@ module.exports = {
   sendUserChannelMessage,
   sendAlertsChannelMessage,
   sendFriendsChannelMessage,
-  sendGoalChannelMessage
+  sendGoalChannelMessage,
+  sendReportChannelMessage
 }

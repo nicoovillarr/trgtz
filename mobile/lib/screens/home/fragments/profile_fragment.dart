@@ -12,6 +12,8 @@ const String editUserEmail = 'EDIT_USER_EMAIL';
 const String goReports = 'GO_REPORTS';
 const String editUserPassword = 'EDIT_USER_PASSWORD';
 const String logout = 'LOGOUT';
+const String validateEmail = 'VALIDATE_EMAIL';
+const String adminReports = 'OPEN_ADMIN_REPORTS';
 
 class ProfileFragment extends BaseFragment {
   const ProfileFragment({super.key, required super.enimtAction});
@@ -25,7 +27,7 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
 
   @override
   Widget build(BuildContext context) {
-    return StoreConnector<AppState, Map<String, dynamic>>(
+    return StoreConnector<ApplicationState, Map<String, dynamic>>(
       converter: (store) => {
         "user": store.state.user,
         "friendsCount": store.state.friends
@@ -87,6 +89,10 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
                     onTap: () => widget.enimtAction(editUserPassword),
                     field: 'Password',
                   ),
+                  if (!user.emailVerified)
+                    _buildListItem(
+                        field: 'Email validation',
+                        onTap: () => widget.enimtAction(validateEmail)),
                 ],
               ),
               _buildOptionsList(
@@ -100,6 +106,7 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
                   ),
                 ],
               ),
+              if (user.isSuperAdmin) _buildAdminOptionsList(),
               _buildOptionsList(
                 children: [
                   _buildListItem(
@@ -313,5 +320,16 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
             ),
           ),
         ),
+      );
+
+  Widget _buildAdminOptionsList() => _buildOptionsList(
+        title: 'Admin Tools',
+        children: [
+          _buildListItem(
+            onTap: () => widget.enimtAction(adminReports),
+            field: 'Reports',
+            icon: Icons.keyboard_arrow_right,
+          ),
+        ],
       );
 }

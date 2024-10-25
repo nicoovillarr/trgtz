@@ -5,17 +5,17 @@ enum CommentReactionType { like, dislike }
 
 class CommentReaction extends ReactionBase<CommentReactionType> {
   CommentReaction({
-    required String id,
-    required User user,
-    required CommentReactionType type,
-  }) : super(id: id, user: user, type: type);
+    required super.id,
+    required super.user,
+    required super.type,
+  });
 
   factory CommentReaction.fromJson(Map<String, dynamic> json) {
     return CommentReaction(
       id: json['_id'],
       user: User.fromJson(json['user']),
       type:
-          ReactionBase.enumFromString(CommentReactionType.values, json['type']),
+          ModelBase.enumFromString(CommentReactionType.values, json['type']),
     );
   }
 

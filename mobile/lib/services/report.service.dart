@@ -42,4 +42,15 @@ class ReportService {
       throw AppException(response.content);
     }
   }
+
+  Future getAdminReports() async {
+    ApiResponse response = await _reportApiService.getAdminReports();
+    if (response.status) {
+      return (response.content as List)
+          .map((report) => Report.fromJson(report))
+          .toList();
+    } else {
+      throw AppException(response.content);
+    }
+  }
 }

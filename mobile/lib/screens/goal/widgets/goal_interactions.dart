@@ -193,7 +193,7 @@ class _GoalInteractionsState extends State<GoalInteractions> {
   }
 
   GoalReaction? get _myReaction {
-    Store<AppState> store = StoreProvider.of<AppState>(context);
+    Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
     final user = store.state.user!.id;
     return widget.goal.reactions
         .where((reaction) => reaction.user.id == user)

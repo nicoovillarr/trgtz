@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trgtz/constants.dart';
+import 'package:trgtz/models/index.dart';
 import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:redux/redux.dart';
@@ -29,7 +30,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
   bool _isLoading = false;
   ScreenState _state = ScreenState.loading;
   OverlayEntry? _overlayEntry;
-  String? _userId;
+  User? _user;
   final Map<String, String> channelsSubscribed = {};
 
   final Map<String, StreamSubscription> _subscriptions = {};
@@ -50,7 +51,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
     customInitState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _userId = StoreProvider.of<AppState>(context).state.user?.id;
+      _user = StoreProvider.of<ApplicationState>(context).state.user;
       setIsLoading(true);
       loader().then((_) {
         setIsLoading(false);
@@ -336,7 +337,8 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
 
   Color get backgroundColor => const Color(0xFFF5F5F5);
 
-  Store<AppState> get store => StoreProvider.of<AppState>(context);
+  Store<ApplicationState> get store =>
+      StoreProvider.of<ApplicationState>(context);
 
   bool get useAppBar => true;
 
@@ -344,7 +346,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
 
   String? get title => appName;
 
-  String? get userId => _userId;
+  User? get user => _user;
 
   List<Widget> get actions => [];
 
@@ -353,6 +355,8 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
   BottomNavigationBar? get bottomNavigationBar => null;
 
   RefreshCallback? get onRefresh => null;
+
+  Size get size => MediaQuery.of(context).size;
 
   void addSubscription(String name, StreamSubscription subscription) {
     _subscriptions[name] = subscription;

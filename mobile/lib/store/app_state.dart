@@ -2,7 +2,7 @@ import 'package:flutter/material.dart' as x;
 import 'package:trgtz/models/index.dart';
 
 @x.immutable
-class AppState {
+class ApplicationState {
   final DateTime date;
   final List<Goal> goals;
   final dynamic currentEditorObject;
@@ -11,8 +11,9 @@ class AppState {
   final int? pendingFriendRequests;
   final bool? isLoading;
   final List<Alert>? alerts;
+  final bool isProduction;
 
-  const AppState({
+  const ApplicationState({
     required this.date,
     this.goals = const [],
     this.user,
@@ -21,9 +22,10 @@ class AppState {
     this.isLoading = false,
     this.currentEditorObject,
     this.alerts,
+    this.isProduction = false,
   });
 
-  AppState copyWith({
+  ApplicationState copyWith({
     DateTime? date,
     List<Goal>? goals,
     dynamic currentEditorObject,
@@ -32,8 +34,9 @@ class AppState {
     int? pendingFriendRequests,
     bool? isLoading,
     List<Alert>? alerts,
+    bool? isProduction,
   }) {
-    AppState state = AppState(
+    ApplicationState state = ApplicationState(
       date: date ?? this.date,
       goals: goals ?? this.goals,
       currentEditorObject: currentEditorObject ?? this.currentEditorObject,
@@ -44,6 +47,7 @@ class AppState {
           _calculateDefaultPendingFriendRequests(user, friends),
       isLoading: isLoading ?? this.isLoading,
       alerts: alerts ?? this.alerts,
+      isProduction: isProduction ?? this.isProduction,
     );
 
     return state;

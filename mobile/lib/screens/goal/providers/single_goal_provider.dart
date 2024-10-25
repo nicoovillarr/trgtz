@@ -273,8 +273,9 @@ class SingleGoalProvider extends ChangeNotifier {
       case broadcastTypeGoalCommentUpdated:
         updateGoalField({
           'comments': model!.goal.comments
-              .map((c) =>
-                  message.data["_id"] == c.id ? message.data : c.toJson())
+              .map((c) => c.id == message.data['_id']
+                  ? c.copyWith(text: message.data['text']).toJson()
+                  : c.toJson())
               .toList(),
         });
         break;

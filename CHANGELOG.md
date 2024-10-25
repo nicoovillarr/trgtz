@@ -2,6 +2,72 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.4](https://github.com/nicoovillarr/trgtz/compare/v0.1.3...v0.1.4) (2024-10-24)
+
+
+### Features
+
+* allow opening camera for profile image ([b6ac89e](https://github.com/nicoovillarr/trgtz/commit/b6ac89e0213c833b4fe70e030442ba93f5cd8183))
+* improve websockets lifecycle ([d241d06](https://github.com/nicoovillarr/trgtz/commit/d241d06a4ff290f06d1df2afdd7d94d91ff0e9cf))
+
+### [0.1.3](https://github.com/nicoovillarr/trgtz/compare/v0.1.2...v0.1.3) (2024-10-24)
+
+### [0.1.2](https://github.com/nicoovillarr/trgtz/compare/v0.1.1...v0.1.2) (2024-10-24)
+
+
+### Features
+
+* show api endpoint ([c017398](https://github.com/nicoovillarr/trgtz/commit/c017398dbbe690ac32b957eb4854b32d684721cc))
+
+### [0.1.1](https://github.com/nicoovillarr/trgtz/compare/v0.1.1-stg.5...v0.1.1) (2024-10-23)
+
+
+### Features
+
+* add configuration to launch.json ([0e30781](https://github.com/nicoovillarr/trgtz/commit/0e30781e7dafaedf2dddb629adfb3c07272c869a))
+* add goal reporting ([7f5be8a](https://github.com/nicoovillarr/trgtz/commit/7f5be8a9ce2105f5a82eb4d07f0f75eef9340798))
+* add google sso endpoints ([b51b9c8](https://github.com/nicoovillarr/trgtz/commit/b51b9c8485fc66fcae46d10fe0a755d08bdb4a38))
+* add play-services-auth dependency for Android ([cb1b5d3](https://github.com/nicoovillarr/trgtz/commit/cb1b5d3bba4c0037f6a7427746f84bf5ebdf2ec2))
+* add reports view ([7c0e817](https://github.com/nicoovillarr/trgtz/commit/7c0e817449c42f459574a32904e20424b5695590))
+* add user reporting ([0b62706](https://github.com/nicoovillarr/trgtz/commit/0b627064ef777b3bc567b9137e83fac08790a276))
+* allow admins to resolve reports, send updates via email and more improvements ([5eda080](https://github.com/nicoovillarr/trgtz/commit/5eda080b776c6bfb11141129d561086366ccfd7c))
+* allow delete/edit comments ([7991ce3](https://github.com/nicoovillarr/trgtz/commit/7991ce3f3acc9511fb2f22e13f93a27fa19c0d12))
+* allow users to react to comments ([8b61c49](https://github.com/nicoovillarr/trgtz/commit/8b61c4906e14a6943c7f4f5d65c69deeff6ad714))
+* allow users to report a comment ([db5f09a](https://github.com/nicoovillarr/trgtz/commit/db5f09a48d3b7f0309beb86e72fb00cb53ca602b))
+* allow users to restore their password ([b0f9bc0](https://github.com/nicoovillarr/trgtz/commit/b0f9bc09862cef54280a3ca8726cb6d15df4fd3b))
+* allow users to verify emails ([ff26398](https://github.com/nicoovillarr/trgtz/commit/ff263986ec21f9c3f044f5bb03f2b6b88b1f678b))
+* check google sign in is still available on splash screen ([869deca](https://github.com/nicoovillarr/trgtz/commit/869deca19ab0f0f76ab3bbff07f508ae802149c2))
+* create new lazy ad widget ([1ff755c](https://github.com/nicoovillarr/trgtz/commit/1ff755c1565bbe1d4799b45bf929e71427403c86))
+* fix email signup ([13c590b](https://github.com/nicoovillarr/trgtz/commit/13c590b5c04fbbee7d8e8d8b37e2ba960df85c6d))
+* fix report email and use hostinger smtp ([4cf8375](https://github.com/nicoovillarr/trgtz/commit/4cf83758531eb8908cd38339aea5f510da144623))
+* fix some input related bugs ([a8875e2](https://github.com/nicoovillarr/trgtz/commit/a8875e223c5639f132bb5f7d3be20e29fbf32eec))
+* fix user reports view ([d2cf882](https://github.com/nicoovillarr/trgtz/commit/d2cf882f4fd8c9579cefdefc8ec89c8b1c5a1c53))
+* generate user qr ([2b69dec](https://github.com/nicoovillarr/trgtz/commit/2b69dec39bbe7ad69b91a65d447b739fe108aad5))
+* hide report button if user belongs the comment ([a23d9e0](https://github.com/nicoovillarr/trgtz/commit/a23d9e05362b5f05e289f035a9e3894132cdea78))
+* implement google admob in dashboard fragment ([eaa70a5](https://github.com/nicoovillarr/trgtz/commit/eaa70a597b1ad6821d42a70bd1f6cb2b263ee9ef))
+* implement google signin from the app ([98aedad](https://github.com/nicoovillarr/trgtz/commit/98aedad30c19aae54db3a0239160fd4c602192d3))
+* improve goal footer ([a6bae5b](https://github.com/nicoovillarr/trgtz/commit/a6bae5b4443b64f3b4e0125e7a48d6d4769bcda2))
+* logout from Google when logging out in the app ([2e8b7f5](https://github.com/nicoovillarr/trgtz/commit/2e8b7f590bee055a483e854ae32599620c6d55fa))
+* make banner bigger and remove background color ([c328b19](https://github.com/nicoovillarr/trgtz/commit/c328b19b778aaaf9ebbb1a3a46843ec2bc099f4f))
+* minor fixes ([350ee06](https://github.com/nicoovillarr/trgtz/commit/350ee06d53077cbf2656374de75a5f3990c67253))
+* remove unused PasswordResetScreen ([f59cd0b](https://github.com/nicoovillarr/trgtz/commit/f59cd0b57f8676375311e9d0cab5da48bafa09a4))
+* rename AppState to avoid issues with Google Admob package ([89f24a8](https://github.com/nicoovillarr/trgtz/commit/89f24a875f3a41d4df6e0850d1da3e404e95e61d))
+* request password when logging in using Google if needed ([66856d4](https://github.com/nicoovillarr/trgtz/commit/66856d41c1540864f9619649238f786d9ee5ed04))
+* restore old astro config ([c3ab994](https://github.com/nicoovillarr/trgtz/commit/c3ab9942e51a92a06744c1ce23cf31e1320ce965))
+* show comment report dialog from long press options ([b63b0cc](https://github.com/nicoovillarr/trgtz/commit/b63b0cca1cf41a3f0b21dd03595c3c763b9145b4))
+* some comment textedit improvements ([ece7e89](https://github.com/nicoovillarr/trgtz/commit/ece7e89625d7326be85eb3ef0f32fd0ebcaa314d))
+* use new ApplicationState class for SetUserProvider action ([a2561f6](https://github.com/nicoovillarr/trgtz/commit/a2561f6d61089174e1bcebc849f1d94ed5d12915))
+* use secrets for admob keys ([f0fb342](https://github.com/nicoovillarr/trgtz/commit/f0fb3426aa9cea1866ff2d89d7de1c937ceec115))
+
+
+### Bug Fixes
+
+* add reactions to toJson and deepCopy methods ([443731e](https://github.com/nicoovillarr/trgtz/commit/443731e9848a5ebfcd4ae39ef7ffd425b039658f))
+* don't send alerts to current user ([6104ae6](https://github.com/nicoovillarr/trgtz/commit/6104ae623abf83579bf73874726840b029e2d320))
+* only check Google access if session provider is google ([673fff7](https://github.com/nicoovillarr/trgtz/commit/673fff732d1fc3ada3ec3ee533ff4513c09e599d))
+* parse alert type goal_comment ([f68fa2f](https://github.com/nicoovillarr/trgtz/commit/f68fa2fb9421bf0895d96d0466a0e8d16fc53bc6))
+* wait 500ms before resubscribing to goal ws ([cde3890](https://github.com/nicoovillarr/trgtz/commit/cde38909cf766d6363dfbd6f38a6d96dd12495a1))
+
 ### [0.1.1-stg.5](https://github.com/nicoovillarr/trgtz/compare/v0.1.1-stg.4...v0.1.1-stg.5) (2024-08-31)
 
 

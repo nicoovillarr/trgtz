@@ -10,6 +10,7 @@ class TextEdit extends StatefulWidget {
   final int? maxLength;
   final bool isPassword;
   final bool showMaxLength;
+  final bool enabled;
 
   const TextEdit({
     super.key,
@@ -21,6 +22,7 @@ class TextEdit extends StatefulWidget {
     this.maxLength,
     this.isPassword = false,
     this.showMaxLength = true,
+    this.enabled = true,
   });
 
   @override
@@ -33,7 +35,11 @@ class TextEditState extends State<TextEdit> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
 
+  String? _errorText;
+
   String get value => _key.currentState?.value ?? '';
+
+  set errorText(String value) => setState(() => _errorText = value);
 
   @override
   void initState() {
@@ -42,34 +48,41 @@ class TextEditState extends State<TextEdit> {
   }
 
   @override
-  Widget build(BuildContext context) => TextFormField(
-        key: _key,
-        controller: _controller,
-        keyboardType: TextInputType.multiline,
-        maxLines: widget.maxLines,
-        maxLength: widget.maxLength,
-        obscureText: widget.isPassword,
-        decoration: InputDecoration(
-          isDense: true,
-          hintText: widget.placeholder,
-          hintStyle: const TextStyle(
-            color: Color(0xFF455457),
-            fontSize: 16.0,
+  Widget build(BuildContext context) => AnimatedOpacity(
+    opacity: widget.enabled ? 1.0 : 0.5,
+    duration: const Duration(milliseconds: 200),
+    child: TextFormField(
+          key: _key,
+          controller: _controller,
+          keyboardType: TextInputType.multiline,
+          maxLines: !widget.isPassword ? widget.maxLines : 1,
+          maxLength: widget.maxLength,
+          obscureText: widget.isPassword,
+          enabled: widget.enabled,
+          decoration: InputDecoration(
+            isDense: true,
+            errorText: _errorText,
+            hintText: widget.placeholder,
+            hintStyle: const TextStyle(
+              color: Color(0xFF455457),
+              fontSize: 16.0,
+            ),
+            filled: true,
+            fillColor: mainColor.withOpacity(0.2),
+            focusedBorder: _buildBorder(const Color(0xFF003E4B)),
+            errorBorder: _buildBorder(Colors.red),
+            enabledBorder: _buildBorder(Colors.transparent),
+            disabledBorder: _buildBorder(Colors.transparent),
+            focusedErrorBorder: _buildBorder(Colors.redAccent),
+            counterText: widget.showMaxLength ? null : '',
           ),
-          filled: true,
-          fillColor: mainColor.withOpacity(0.2),
-          focusedBorder: _buildBorder(const Color(0xFF003E4B)),
-          errorBorder: _buildBorder(Colors.red),
-          enabledBorder: _buildBorder(Colors.transparent),
-          focusedErrorBorder: _buildBorder(Colors.redAccent),
-          counterText: widget.showMaxLength ? null : '',
+          validator: widget.validate,
+          focusNode: _focusNode,
+          autofocus: false,
+          onSaved: widget.onSaved,
+          onTapOutside: (_) => unfocus(),
         ),
-        validator: widget.validate,
-        focusNode: _focusNode,
-        autofocus: false,
-        onSaved: widget.onSaved,
-        onTapOutside: (_) => unfocus(),
-      );
+  );
 
   InputBorder _buildBorder(Color color) => OutlineInputBorder(
         borderSide: BorderSide(
@@ -87,4 +100,15 @@ class TextEditState extends State<TextEdit> {
   }
 
   void clear() => _controller.clear();
+
+  bool validate() {
+    if (widget.validate != null) {
+      final String? error = widget.validate!(value);
+      if (error != null) {
+        setState(() => _errorText = error);
+        return false;
+      }
+    }
+    return true;
+  }
 }

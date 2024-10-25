@@ -40,6 +40,13 @@ const { title, description } = Astro.props;
       * {
         box-sizing: border-box;
       }
+
+      body {
+        display: grid;
+        min-height: 100dvh;
+        grid-template-rows: 1fr auto;
+        font-family: "Inter", sans-serif;
+      }
     </style>
   </head>
   <body>

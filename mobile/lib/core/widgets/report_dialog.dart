@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/widgets/index.dart';
@@ -8,11 +9,13 @@ class ReportDialog extends StatefulWidget {
   final List<ReportCategory> categoriesAvailable;
   final String entityType;
   final String entityId;
+  final Function() showCommunityGuidelines;
   const ReportDialog({
     super.key,
     required this.categoriesAvailable,
     required this.entityType,
     required this.entityId,
+    required this.showCommunityGuidelines,
   });
 
   @override
@@ -56,7 +59,7 @@ class _ReportDialogState extends State<ReportDialog> {
             top: 50,
             left: 0,
             right: 0,
-            bottom: 50,
+            bottom: 0,
             child: PageView.builder(
               controller: _pageController,
               physics: const NeverScrollableScrollPhysics(),
@@ -68,15 +71,6 @@ class _ReportDialogState extends State<ReportDialog> {
                   child: _pages[index],
                 ),
               ),
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 50,
-            child: Container(
-              color: Colors.white,
             ),
           ),
           _buildSpinner(),
@@ -140,10 +134,28 @@ class _ReportDialogState extends State<ReportDialog> {
             'What do you want to report?',
             style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
           ),
+          const SizedBox(height: 8),
+          RichText(
+            text: TextSpan(
+              text: 'Make sure to check our ',
+              children: [
+                TextSpan(
+                  text: 'community guidelines',
+                  style: TextStyle(
+                    color: textButtonColor.withOpacity(0.75),
+                    fontWeight: FontWeight.w500,
+                  ),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () => widget.showCommunityGuidelines(),
+                ),
+                const TextSpan(text: ' before reporting.'),
+              ],
+              style: TextStyle(color: mainColor.withOpacity(0.75)),
+            ),
+          ),
           const SizedBox(height: 20),
           ...widget.categoriesAvailable
-              .map((category) => _buildReportOption(category: category))
-              .toList(),
+              .map((category) => _buildReportOption(category: category)),
         ],
       );
 

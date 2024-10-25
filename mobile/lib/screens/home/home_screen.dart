@@ -56,6 +56,15 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
           store.dispatch(UpdateUserFields(fields: message.data));
           setState(() {});
           break;
+
+        case broadcastTypeUserEmailVerified:
+          store.dispatch(SetUserEmailVerifiedAction(isEmailVerified: message.data));
+          setState(() {});
+
+          if (message.data) {
+            showSnackBar('Your email has been verified!');
+          }
+          break;
       }
     });
 
@@ -102,7 +111,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
                     : 'Title cannot be empty',
                 onSave: (s) {
                   if (s != null && s.isNotEmpty) {
-                    Store<AppState> store = StoreProvider.of<AppState>(context);
+                    Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
                     final newGoal = Goal(
                       id: const Uuid().v4(),
                       title: s,
@@ -190,9 +199,19 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         _openPasswordEditor();
         break;
 
+      case validateEmail:
+        _validateEmail();
+        break;
+
+      case adminReports:
+        Navigator.of(context).pushNamed('/admin');
+        break;
+
       case logout:
-        Security.logOut()
-            .then((_) => Navigator.of(context).pushReplacementNamed('/login'));
+        Security.logOut().then((_) {
+          Navigator.of(context).popUntil((route) => false);
+          Navigator.of(context).pushNamed('/login');
+        });
         break;
 
       default:
@@ -214,7 +233,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
   }
 
   void _openNameEditor() {
-    Store<AppState> store = StoreProvider.of<AppState>(context);
+    Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
     String original = store.state.user!.firstName;
     simpleBottomSheet(
       title: 'Change your name',
@@ -227,7 +246,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
             s == null || s.isEmpty ? 'You must enter a name.' : null,
         onSave: (s) {
           setIsLoading(true);
-          Store<AppState> store = StoreProvider.of(context);
+          Store<ApplicationState> store = StoreProvider.of(context);
           User user = store.state.user!.deepCopy();
           user.firstName = s!;
           ModuleService.updateUser(user, store)
@@ -238,7 +257,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
   }
 
   void _openEmailEditor() {
-    Store<AppState> store = StoreProvider.of<AppState>(context);
+    Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
     String original = store.state.user!.email;
     simpleBottomSheet(
       title: 'Change your email',
@@ -252,7 +271,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
             : null,
         onSave: (s) {
           setIsLoading(true);
-          Store<AppState> store = StoreProvider.of(context);
+          Store<ApplicationState> store = StoreProvider.of(context);
           User user = store.state.user!.deepCopy();
           user.email = s!;
           ModuleService.updateUser(user, store)
@@ -267,6 +286,10 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
     GlobalKey<TextEditState> oldPassKey = GlobalKey();
     GlobalKey<TextEditState> newPassKey = GlobalKey();
     GlobalKey<TextEditState> repeatPassKey = GlobalKey();
+
+    bool hasPassword =
+        store.state.user!.authProviders.contains(AuthProvider.email);
+
     simpleBottomSheet(
       title: 'Change your password',
       child: Form(
@@ -282,9 +305,10 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
                 placeholder: 'Current password',
                 isPassword: true,
                 maxLines: 1,
-                validate: (s) => s == null || s.isEmpty
+                validate: (s) => hasPassword && (s == null || s.isEmpty)
                     ? 'You must enter the current password.'
                     : null,
+                enabled: hasPassword,
               ),
               TextEdit(
                 key: newPassKey,
@@ -319,7 +343,12 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
                     String newPassword = newPassKey.currentState!.value;
                     setIsLoading(true);
                     await ModuleService.changePassword(
-                        oldPassword, newPassword, store);
+                        oldPassword, newPassword);
+                    if (!store.state.user!.authProviders
+                        .contains(AuthProvider.email)) {
+                      store.dispatch(
+                          SetUserProvider(provider: AuthProvider.email));
+                    }
                     navigator.pop();
                     setIsLoading(false);
                   }
@@ -331,10 +360,45 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         ),
       ),
     );
+  }  
+
+  void _validateEmail() {
+    setIsLoading(true);
+    ModuleService.validateEmail().then((_) {
+      setIsLoading(false);
+      showSnackBar('Email validation sent!');
+    });
   }
 
   Future<void> _openImagePicker() async {
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    simpleBottomSheet(
+      title: 'Change your profile picture',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.camera_alt),
+            title: const Text('Take a photo'),
+            onTap: () {
+              Navigator.of(context).pop();
+              _pickImage(ImageSource.camera);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.photo),
+            title: const Text('Choose from gallery'),
+            onTap: () {
+              Navigator.of(context).pop();
+              _pickImage(ImageSource.gallery);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Future _pickImage(ImageSource source)  async {
+    final pickedFile = await picker.pickImage(source: source);
 
     if (pickedFile != null) {
       File? file = File(pickedFile.path);

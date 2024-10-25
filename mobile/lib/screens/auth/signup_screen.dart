@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:redux/redux.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/index.dart';
@@ -7,7 +10,6 @@ import 'package:trgtz/logger.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/auth/services/index.dart';
 import 'package:trgtz/screens/auth/widgets/index.dart';
-import 'package:trgtz/security.dart';
 import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
 
@@ -49,23 +51,26 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
   Widget _buildBanner() => Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text.rich(
-            const TextSpan(
-              text: appName,
-              children: [
-                TextSpan(
-                  text: '.',
-                  style: TextStyle(
-                    height: 1,
-                    color: accentColor,
+          GestureDetector(
+            onTap: _printAppEndpoint,
+            child: Text.rich(
+              const TextSpan(
+                text: appName,
+                children: [
+                  TextSpan(
+                    text: '.',
+                    style: TextStyle(
+                      height: 1,
+                      color: accentColor,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            style: GoogleFonts.josefinSans(
-              color: mainColor,
-              fontSize: 48,
-              fontWeight: FontWeight.bold,
+                ],
+              ),
+              style: GoogleFonts.josefinSans(
+                color: mainColor,
+                fontSize: 48,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           Text(
@@ -182,6 +187,8 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
               .then((response) async {
             setIsLoading(false);
 
+            LocalStorage.saveToken(response['token'].toString());
+
             final Map<String, dynamic> me = await ModuleService()
                 .getUserProfile(response['_id'].toString());
             User u = me['user'];
@@ -195,14 +202,9 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
             final ws = WebSocketService.getInstance();
             await ws.init();
 
-            Logger.logSignup().then((_) {
-              Navigator.of(context).popAndPushNamed('/home');
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Signed up'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
+            Logger.logLogin().then((_) {
+              Navigator.of(context).popUntil((route) => false);
+              Navigator.of(context).pushNamed('/home');
             });
           });
         },
@@ -258,4 +260,11 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
 
   @override
   bool get useAppBar => false;
+
+  void _printAppEndpoint() {
+    Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
+    if (!store.state.isProduction) {
+      showSnackBar('Endpoint: ${dotenv.env['ENDPOINT']}');
+    }
+  }
 }

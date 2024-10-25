@@ -24,15 +24,13 @@ class FriendsListScreen extends StatefulWidget {
 }
 
 class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
-  @override
   late String userId;
 
-  bool get itsMe => userId == store.state.user!.id;
+  bool get itsMe => userId == user!.id;
 
   @override
   Future afterFirstBuild(BuildContext context) async {
-    userId = ModalRoute.of(context)?.settings.arguments as String? ??
-        store.state.user!.id;
+    userId = ModalRoute.of(context)?.settings.arguments as String? ?? user!.id;
     context.read<FriendsListScreenProvider>().populate(userId, itsMe);
   }
 
@@ -265,7 +263,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
 
   void _deleteFriend(Friendship friend) async {
     setIsLoading(true);
-    Store<AppState> store = StoreProvider.of<AppState>(context);
+    Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
     await ModuleService.deleteFriend(store.state.user!.id, friend);
     setIsLoading(false);
   }
@@ -289,7 +287,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
 
   void _showQRCodeDialog(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    Store<AppState> store = StoreProvider.of<AppState>(context);
+    Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
     simpleBottomSheet(
       height: size.height * 0.6,
       child: Column(

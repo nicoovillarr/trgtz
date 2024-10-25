@@ -121,4 +121,11 @@ class UserService {
       throw AppException(response.content);
     }
   }
+
+  Future validateEmail() async {
+    ApiResponse response = await _userApiService.validateEmail();
+    if (!response.status) {
+      throw AppException(response.content);
+    }
+  }
 }

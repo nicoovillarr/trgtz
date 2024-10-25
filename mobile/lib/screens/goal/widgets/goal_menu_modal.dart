@@ -48,8 +48,8 @@ class GoalMenuModal extends StatelessWidget {
                     onPressed: () => context
                         .read<SingleGoalProvider>()
                         .deleteGoal()
-                        .then((_) => Navigator.of(context)
-                            .popUntil((route) => route.settings.name == '/')),
+                        .then((_) => Navigator.of(context).popUntil(
+                            (route) => route.settings.name == '/home')),
                     child: const Text(
                       'Delete',
                       style: TextStyle(color: Colors.redAccent),

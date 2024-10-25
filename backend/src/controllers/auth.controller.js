@@ -1,19 +1,15 @@
 const User = require('../models/user.model')
 const authService = require('../services/auth.service')
 const sessionService = require('../services/session.service')
+const mailService = require('../services/mail.service')
+const tokenService = require('../services/token.service')
+const userService = require('../services/user.service')
 
 const signup = async (req, res) => {
   try {
-    const { email, firstName, deviceInfo, photoUrl, password, provider } =
-      req.body
+    const { email, firstName, deviceInfo, photoUrl, password } = req.body
 
-    if (
-      !firstName ||
-      !email ||
-      !deviceInfo ||
-      !provider ||
-      (provider === 'email' && !password)
-    )
+    if (!firstName || !email || !deviceInfo || !password)
       return res.status(400).json({ message: 'Missing required fields' })
 
     if (await authService.checkEmailInUse(email)) {
@@ -41,15 +37,18 @@ const signup = async (req, res) => {
         .status(400)
         .json({ message: 'Missing required fields in device info' })
 
-    const hash =
-      provider === 'email' ? await authService.hashPassword(password) : null
+    const hash = await authService.hashPassword(password)
     const user = await authService.signup(
       firstName,
       email,
       hash,
-      provider,
+      'email',
       photoUrl
     )
+
+    if (!(await userService.sendValidationEmail(user))) {
+      console.error('Error sending validation email')
+    }
 
     const token = await sessionService.createJWT(
       user._id,
@@ -61,8 +60,9 @@ const signup = async (req, res) => {
       isVirtual,
       serialNumber,
       req.custom.ip,
-      provider
+      'email'
     )
+
     res.status(201).json({
       _id: user._id,
       token
@@ -150,37 +150,46 @@ const logout = async (req, res) => {
 }
 
 const googleSignIn = async (req, res) => {
-  const { idToken, email, deviceInfo } = req.body
+  const { idToken, deviceInfo } = req.body
+  if (!idToken || !deviceInfo) {
+    return res.status(400).json({ message: 'Missing required fields' })
+  }
+
+  const {
+    firebaseToken,
+    type,
+    version,
+    manufacturer,
+    model,
+    isVirtual,
+    serialNumber
+  } = deviceInfo
+  if (
+    !type ||
+    !version ||
+    !manufacturer ||
+    !model ||
+    isVirtual == null ||
+    !serialNumber
+  ) {
+    return res
+      .status(400)
+      .json({ message: 'Missing required fields in device info' })
+  }
 
   try {
-    const {
-      firebaseToken,
-      type,
-      version,
-      manufacturer,
-      model,
-      isVirtual,
-      serialNumber
-    } = deviceInfo
-    if (
-      !type ||
-      !version ||
-      !manufacturer ||
-      !model ||
-      isVirtual == null ||
-      !serialNumber
-    )
-      return res
-        .status(400)
-        .json({ message: 'Missing required fields in device info' })
-
     const payload = await authService.verifyGoogleToken(idToken)
-    if (payload.email !== email) {
-      return res.status(401).json({ message: 'Token email does not match' })
+    if (payload == null) {
+      return res.status(401).json({ message: 'Invalid token' })
     }
 
-    if (await authService.checkEmailInUse(email)) {
-      const user = await User.findOne({ email })
+    const user = await User.findOne({ email: payload.email })
+    if (user != null) {
+      if (user.providers.indexOf('google') === -1) {
+        return res
+          .status(401)
+          .json({ message: 'You must log in using your password' })
+      }
 
       const token = await sessionService.createJWT(
         user._id,
@@ -199,7 +208,7 @@ const googleSignIn = async (req, res) => {
     } else {
       const user = await authService.signup(
         payload.given_name,
-        email,
+        payload.email,
         null,
         'google',
         payload.picture
@@ -225,10 +234,117 @@ const googleSignIn = async (req, res) => {
   }
 }
 
+const addProvider = async (req, res) => {
+  try {
+    const userId = req.user
+    const { provider, idToken } = req.body
+
+    if (!provider) {
+      return res.status(400).json({ message: 'Missing required fields' })
+    }
+
+    const user = await User.findById(userId)
+    if (user == null) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    if (await authService.addProvider(user, provider)) {
+      if (idToken != null) {
+        const payload = await authService.verifyGoogleToken(idToken)
+        if (payload == null) {
+          return res.status(401).json({ message: 'Invalid token' })
+        }
+
+        await sessionService.updateSessionProvider(req.token, provider)
+      }
+      res.status(204).end()
+    } else {
+      res.status(400).json({ message: 'Provider already added' })
+    }
+  } catch (error) {
+    res.status(500).json(error)
+    console.error('Error adding provider: ', error)
+  }
+}
+
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body
+    if (!email)
+      return res.status(400).json({ message: 'Missing required fields' })
+
+    const user = await User.findOne({ email })
+    if (user == null) return res.status(204).end()
+
+    const token = await tokenService.createToken('password_reset', user._id)
+    if (token == null)
+      return res.status(500).json({ message: 'Error creating token' })
+
+    const resetUrl = `${
+      process.env.FRONTEND_URL
+    }/forgot-password?token=${encodeURIComponent(token)}`
+    const subject = 'Reset your password'
+    const text = `Click the following link to reset your password: ${resetUrl}`
+    const html = `<p>Click the following link to reset your password: <a href="${resetUrl}">${resetUrl}</a></p>`
+
+    const sent = await mailService.sendNoReplyEmail(email, subject, text, html)
+    if (!sent) return res.status(500).json({ message: 'Error sending email' })
+
+    res.status(204).end()
+  } catch (error) {
+    res.status(500).json(error)
+    console.error('Error sending email: ', error)
+  }
+}
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body
+    if (!token || !password)
+      return res.status(400).json({ message: 'Missing required fields' })
+
+    const userId = await tokenService.consumeToken(
+      decodeURIComponent(token),
+      'password_reset'
+    )
+    if (userId == null)
+      return res.status(401).json({ message: 'Invalid token' })
+
+    const user = await User.findById(userId)
+    if (user == null) return res.status(404).json({ message: 'User not found' })
+
+    const hash = await authService.hashPassword(password)
+    await User.findByIdAndUpdate(userId, { password: hash }).exec()
+
+    const subject = 'Password reset successful'
+    const text = 'Your password has been successfully reset'
+    const html = '<p>Your password has been successfully reset</p>'
+
+    const sent = await mailService.sendNoReplyEmail(
+      user.email,
+      subject,
+      text,
+      html
+    )
+    if (!sent) return res.status(500).json({ message: 'Error sending email' })
+
+    user.validatedEmail = true
+    await user.save()
+
+    res.status(204).end()
+  } catch (error) {
+    res.status(500).json(error)
+    console.error('Error resetting password: ', error)
+  }
+}
+
 module.exports = {
   signup,
   login,
   tick,
   logout,
-  googleSignIn
+  googleSignIn,
+  addProvider,
+  forgotPassword,
+  resetPassword
 }

@@ -53,5 +53,11 @@
 			<string>UIInterfaceOrientationLandscapeLeft</string>
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Upload a profile image and share goal images</string>
+		<key>NSCameraUsageDescription</key>
+		<string>Upload a profile image and share goal images</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>Record a video to share goals updates</string>
 	</dict>
 </plist>
