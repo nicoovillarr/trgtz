@@ -25,3 +25,5 @@ pnpm-debug.log*
 
 .vercel/output
 .vercel
+
+public/.well-known/assetlinks.json
