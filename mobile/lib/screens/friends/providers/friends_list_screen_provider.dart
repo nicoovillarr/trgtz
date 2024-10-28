@@ -83,4 +83,7 @@ class FriendsListScreenProvider extends ChangeNotifier {
     _model?.friends.removeWhere((element) => element.otherUserId == friendId);
     notifyListeners();
   }
+
+  Future<User> getProfile(String userId) async =>
+      await _moduleService.getProfile(userId);
 }
