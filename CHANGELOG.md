@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.5-stg.1](https://github.com/nicoovillarr/trgtz/compare/v0.1.5-stg.0...v0.1.5-stg.1) (2024-10-28)
+
+
+### Features
+
+* add assetlinks json file post build ([363038c](https://github.com/nicoovillarr/trgtz/commit/363038ca594a560ce8d3b1b77081f4d47369e1cf))
+* add assetlinks.json file to .gitignore ([6a284c6](https://github.com/nicoovillarr/trgtz/commit/6a284c6e0b755da123ed3643bee315ea1e7927bc))
+* add deeplinking configuration to mobile project ([d092a33](https://github.com/nicoovillarr/trgtz/commit/d092a3375fce26d9091bbadc0676cd7bc1ca742e))
+* add friend management button in user bottom sheet ([fd5b209](https://github.com/nicoovillarr/trgtz/commit/fd5b2097577ea4a11a6067d3f462bdd20da8442c))
+* add new style for button ([cd858f1](https://github.com/nicoovillarr/trgtz/commit/cd858f182d3e2bddba05838a58d21c8101c1cc77))
+* allow non-friends to read minimal user information ([b7bbf43](https://github.com/nicoovillarr/trgtz/commit/b7bbf4314ff5a0d3f0b1b5280c8b322ea07f64cf))
+* last fixes ([f945287](https://github.com/nicoovillarr/trgtz/commit/f9452872496409db1a2c0d6592e3027d6a9b315e))
+* remove dist folder for .well-known path ([8bc12d4](https://github.com/nicoovillarr/trgtz/commit/8bc12d492df7ecc38cbddb530684fd729986331c))
+* remove vercel.json file ([f47acf2](https://github.com/nicoovillarr/trgtz/commit/f47acf23c2e4b0e1277727f6effb803795a80d4b))
+* test redirect from web ([32d9c5f](https://github.com/nicoovillarr/trgtz/commit/32d9c5f54cfd16d7659e58bf05f8117158a4cce8))
+
 ### [0.1.5-stg.0](https://github.com/nicoovillarr/trgtz/compare/v0.1.4...v0.1.5-stg.0) (2024-10-25)
 
 
