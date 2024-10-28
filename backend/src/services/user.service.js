@@ -197,7 +197,7 @@ const hasAccess = async (me, other) => {
         (friend.requester == other && friend.recipient == me)) &&
       friend.status == 'accepted' &&
       friend.deletedOn == null
-  )
+  ) || user.isSuperAdmin
 }
 
 const sendValidationEmail = async (user) => {
