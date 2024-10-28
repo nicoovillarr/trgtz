@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trgtz/core/base/index.dart';
-import 'package:trgtz/core/widgets/community_guidelines.dart';
-import 'package:trgtz/core/widgets/report_dialog.dart';
+import 'package:trgtz/core/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/profile/providers/index.dart';
 import 'package:trgtz/screens/profile/widgets/index.dart';
 
 class SingleProfileView extends StatefulWidget {
-  final User user;
+  final String userId;
   final String me;
   const SingleProfileView({
     super.key,
-    required this.user,
+    required this.userId,
     required this.me,
   });
 
@@ -22,6 +21,9 @@ class SingleProfileView extends StatefulWidget {
 
 class _SingleProfileViewState extends BaseScreen<SingleProfileView> {
   bool _loaded = false;
+  bool _areFriends = false;
+  bool _requestSent = false;
+  bool _requestReceived = false;
   late ProfileModel model;
 
   @override
@@ -29,11 +31,17 @@ class _SingleProfileViewState extends BaseScreen<SingleProfileView> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       context
           .read<SingleProfileProvider>()
-          .getProfile(widget.user.id)
+          .getProfile(widget.userId)
           .then((_) async {
         final profileProvider =
             Provider.of<SingleProfileProvider>(context, listen: false);
         model = profileProvider.profileModel!;
+        _areFriends = model.friends
+            .any((f) => f.otherUserId == widget.me && f.status == 'accepted');
+        _requestSent = model.friends
+            .any((f) => f.otherUserId == widget.me && f.status == 'pending');
+        _requestReceived = model.friends
+            .any((f) => f.otherUserId == widget.me && f.status == 'pending');
         _loaded = true;
         setState(() {});
       });
@@ -48,18 +56,42 @@ class _SingleProfileViewState extends BaseScreen<SingleProfileView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 140.0,
+            height: 140,
             color: Colors.white,
             child: ProfileBanner(
-              user: widget.user,
+              user: model.user,
               friendsCount: model.friends.length,
               goalsCount: model.goals.length,
-              itsMe: widget.user.id == widget.me,
+              itsMe: model.user.id == widget.me,
               padding: const EdgeInsets.all(16.0),
               onReport: _showUserReportDialog,
             ),
           ),
-          ProfileGoalsList(goals: model.goals),
+          if (!_areFriends)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SizedBox(
+                width: double.infinity,
+                child: MButton(
+                  onPressed: _friendRequestAction,
+                  type: MButtonType.secondary,
+                  outlined: true,
+                  borderRadius: 16.0,
+                  leading: _requestSent || _requestReceived
+                      ? const Icon(Icons.check, size: 18.0)
+                      : null,
+                  child: _requestReceived
+                      ? Text('Request Received')
+                      : _requestSent
+                          ? Text('Request Sent')
+                          : Text('Send Friend Request'),
+                ),
+              ),
+            ),
+          ProfileGoalsList(
+            goals: model.goals,
+            canEnterGoal: _areFriends || widget.me == widget.userId,
+          ),
         ],
       );
     } else {
@@ -96,5 +128,35 @@ class _SingleProfileViewState extends BaseScreen<SingleProfileView> {
       height: MediaQuery.of(context).size.height * 0.825,
       builder: (context, _) => const CommunityGuidelines(),
     );
+  }
+
+  void _friendRequestAction() {
+    if (_areFriends || _requestSent && !_requestReceived) {
+      return;
+    }
+    setIsLoading(true);
+
+    if (_requestReceived) {
+      context
+          .read<SingleProfileProvider>()
+          .acceptFriendRequest(model.user.id)
+          .then((_) {
+        setIsLoading(false);
+        setState(() {
+          _areFriends = true;
+        });
+      });
+      return;
+    } else {
+      context
+          .read<SingleProfileProvider>()
+          .sendFriendRequest(model.user.id)
+          .then((_) {
+        setIsLoading(false);
+        setState(() {
+          _requestSent = true;
+        });
+      });
+    }
   }
 }
