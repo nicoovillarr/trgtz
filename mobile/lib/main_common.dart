@@ -37,6 +37,8 @@ void mainCommon({
   await Firebase.initializeApp(options: _buildFirebaseOptions());
   await FirebaseHelperService.init();
   await admob.MobileAds.instance.initialize();
+  DeepLinkingService.instance.init();
+  
   ApplicationState initialState = ApplicationState(
     date: DateTime.now(),
     isProduction: isProduction,
