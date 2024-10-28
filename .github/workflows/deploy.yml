@@ -137,9 +137,6 @@ jobs:
           echo "BUNDLE_PATH=$BUNDLE_FOLDER/$BUNDLE_FILE_NAME" >> $GITHUB_ENV
           echo "Bundle saved in: $BUNDLE_PATH"
         shell: bash
-        env:
-          ENDPOINT: ${{ vars.ENDPOINT }}
-          WS_ENDPOINT: ${{ vars.WS_ENDPOINT }}
 
       - name: Upload app bundle as artifact
         uses: actions/upload-artifact@v3
