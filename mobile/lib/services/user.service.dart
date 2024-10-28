@@ -7,17 +7,20 @@ import 'package:trgtz/models/index.dart';
 class UserService {
   final UserApiService _userApiService = UserApiService();
 
-  Future getProfile(String userId) async {
+  Future<Map<String, dynamic>> getProfile(String userId) async {
     ApiResponse response = await _userApiService.getProfile(userId);
     if (response.status) {
       final dynamic content = response.content;
       Map<String, dynamic> result = {};
       result['user'] = User.fromJson(content);
-      result['goals'] =
-          (content['goals'] as List).map((e) => Goal.fromJson(e)).toList();
-      result['friends'] = (content['friends'] as List)
-          .map((e) => Friendship.fromJson(e))
-          .toList();
+      result['goals'] = content.containsKey('goals')
+          ? (content['goals'] as List).map((e) => Goal.fromJson(e)).toList()
+          : [];
+      result['friends'] = content.containsKey('friends')
+          ? (content['friends'] as List)
+              .map((e) => Friendship.fromJson(e))
+              .toList()
+          : [];
       if (content.containsKey('alerts')) {
         result['alerts'] =
             (content['alerts'] as List).map((e) => Alert.fromJson(e)).toList();
@@ -124,6 +127,13 @@ class UserService {
 
   Future validateEmail() async {
     ApiResponse response = await _userApiService.validateEmail();
+    if (!response.status) {
+      throw AppException(response.content);
+    }
+  }
+
+  Future sendFriendRequest(String userId) async {
+    ApiResponse response = await _userApiService.sendFriendRequest(userId);
     if (!response.status) {
       throw AppException(response.content);
     }
