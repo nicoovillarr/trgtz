@@ -17,13 +17,19 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart' as admob;
 
 void showErrorDialog(GlobalKey<NavigatorState> navigator, Object error) {
-  BuildContext context = navigator.currentContext!;
-  Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
-  store.dispatch(const SetIsLoadingAction(isLoading: false));
-  WidgetsBinding.instance.addPostFrameCallback((_) => showDialog(
-      context: navigator.currentContext!,
-      builder: (context) =>
-          ErrorDialog(innerException: error is AppException ? error : null)));
+  if (navigator.currentContext == null) return;
+
+  try {
+    BuildContext context = navigator.currentContext!;
+    Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
+    store.dispatch(const SetIsLoadingAction(isLoading: false));
+    WidgetsBinding.instance.addPostFrameCallback((_) => showDialog(
+        context: navigator.currentContext!,
+        builder: (context) =>
+            ErrorDialog(innerException: error is ApiException ? error : null)));
+  } on Exception catch (e) {
+    FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
+  }
 }
 
 void mainCommon({
@@ -38,7 +44,7 @@ void mainCommon({
   await FirebaseHelperService.init();
   await admob.MobileAds.instance.initialize();
   DeepLinkingService.instance.init();
-  
+
   ApplicationState initialState = ApplicationState(
     date: DateTime.now(),
     isProduction: isProduction,
@@ -66,7 +72,10 @@ void mainCommon({
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    if (error is! ApiException) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    }
+
     showErrorDialog(navigatorKey, error);
     return true;
   };
