@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:trgtz/services/index.dart';
@@ -14,14 +15,22 @@ class FirebaseHelperService {
     importance: Importance.max,
   );
 
-  static Future<String?> get token {
-    if (Platform.isAndroid) {
-      return _firebaseMessaging.getToken();
-    } else if (Platform.isIOS) {
-      return _firebaseMessaging.getAPNSToken();
-    } else {
+  static Future<String?> get token async {
+    if (!Platform.isAndroid && !Platform.isIOS) {
       throw UnsupportedError('Unsupported platform');
     }
+    
+    try {
+      if (Platform.isAndroid) {
+        return _firebaseMessaging.getToken();
+      } else if (Platform.isIOS) {
+        return _firebaseMessaging.getAPNSToken();
+      }
+    } catch (e) {
+      FirebaseCrashlytics.instance.log('Failed to get token: $e');
+    }
+
+    return null;
   }
 
   static Future<void> init() async {

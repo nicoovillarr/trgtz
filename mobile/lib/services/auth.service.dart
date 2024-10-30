@@ -1,6 +1,5 @@
 import 'package:trgtz/api/index.dart';
 import 'package:trgtz/core/exceptions/index.dart';
-import 'package:trgtz/core/exceptions/sso_login_exception.dart';
 
 class AuthService {
   final AuthApiService _authApiService = AuthApiService();
@@ -15,7 +14,7 @@ class AuthService {
     if (response.status) {
       return response.content;
     } else {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -30,7 +29,7 @@ class AuthService {
     if (response.status) {
       return response.content;
     } else {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -50,7 +49,7 @@ class AuthService {
     } else if (response.statusCode == 401) {
       throw SsoLoginException();
     } else {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -62,7 +61,7 @@ class AuthService {
   Future sendResetLink(String email) async {
     ApiResponse response = await _authApiService.sendResetLink(email);
     if (!response.status) {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 }

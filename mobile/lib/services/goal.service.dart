@@ -10,7 +10,7 @@ class GoalService {
     if (response.status) {
       return response.content.map<Goal>((goal) => Goal.fromJson(goal)).toList();
     } else {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -19,7 +19,7 @@ class GoalService {
     if (response.status) {
       return Goal.fromJson(response.content);
     } else {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -28,21 +28,21 @@ class GoalService {
     if (response.status) {
       return (response.content as List).map((e) => Goal.fromJson(e)).toList();
     } else {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
   Future deleteGoal(String id) async {
     ApiResponse response = await _goalsApiService.deleteGoal(id);
     if (!response.status) {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
   Future updateGoal(Goal goal) async {
     ApiResponse response = await _goalsApiService.updateGoal(goal);
     if (!response.status) {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -50,7 +50,7 @@ class GoalService {
     ApiResponse response =
         await _goalsApiService.setMilestones(goal, milestones);
     if (!response.status) {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -58,7 +58,7 @@ class GoalService {
     ApiResponse response =
         await _goalsApiService.updateMilestone(goal, milestone);
     if (!response.status) {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -67,33 +67,33 @@ class GoalService {
     if (response.status) {
       return Milestone.fromJson(response.content);
     } else {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
   Future reactToGoal(Goal goal, String reaction) async {
     ApiResponse response = await _goalsApiService.reactToGoal(goal, reaction);
     if (!response.status) {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
   Future removeReaction(Goal goal) async {
     ApiResponse response = await _goalsApiService.removeReaction(goal);
     if (!response.status) {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
   Future createComment(Goal goal, String text) async {
     ApiResponse response = await _goalsApiService.createComment(goal, text);
-    if (!response.status) throw AppException(response.content);
+    if (!response.status) throw ApiException(response.content);
   }
 
   Future deleteMilestone(Goal goal, String id) async {
     ApiResponse response = await _goalsApiService.deleteMilestone(goal, id);
     if (!response.status) {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -101,7 +101,7 @@ class GoalService {
     ApiResponse response =
         await _goalsApiService.deleteComment(goal, commentId);
     if (!response.status) {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -109,7 +109,7 @@ class GoalService {
     ApiResponse response =
         await _goalsApiService.updateComment(goal, commentId, value);
     if (!response.status) {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -121,7 +121,7 @@ class GoalService {
       reactionType,
     );
     if (!response.status) {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 }
