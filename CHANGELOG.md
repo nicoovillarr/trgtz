@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.5-stg.2](https://github.com/nicoovillarr/trgtz/compare/v0.1.5-stg.1...v0.1.5-stg.2) (2024-10-30)
+
+
+### Features
+
+* fix some crashlytics issues ([0258793](https://github.com/nicoovillarr/trgtz/commit/0258793349b1f015b3dffa011f0299d054a9fcda))
+
 ### [0.1.5-stg.1](https://github.com/nicoovillarr/trgtz/compare/v0.1.5-stg.0...v0.1.5-stg.1) (2024-10-28)
 
 
