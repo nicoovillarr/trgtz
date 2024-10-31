@@ -49,6 +49,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
 
   @override
   Future afterFirstBuild(BuildContext context) async {
+    await WebSocketService.getInstance().ensureAuthenticated();
     subscribeToChannel(broadcastChannelTypeUser, store.state.user!.id,
         (message) {
       switch (message.type) {

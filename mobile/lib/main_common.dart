@@ -62,8 +62,7 @@ void mainCommon({
     );
     loggedIn = true;
 
-    final ws = WebSocketService.getInstance();
-    await ws.init();
+    await WebSocketService.getInstance().init();
   }
 
   FlutterError.onError = (errorDetails) {
