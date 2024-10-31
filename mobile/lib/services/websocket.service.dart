@@ -9,6 +9,8 @@ import 'package:trgtz/constants.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+enum ChannelStatus { connected, disconnected }
+
 class WebSocketMessage {
   final String? type;
   final String? channelType;
@@ -44,19 +46,23 @@ class WebSocketMessage {
 class WebSocketChannelSubscription {
   final String channelType;
   final String documentId;
-  final Stream<WebSocketMessage> messages;
   final Function(WebSocketMessage) callback;
+
+  ChannelStatus status = ChannelStatus.disconnected;
 
   StreamSubscription<dynamic>? _subscription;
 
   WebSocketChannelSubscription({
     required this.channelType,
     required this.documentId,
-    required this.messages,
     required this.callback,
   });
 
-  void init() {
+  Stream<WebSocketMessage> get messages {
+    return WebSocketService.getInstance().messages!;
+  }
+
+  Future init() async {
     WebSocketService.getInstance().sendMessage(
       WebSocketMessage(
         type: broadcastTypeSubscribeChannel,
@@ -67,14 +73,37 @@ class WebSocketChannelSubscription {
       ),
     );
 
+    Completer<void> completer = Completer<void>();
     _subscription = messages.listen((message) {
+      if (!(message.channelType == channelType &&
+          (message.documentId == documentId || message.documentId == null))) {
+        return;
+      }
+
+      if (message.type == "${channelType}_SUBSCRIBED") {
+        status = ChannelStatus.connected;
+        completer.complete();
+
+        if (kDebugMode) {
+          print('[WebSocket] Subscribed to $channelType/$documentId');
+        }
+        return;
+      }
+
       callback(message);
     });
+
+    completer.future.timeout(const Duration(seconds: 10),
+        onTimeout: () => completer.completeError('Timeout'));
+
+    await completer.future;
   }
 
   void cancel() {
     _subscription?.cancel();
     _subscription = null;
+
+    status = ChannelStatus.disconnected;
   }
 }
 
@@ -99,8 +128,6 @@ class WebSocketService {
 
   Future init() async {
     if (_channel == null) {
-      Completer<void> completer = Completer<void>();
-
       final endpoint = Uri.parse(dotenv.env["WS_ENDPOINT"].toString());
       _channel = WebSocketChannel.connect(endpoint);
 
@@ -128,67 +155,34 @@ class WebSocketService {
         return message;
       }).asBroadcastStream();
 
-      StreamSubscription<WebSocketMessage>? authAux;
-      authAux = _broadcastStream!.listen((event) async {
-        if (event.type == broadcastTypeAuthSuccess) {
-          await LocalStorage.saveBroadcastToken(event.data);
-
-          connected = true;
-          completer.complete();
-          authAux?.cancel();
-
-          if (_pingTimer != null && !_pingTimer!.isActive) {
-            _pingTimer!.cancel();
-            _pingTimer = null;
-          }
-
-          _pingTimer = Timer.periodic(Duration(seconds: 30), (timer) {
-            if (_channel != null) {
-              if (_waitingForPong) {
-                restart();
-                return;
-              }
-
-              sendMessage(WebSocketMessage(type: 'PING', data: {}));
-              _waitingForPong = true;
-            }
-          });
-        }
-      });
-
-      await completer.future;
-
-      if (_channelsSubscribed.isNotEmpty) {
-        for (var sub in _channelsSubscribed) {
-          sub.init();
-        }
-      }
+      await ensureAuthenticated();
     } else if (kDebugMode) {
       print('WebSocketService is already initialized');
     }
   }
 
-  void subscribe(String channelType, String documentId,
-      Function(WebSocketMessage) callback) {
-    if (_channelsSubscribed.any((element) =>
-        element.channelType == channelType &&
-        element.documentId == documentId)) {
-      throw StateError('Already subscribed to $channelType/$documentId');
-    }
-
-    if (kDebugMode) {
-      print('[WebSocket] Subscribed to $channelType/$documentId');
+  Future subscribe(String channelType, String documentId,
+      Function(WebSocketMessage) callback) async {
+    final existing = _channelsSubscribed
+        .where((element) =>
+            element.channelType == channelType &&
+            element.documentId == documentId)
+        .lastOrNull;
+    if (existing != null) {
+      if (existing.status == ChannelStatus.connected) {
+        throw StateError('Already subscribed to $channelType/$documentId');
+      } else {
+        _channelsSubscribed.remove(existing);
+      }
     }
 
     WebSocketChannelSubscription sub = WebSocketChannelSubscription(
       channelType: channelType,
       documentId: documentId,
-      messages: messages!.where((event) =>
-          event.channelType == channelType && event.documentId == documentId),
       callback: callback,
     );
 
-    sub.init();
+    await sub.init();
 
     _channelsSubscribed.add(sub);
   }
@@ -250,16 +244,11 @@ class WebSocketService {
 
   Stream<WebSocketMessage>? get messages => _broadcastStream;
 
-  void dispose() {
-    _channel?.sink.close();
-    _channel = null;
-    _pingTimer?.cancel();
-    _pingTimer = null;
-  }
-
   void close() {
-    _rootSubscription?.cancel();
     unsubscribeToAll();
+    connected = false;
+
+    _rootSubscription?.cancel();
     _controller?.close();
     _channel?.sink.close();
     _channel = null;
@@ -285,14 +274,10 @@ class WebSocketService {
       ),
     );
 
-    List<WebSocketChannelSubscription> backup = List.from(_channelsSubscribed);
     close();
+
     Future.delayed(const Duration(seconds: 5), () {
       init().then((value) {
-        for (var element in backup) {
-          subscribe(element.channelType, element.documentId, element.callback);
-        }
-
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Reconnected.'),
@@ -301,5 +286,51 @@ class WebSocketService {
         );
       });
     });
+  }
+
+  Future ensureAuthenticated() async {
+    if (connected) return;
+
+    Completer<void> completer = Completer<void>();
+
+    StreamSubscription<WebSocketMessage>? authAux;
+    authAux = _broadcastStream!.listen((event) async {
+      if (event.type == broadcastTypeAuthSuccess) {
+        await LocalStorage.saveBroadcastToken(event.data);
+
+        connected = true;
+        completer.complete();
+        authAux?.cancel();
+
+        if (_pingTimer != null && !_pingTimer!.isActive) {
+          _pingTimer!.cancel();
+          _pingTimer = null;
+        }
+
+        _pingTimer = Timer.periodic(Duration(seconds: 30), (timer) {
+          if (_channel != null) {
+            if (_waitingForPong) {
+              restart();
+              return;
+            }
+
+            sendMessage(WebSocketMessage(type: 'PING', data: {}));
+            _waitingForPong = true;
+          }
+        });
+      }
+    });
+
+    completer.future.timeout(const Duration(seconds: 10),
+        onTimeout: () => completer.completeError('Timeout'));
+
+    await completer.future;
+
+    List<WebSocketChannelSubscription> toRestart = _channelsSubscribed
+        .where((s) => s.status == ChannelStatus.disconnected)
+        .toList();
+    if (toRestart.isNotEmpty) {
+      await Future.wait(toRestart.map((e) => e.init()));
+    }
   }
 }
