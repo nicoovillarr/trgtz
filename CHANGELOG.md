@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.5-stg.3](https://github.com/nicoovillarr/trgtz/compare/v0.1.5-stg.2...v0.1.5-stg.3) (2024-10-31)
+
+
+### Features
+
+* improve websockets workflow ([55182ea](https://github.com/nicoovillarr/trgtz/commit/55182ea3586f05317fbe6c26442525dd3e1a9d7f))
+
+
+### Bug Fixes
+
+* automatically set profile image after going to camera app ([20a8b92](https://github.com/nicoovillarr/trgtz/commit/20a8b9278f1614d755ef856d8a592371bb56dd50))
+* fix user profile websockets ([2d0bd78](https://github.com/nicoovillarr/trgtz/commit/2d0bd7855f28132612c1a31bce49904bab2050a2))
+* set the correct path prefix for deep linking ([80d1c3a](https://github.com/nicoovillarr/trgtz/commit/80d1c3ac5e7326a0d51ab9466d8797de926f3a82))
+
 ### [0.1.5-stg.2](https://github.com/nicoovillarr/trgtz/compare/v0.1.5-stg.1...v0.1.5-stg.2) (2024-10-30)
 
 
