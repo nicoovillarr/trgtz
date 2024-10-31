@@ -38,7 +38,7 @@
 
                 <data android:scheme="https"
                     android:host="www.trgtz.com"
-                    android:pathPrefix="/friend/" />
+                    android:pathPrefix="/friends/" />
             </intent-filter>
 
             <!-- Deep linking for staging development -->
@@ -50,19 +50,7 @@
 
                 <data android:scheme="https"
                     android:host="uat.trgtz.com"
-                    android:pathPrefix="/friend/" />
-            </intent-filter>
-
-            <!-- Deep linking for local development -->
-            <intent-filter android:autoVerify="false">
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="https"
-                      android:host="p2g1zcth-4321.brs.devtunnels.ms"
-                      android:pathPrefix="/friends/" />
+                    android:pathPrefix="/friends/" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
