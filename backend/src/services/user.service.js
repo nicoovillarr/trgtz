@@ -184,7 +184,7 @@ const setAvatarImage = async (id, image) => {
   user.avatar = image._id
   await user.save()
 
-  sendUserChannelMessage(id, 'USER_UPDATE', {
+  sendUserChannelMessage(id, 'USER_UPDATED', {
     avatar: image
   })
 }
