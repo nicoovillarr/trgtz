@@ -17,7 +17,7 @@ const String broadcastTypeUnsubscribeChannel = 'UNSUBSCRIBE_CHANNEL';
 const String broadcastTypeAuthSuccess = 'AUTH_SUCCESS';
 
 const String broadcastChannelTypeUser = 'USER';
-const String broadcastTypeUserUpdate = 'USER_UPDATE';
+const String broadcastTypeUserUpdate = 'USER_UPDATED';
 const String broadcastTypeUserEmailVerified = 'USER_EMAIL_VERIFIED';
 
 const String broadcastChannelTypeFriends = 'FRIENDS';
