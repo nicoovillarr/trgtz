@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:trgtz/app.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/store/index.dart';
+import 'package:trgtz/core/extensions/index.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 enum ChannelStatus { connected, disconnected }
@@ -73,7 +75,7 @@ class WebSocketChannelSubscription {
       ),
     );
 
-    Completer<void> completer = Completer<void>();
+    Completer<bool> completer = Completer();
     _subscription = messages.listen((message) {
       if (!(message.channelType == channelType &&
           (message.documentId == documentId || message.documentId == null))) {
@@ -82,7 +84,7 @@ class WebSocketChannelSubscription {
 
       if (message.type == "${channelType}_SUBSCRIBED") {
         status = ChannelStatus.connected;
-        completer.complete();
+        completer.complete(true);
 
         if (kDebugMode) {
           print('[WebSocket] Subscribed to $channelType/$documentId');
@@ -93,10 +95,18 @@ class WebSocketChannelSubscription {
       callback(message);
     });
 
-    completer.future.timeout(const Duration(seconds: 10),
-        onTimeout: () => completer.completeError('Timeout'));
+    completer.future.timeout(const Duration(seconds: 3), onTimeout: () {
+      _subscription?.cancel();
+      return false;
+    });
 
-    await completer.future;
+    if (!(await completer.future)) {
+      FirebaseCrashlytics.instance.recordError(
+          'Timeout subscribing to $channelType/$documentId',
+          StackTrace.current);
+      WebSocketService.getInstance().restart();
+      return;
+    }
   }
 
   void cancel() {
@@ -117,9 +127,15 @@ class WebSocketService {
   Timer? _pingTimer;
   bool _waitingForPong = false;
 
+  StreamController<bool>? _authController;
+  Stream<bool>? _authStream;
+  StreamSubscription<WebSocketMessage>? _authSubscription;
+
   final List<WebSocketChannelSubscription> _channelsSubscribed = [];
 
   WebSocketService._();
+
+  Stream<WebSocketMessage>? get messages => _broadcastStream;
 
   static WebSocketService getInstance() {
     _instance ??= WebSocketService._();
@@ -130,9 +146,6 @@ class WebSocketService {
     if (_channel == null) {
       final endpoint = Uri.parse(dotenv.env["WS_ENDPOINT"].toString());
       _channel = WebSocketChannel.connect(endpoint);
-
-      final token = await LocalStorage.getToken();
-      sendMessage(WebSocketMessage(type: 'AUTH', data: {'token': token}));
 
       _controller = StreamController<dynamic>();
 
@@ -154,6 +167,9 @@ class WebSocketService {
 
         return message;
       }).asBroadcastStream();
+
+      _authController = StreamController<bool>.broadcast();
+      _authStream = _authController!.stream.asBroadcastStream();
 
       await ensureAuthenticated();
     } else if (kDebugMode) {
@@ -242,8 +258,6 @@ class WebSocketService {
     }
   }
 
-  Stream<WebSocketMessage>? get messages => _broadcastStream;
-
   void close() {
     unsubscribeToAll();
     connected = false;
@@ -291,16 +305,30 @@ class WebSocketService {
   Future ensureAuthenticated() async {
     if (connected) return;
 
-    Completer<void> completer = Completer<void>();
+    if (_authSubscription != null && _authStream != null && await _authStream!.wait<bool>()) {
+      debugPrint('[WebSocket] WebSocket authenticated by another thread...');
+      return;
+    }
 
-    StreamSubscription<WebSocketMessage>? authAux;
-    authAux = _broadcastStream!.listen((event) async {
+    // TODO: queue messages while waiting for auth and
+    //  process them after auth is successful.
+
+    final token = await LocalStorage.getToken();
+    sendMessage(WebSocketMessage(type: 'AUTH', data: {'token': token}));
+
+    debugPrint('[WebSocket] Authenticating WebSocket...');
+
+    Completer<bool> completer = Completer();
+
+    _authSubscription = _broadcastStream!.listen((event) async {
       if (event.type == broadcastTypeAuthSuccess) {
         await LocalStorage.saveBroadcastToken(event.data);
 
         connected = true;
-        completer.complete();
-        authAux?.cancel();
+        completer.complete(true);
+        _authSubscription?.cancel();
+        _authSubscription = null;
+        _authController?.add(true);
 
         if (_pingTimer != null && !_pingTimer!.isActive) {
           _pingTimer!.cancel();
@@ -321,10 +349,19 @@ class WebSocketService {
       }
     });
 
-    completer.future.timeout(const Duration(seconds: 10),
-        onTimeout: () => completer.completeError('Timeout'));
+    completer.future.timeout(const Duration(seconds: 3), onTimeout: () {
+      _authSubscription?.cancel();
+      _authSubscription = null;
+      _authController?.add(false);
+      return false;
+    });
 
-    await completer.future;
+    if (!(await completer.future)) {
+      FirebaseCrashlytics.instance
+          .recordError('Timeout authenticating WebSocket', StackTrace.current);
+      restart();
+      return;
+    }
 
     List<WebSocketChannelSubscription> toRestart = _channelsSubscribed
         .where((s) => s.status == ChannelStatus.disconnected)
