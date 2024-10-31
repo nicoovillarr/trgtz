@@ -1,0 +1,33 @@
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redireccionando...</title>
+  </head>
+  <body>
+    <p>
+      Si no eres redirigido automáticamente, haz clic <button onclick="redirect"
+        >aquí</button
+      >.
+    </p>
+  </body>
+  <script>
+    const userAgent = navigator.userAgent;
+    const id = window.location.pathname.split("/").pop();
+    const isBot = /bot|googlebot|crawler|spider|robot|crawling/i.test(userAgent);
+  
+    function redirect() {
+      if (!isBot) {
+        const uri = `intent://friends/${id}#Intent;scheme=https;package=com.marppa.trgtz.dev;end`;
+        console.log(uri)
+        window.location.href = uri;
+      }
+    }
+  
+    setTimeout(() => {
+      redirect();
+    }, 1000);
+  </script>
+</html>
+

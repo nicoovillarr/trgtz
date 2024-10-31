@@ -29,4 +29,10 @@ class SingleProfileProvider extends ChangeNotifier {
     );
     notifyListeners();
   }
+
+  Future<void> sendFriendRequest(String userId) =>
+      _profileRepository.sendFriendRequest(userId);
+
+  Future<void> acceptFriendRequest(String userId) =>
+      _profileRepository.answerFriendRequest(userId, true);
 }

@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Show SHA1 Keytool Debug",
+      "type": "shell",
+      "command": "keytool",
+      "args": [
+        "-list",
+        "-v",
+        "-keystore",
+        "C:/Users/Nico/.android/debug.keystore",
+        "-alias",
+        "androiddebugkey",
+        "-storepass",
+        "android",
+        "-keypass",
+        "android"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}

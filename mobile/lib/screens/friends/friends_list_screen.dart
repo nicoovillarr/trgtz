@@ -129,7 +129,7 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
           return ListTile(
             onTap: () => simpleBottomSheet(
               child: SingleProfileView(
-                user: friends[index].friendDetails,
+                userId: friends[index].friendDetails.id,
                 me: store.state.user!.id,
               ),
               height: MediaQuery.of(context).size.height * 0.75,

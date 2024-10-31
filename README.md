@@ -1,25 +1,26 @@
-Me propuse crear una aplicación móvil desde cero, y adivina qué... ¡ahora podrás proponerte metas tú también! 📱🚀
+I set out to create a mobile app from scratch, and guess what… now you can set goals for yourself too! 📱🚀
 
-Trgtz es una app en la que puedes agregar tus metas del año, compartirlas con tus amigos y celebrar juntos cada logro. La idea surgió mientras reflexionaba sobre cómo hacer la gestión de objetivos más interactiva y social, permitiendo que las personas se motiven mutuamente. 🎯🤝
+**Trgtz** is an app where you can add your goals for the year, share them with friends, and celebrate every achievement together. The idea came to me while reflecting on how to make goal management more interactive and social, allowing people to motivate each other. 🎯🤝
 
-Quería una herramienta que no solo me ayudara a definir mis objetivos, sino que también me permitiera seguir el progreso de mis amigos y celebrar juntos nuestros logros. Ya sea que busques crecimiento personal, hitos profesionales o mejoras en tu estado físico, Trgtz está diseñada para apoyarte en cada paso del camino. 🌱💼💪
+I wanted a tool that not only helped me define my objectives but also allowed me to track my friends’ progress and celebrate our achievements together. Whether you’re aiming for personal growth, career milestones, or fitness improvements, Trgtz is designed to support you every step of the way. 🌱💼💪
 
-Algunos de los beneficios de usar Trgtz son:
-- Define metas claras: Sueña en grande y planifica estratégicamente. ✨📊
-- Mantén el ritmo: Sigue tu progreso y ajusta tu enfoque para mantenerte en el camino hacia el éxito. 🛤️🚶‍♂️
-- Recibe actualizaciones: Obtén recordatorios y notificaciones para mantenerte motivado. 🔔🎯
+Some of the benefits of using Trgtz include:
 
-Pasé por las fases comunes de creación: planificación, diseño, desarrollo, testing y lanzamiento, utilizando diversas tecnologías como Flutter para el desarrollo multiplataforma, Express para el backend y MongoDB para la gestión de datos. 💻🛠️
+- **Define clear goals**: Dream big and plan strategically. ✨📊
+- **Stay on track**: Monitor your progress and adjust your approach to stay on the path to success. 🛤️🚶‍♂️
+- **Receive updates**: Get reminders and notifications to keep you motivated. 🔔🎯
 
-Además, me encargué de varios procesos cruciales como:
+I went through all the usual creation phases: planning, design, development, testing, and launch, using various technologies like Flutter for cross-platform development, Express for the backend, and MongoDB for data management. 💻🛠️
 
-1. Implementación de CI/CD para asegurar un flujo de desarrollo continuo y sin interrupciones. ⚙️🔄
-2. Compra del dominio trgtz.com para asegurar una presencia en línea profesional. 🌐🏠
-3. Integración de Cloudflare y Vercel para optimizar el rendimiento y la seguridad de la aplicación. 🔐⚡
-4. Creación de pruebas unitarias para garantizar la estabilidad y funcionalidad de cada componente. ✅🧪
+In addition, I managed several crucial processes such as:
 
-Mi propósito con este proyecto fue mostrar mis habilidades en mi portfolio, y estoy increíblemente orgulloso del resultado.
+1. **Implementing CI/CD** to ensure a seamless, uninterrupted development flow. ⚙️🔄
+2. **Purchasing the trgtz.com domain** to establish a professional online presence. 🌐🏠
+3. **Integrating Cloudflare and Vercel** to optimize the app’s performance and security. 🔐⚡
+4. **Creating unit tests** to guarantee the stability and functionality of each component. ✅🧪
 
-Trgtz es más que una simple aplicación de metas; es una comunidad donde cada logro se celebra y cada esfuerzo es reconocido. Estoy emocionado por ver cómo Trgtz puede transformar la forma en que las personas establecen y alcanzan sus metas. 🎉🏅
+My goal with this project was to showcase my skills in my portfolio, and I’m incredibly proud of the outcome.
 
-¡Descarga Trgtz ahora en Android y iOS!
+Trgtz is more than just a goal-setting app; it’s a community where every achievement is celebrated, and every effort is recognized. I’m thrilled to see how Trgtz can transform the way people set and reach their goals. 🎉🏅
+
+Download Trgtz now on Android and iOS!

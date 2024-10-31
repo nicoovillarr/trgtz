@@ -12,20 +12,32 @@ const getUserProfile = async (req, res) => {
     const me = req.user
     const { user } = req.params
 
-    if (me != user && !(await userService.hasAccess(me, user))) {
-      res.status(403).end()
+    const userInfo = await userService.getUserInfo(user)
+    if (userInfo == null) {
+      res.status(404).end()
       return
     }
 
-    const userInfo = await userService.getUserInfo(user)
     const json = userInfo.toJSON()
-    if (me == user) {
-      await alertService.markAlertsAsSeen(user)
-    } else {
-      json.goals = json.goals.filter((g) => g.deletedOn == null)
+
+    if (me != user && !(await userService.hasAccess(me, user))) {
+      json.goals = json.goals
+        .filter((g) => g.deletedOn == null)
+        .map((g) => ({
+          _id: g._id,
+          title: g.title,
+          year: g.year,
+          description: g.description,
+          completedOn: g.completedOn,
+          createdOn: g.createdOn
+        }))
       delete json.alerts
       delete json.sessions
       delete json.firebaseTokens
+    }
+
+    if (me == user) {
+      await alertService.markAlertsAsSeen(user)
     }
 
     res.status(200).json(json)
@@ -279,8 +291,7 @@ const validateEmail = async (req, res) => {
       await userService.sendUserEmailVerified(user._id, user.email)
       sendUserChannelMessage(userId, 'USER_EMAIL_VERIFIED', true)
       res.status(204).end()
-    }
-    else throw new Error('Error validating email.')
+    } else throw new Error('Error validating email.')
   } catch (error) {
     res.status(500).json(error)
     console.error('Error validating email: ', error)

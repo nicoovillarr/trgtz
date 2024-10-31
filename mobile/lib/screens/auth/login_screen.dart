@@ -8,7 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:redux/redux.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
-import 'package:trgtz/core/exceptions/sso_login_exception.dart';
+import 'package:trgtz/core/exceptions/index.dart';
 import 'package:trgtz/core/index.dart';
 import 'package:trgtz/logger.dart';
 import 'package:trgtz/models/index.dart';
@@ -352,7 +352,8 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
 
       if (googleUser == null) {
         setIsLoading(false);
-        throw Exception("Google sign in failed");
+        showMessage('Ups!', 'Google Sign In failed');
+        return;
       }
 
       final GoogleSignInAuthentication googleAuth =
@@ -362,7 +363,8 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
 
       if (idToken == null) {
         setIsLoading(false);
-        throw Exception("Google sign in failed");
+        showMessage('Ups!', 'Google Sign In failed');
+        return;
       }
 
       await _completeGoogleSignIn(idToken, googleUser);

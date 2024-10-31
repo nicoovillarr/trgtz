@@ -6,3 +6,4 @@ export './device_information.service.dart';
 export './session.service.dart';
 export './websocket.service.dart';
 export './report.service.dart';
+export './deep_linking_service.dart';

@@ -49,6 +49,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
 
   @override
   Future afterFirstBuild(BuildContext context) async {
+    await WebSocketService.getInstance().ensureAuthenticated();
     subscribeToChannel(broadcastChannelTypeUser, store.state.user!.id,
         (message) {
       switch (message.type) {
@@ -58,7 +59,8 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
           break;
 
         case broadcastTypeUserEmailVerified:
-          store.dispatch(SetUserEmailVerifiedAction(isEmailVerified: message.data));
+          store.dispatch(
+              SetUserEmailVerifiedAction(isEmailVerified: message.data));
           setState(() {});
 
           if (message.data) {
@@ -111,7 +113,8 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
                     : 'Title cannot be empty',
                 onSave: (s) {
                   if (s != null && s.isNotEmpty) {
-                    Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
+                    Store<ApplicationState> store =
+                        StoreProvider.of<ApplicationState>(context);
                     final newGoal = Goal(
                       id: const Uuid().v4(),
                       title: s,
@@ -249,8 +252,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
           Store<ApplicationState> store = StoreProvider.of(context);
           User user = store.state.user!.deepCopy();
           user.firstName = s!;
-          ModuleService.updateUser(user, store)
-              .then((_) => setIsLoading(false));
+          ModuleService.updateUser(user).then((_) => setIsLoading(false));
         },
       ),
     );
@@ -274,8 +276,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
           Store<ApplicationState> store = StoreProvider.of(context);
           User user = store.state.user!.deepCopy();
           user.email = s!;
-          ModuleService.updateUser(user, store)
-              .then((_) => setIsLoading(false));
+          ModuleService.updateUser(user).then((_) => setIsLoading(false));
         },
       ),
     );
@@ -360,7 +361,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         ),
       ),
     );
-  }  
+  }
 
   void _validateEmail() {
     setIsLoading(true);
@@ -396,8 +397,8 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
       ),
     );
   }
-  
-  Future _pickImage(ImageSource source)  async {
+
+  Future _pickImage(ImageSource source) async {
     final pickedFile = await picker.pickImage(source: source);
 
     if (pickedFile != null) {

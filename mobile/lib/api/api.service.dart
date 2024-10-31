@@ -54,7 +54,8 @@ class ApiBaseService {
     );
     request.headers.addAll(await _buildHeaders());
     final response = await request.send();
-    return ApiResponse(content: 'asd', statusCode: response.statusCode);
+    final responseMsg = await response.stream.bytesToString();
+    return ApiResponse(content: responseMsg, statusCode: response.statusCode);
   }
 
   Future<ApiResponse> _call(

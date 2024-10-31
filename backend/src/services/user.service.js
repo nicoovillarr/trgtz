@@ -184,7 +184,7 @@ const setAvatarImage = async (id, image) => {
   user.avatar = image._id
   await user.save()
 
-  sendUserChannelMessage(id, 'USER_UPDATE', {
+  sendUserChannelMessage(id, 'USER_UPDATED', {
     avatar: image
   })
 }
@@ -197,7 +197,7 @@ const hasAccess = async (me, other) => {
         (friend.requester == other && friend.recipient == me)) &&
       friend.status == 'accepted' &&
       friend.deletedOn == null
-  )
+  ) || user.isSuperAdmin
 }
 
 const sendValidationEmail = async (user) => {

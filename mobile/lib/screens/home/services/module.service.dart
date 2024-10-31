@@ -1,9 +1,7 @@
 import 'dart:io';
 
-import 'package:redux/redux.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/services/index.dart';
-import 'package:trgtz/store/index.dart';
 
 class ModuleService {
   static final GoalService _goalService = GoalService();
@@ -14,14 +12,10 @@ class ModuleService {
 
   static Future deleteGoal(String id) async => _goalService.deleteGoal(id);
 
-  static Future updateUser(User user, Store<ApplicationState> store) async {
-    dynamic response = await _userService.patchUser(user);
-    store.dispatch(SetUserAction(user: response['user']));
-    store.dispatch(SetGoalsAction(goals: response['goals']));
-  }
+  static Future updateUser(User user) => _userService.patchUser(user);
 
-  static Future changePassword(
-      String oldPassword, String newPassword) async => await _userService.changePassword(oldPassword, newPassword);
+  static Future changePassword(String oldPassword, String newPassword) async =>
+      await _userService.changePassword(oldPassword, newPassword);
 
   static Future setProfileImage(File image) async =>
       await _userService.setProfileImage(image);

@@ -14,8 +14,8 @@ class ModuleService {
     store.dispatch(SetGoalsAction(goals: response['goals']));
   }
 
-  static Future changePassword(
-      String oldPassword, String newPassword, Store<ApplicationState> store) async {
+  static Future changePassword(String oldPassword, String newPassword,
+      Store<ApplicationState> store) async {
     dynamic response =
         await _userService.changePassword(oldPassword, newPassword);
     store.dispatch(SetUserAction(user: response['user']));
@@ -33,4 +33,10 @@ class ModuleService {
 
   Future getProfile(String userId) async =>
       await _userService.getProfile(userId);
+
+  Future sendFriendRequest(String userId) async =>
+      await _userService.sendFriendRequest(userId);
+
+  Future answerFriendRequest(String userId, bool bool) =>
+      _userService.answerFriendRequest(userId, bool);
 }

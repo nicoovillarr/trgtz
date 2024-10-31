@@ -5,12 +5,14 @@ import 'package:shimmer/shimmer.dart';
 import 'package:trgtz/models/index.dart';
 
 class ProfileGoalsList extends StatelessWidget {
+  final bool canEnterGoal;
   final List<Goal> goals;
   final Axis direction;
   const ProfileGoalsList({
     super.key,
     required this.goals,
     this.direction = Axis.vertical,
+    this.canEnterGoal = false,
   });
 
   @override
@@ -57,10 +59,14 @@ class ProfileGoalsList extends StatelessWidget {
             elevation: 5,
             clipBehavior: Clip.hardEdge,
             child: InkWell(
-              onTap: () => Navigator.of(context).pushNamed(
-                '/goal',
-                arguments: goal.id,
-              ),
+              onTap: () {
+                if (canEnterGoal) {
+                  Navigator.of(context).pushNamed(
+                    '/goal',
+                    arguments: goal.id,
+                  );
+                }
+              },
               child: Container(
                 constraints: constraints,
                 child: ListTile(

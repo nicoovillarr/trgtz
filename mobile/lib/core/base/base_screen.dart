@@ -323,8 +323,12 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
         ),
       );
 
-  void showSnackBar(String message, {SnackBarAction? action}) {
-    ScaffoldMessenger.of(context).showSnackBar(
+  void showSnackBar(
+    String message, {
+    SnackBarAction? action,
+    BuildContext? context,
+  }) {
+    ScaffoldMessenger.of(context ?? this.context).showSnackBar(
       SnackBar(
         content: Text(message),
         duration: const Duration(seconds: 2),

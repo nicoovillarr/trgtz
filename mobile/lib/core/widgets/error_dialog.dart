@@ -4,7 +4,7 @@ import 'package:trgtz/core/exceptions/index.dart';
 class ErrorDialog extends StatelessWidget {
   final String title;
   final String content;
-  final AppException? innerException;
+  final ApiException? innerException;
   const ErrorDialog({
     super.key,
     this.title = 'Error',

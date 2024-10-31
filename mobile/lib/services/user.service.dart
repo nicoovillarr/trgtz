@@ -7,31 +7,34 @@ import 'package:trgtz/models/index.dart';
 class UserService {
   final UserApiService _userApiService = UserApiService();
 
-  Future getProfile(String userId) async {
+  Future<Map<String, dynamic>> getProfile(String userId) async {
     ApiResponse response = await _userApiService.getProfile(userId);
     if (response.status) {
       final dynamic content = response.content;
       Map<String, dynamic> result = {};
       result['user'] = User.fromJson(content);
-      result['goals'] =
-          (content['goals'] as List).map((e) => Goal.fromJson(e)).toList();
-      result['friends'] = (content['friends'] as List)
-          .map((e) => Friendship.fromJson(e))
-          .toList();
+      result['goals'] = content.containsKey('goals')
+          ? (content['goals'] as List).map((e) => Goal.fromJson(e)).toList()
+          : [];
+      result['friends'] = content.containsKey('friends')
+          ? (content['friends'] as List)
+              .map((e) => Friendship.fromJson(e))
+              .toList()
+          : [];
       if (content.containsKey('alerts')) {
         result['alerts'] =
             (content['alerts'] as List).map((e) => Alert.fromJson(e)).toList();
       }
       return result;
     } else {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
   Future patchUser(User user) async {
     ApiResponse response = await _userApiService.patchUser(user);
     if (!response.status) {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -39,7 +42,7 @@ class UserService {
     ApiResponse response =
         await _userApiService.changePassword(oldPassword, newPassword);
     if (!response.status) {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -49,7 +52,7 @@ class UserService {
     if (response.status) {
       return response.content;
     } else {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -59,7 +62,7 @@ class UserService {
     if (response.status) {
       return response.content;
     } else {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -68,7 +71,7 @@ class UserService {
     if (response.status) {
       return response.content;
     } else {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -80,7 +83,7 @@ class UserService {
           .map((e) => Friendship.fromJson(e))
           .toList();
     } else {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -91,14 +94,14 @@ class UserService {
           .map((e) => Friendship.fromJson(e))
           .toList();
     } else {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
   Future setProfileImage(File image) async {
     ApiResponse response = await _userApiService.setProfileImage(image);
     if (!response.status) {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -107,7 +110,7 @@ class UserService {
     if (response.status) {
       return (response.content as List).map((e) => Goal.fromJson(e)).toList();
     } else {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -118,14 +121,21 @@ class UserService {
           .map((e) => Friendship.fromJson(e))
           .toList();
     } else {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
   Future validateEmail() async {
     ApiResponse response = await _userApiService.validateEmail();
     if (!response.status) {
-      throw AppException(response.content);
+      throw ApiException(response.content);
+    }
+  }
+
+  Future sendFriendRequest(String userId) async {
+    ApiResponse response = await _userApiService.sendFriendRequest(userId);
+    if (!response.status) {
+      throw ApiException(response.content);
     }
   }
 }

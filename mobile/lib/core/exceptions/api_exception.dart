@@ -1,7 +1,7 @@
-class AppException extends Error {
+class ApiException extends Error {
   final String message;
 
-  AppException([this.message = '']);
+  ApiException([this.message = '']);
 
   @override
   String toString() {
