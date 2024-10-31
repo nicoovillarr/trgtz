@@ -105,7 +105,7 @@ class _SsoIntermediatePasswordState extends State<SsoIntermediatePassword> {
           await _completeSignIn(response);
         }
       }
-    } on AppException catch (e) {
+    } on ApiException catch (e) {
       _passwordKey.currentState!.errorText = e.message;
     }
   }

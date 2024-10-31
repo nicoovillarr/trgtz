@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:trgtz/app.dart';
 import 'package:trgtz/models/goal.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/store/index.dart';
@@ -156,4 +158,65 @@ class Utils {
 
   static String formatDate(DateTime createdOn) =>
       DateFormat("MM-dd-yyyy").format(createdOn);
+
+  static void simpleBottomSheet({
+    BuildContext? context,
+    Widget? child,
+    Widget Function(BuildContext, Widget?)? builder,
+    String? title,
+    double height = 350,
+    Color backgroundColor = const Color(0xFFFFFFFF),
+  }) {
+    assert(context != null || navigatorKey.currentContext != null,
+        'context should be provided');
+
+    assert(child != null || builder != null,
+        'child or builder should be provided');
+
+    builder ??= (context, child) => SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (title != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: Text(title),
+                ),
+              child!,
+            ],
+          ),
+        );
+
+    context ??= navigatorKey.currentContext!;
+
+    showModalBottomSheet(
+      context: navigatorKey.currentContext!,
+      isScrollControlled: true,
+      showDragHandle: true,
+      enableDrag: true,
+      backgroundColor: Colors.white,
+      useRootNavigator: false,
+      elevation: 20,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16.0),
+          topRight: Radius.circular(16.0),
+        ),
+      ),
+      builder: (BuildContext context) {
+        final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+        final screenHeight = MediaQuery.of(context).size.height;
+        final maxHeight = (screenHeight * 0.875) - keyboardHeight;
+        return Container(
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          height: height > 0 ? min(height, maxHeight) : null,
+          color: backgroundColor,
+          width: MediaQuery.of(context).size.width,
+          child: builder!(context, child),
+        );
+      },
+    );
+  }
 }

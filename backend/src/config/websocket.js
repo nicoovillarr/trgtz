@@ -54,7 +54,7 @@ const init = () => {
             if (error) {
               console.error('Error sending PONG:', error)
             }
-          })        
+          })
         } else {
           const { channelType, documentId } = data
 
@@ -63,10 +63,20 @@ const init = () => {
               if (!channels[channelType]) {
                 channels[channelType] = {}
               }
+
               if (!channels[channelType][documentId]) {
                 channels[channelType][documentId] = new Set()
               }
+
               channels[channelType][documentId].add(userId)
+
+              ws.send(
+                JSON.stringify({
+                  channelType,
+                  type: `${channelType}_SUBSCRIBED`,
+                  data: documentId
+                })
+              )
 
               console.log(`${userId} suscribed to ${channelType}:${documentId}`)
               break

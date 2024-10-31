@@ -18,4 +18,9 @@ class ModuleService {
 
   Future<List<Friendship>> getFriends(String userId) async =>
       await _userService.getFriends(userId);
+
+  Future<User> getProfile(String userId) async {
+    final Map<String, dynamic> profile = await _userService.getProfile(userId);
+    return profile['user'];
+  }
 }

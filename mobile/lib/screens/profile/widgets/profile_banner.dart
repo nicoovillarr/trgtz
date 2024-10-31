@@ -16,6 +16,7 @@ class ProfileBanner extends StatelessWidget {
   final int friendsCount;
   final int goalsCount;
   final bool itsMe;
+  final bool areFriends;
   final EdgeInsetsGeometry padding;
   final Function()? onReport;
 
@@ -27,6 +28,7 @@ class ProfileBanner extends StatelessWidget {
     required this.friendsCount,
     required this.goalsCount,
     this.itsMe = false,
+    this.areFriends = false,
     this.padding = EdgeInsets.zero,
     this.onReport,
   });
@@ -50,7 +52,10 @@ class ProfileBanner extends StatelessWidget {
                       ),
                     ),
                     if (user.id ==
-                        StoreProvider.of<ApplicationState>(context).state.user?.id)
+                        StoreProvider.of<ApplicationState>(context)
+                            .state
+                            .user
+                            ?.id)
                       Positioned(
                         bottom: 0,
                         right: 0,
@@ -132,7 +137,7 @@ class ProfileBanner extends StatelessWidget {
                               title: 'Friends',
                               value: friendsCount.toString(),
                               onTap: () {
-                                if (!itsMe) {
+                                if (!itsMe && areFriends) {
                                   if (Navigator.of(context).canPop()) {
                                     Navigator.of(context).pop();
                                   }
@@ -150,7 +155,7 @@ class ProfileBanner extends StatelessWidget {
                               },
                             ),
                           ],
-                        )
+                        ),
                       ],
                     ),
                   ),

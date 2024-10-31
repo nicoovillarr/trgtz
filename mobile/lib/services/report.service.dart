@@ -10,7 +10,7 @@ class ReportService {
     ApiResponse response = await _reportApiService.createReport(
         entityType, entityId, category, reason);
     if (!response.status) {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -19,7 +19,7 @@ class ReportService {
     ApiResponse response =
         await _reportApiService.resolveReport(reportId, status, resolution);
     if (!response.status) {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -30,7 +30,7 @@ class ReportService {
           .map((report) => Report.fromJson(report))
           .toList();
     } else {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -39,7 +39,7 @@ class ReportService {
     if (response.status) {
       return Report.fromJson(response.content);
     } else {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 
@@ -50,7 +50,7 @@ class ReportService {
           .map((report) => Report.fromJson(report))
           .toList();
     } else {
-      throw AppException(response.content);
+      throw ApiException(response.content);
     }
   }
 }
