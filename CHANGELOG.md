@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.5-stg.4](https://github.com/nicoovillarr/trgtz/compare/v0.1.5-stg.3...v0.1.5-stg.4) (2024-10-31)
+
+
+### Bug Fixes
+
+* try to fix deep link ([f3fb75a](https://github.com/nicoovillarr/trgtz/commit/f3fb75aaf7b74af20edfe5e2c5282e0c175629a6))
+
 ### [0.1.5-stg.3](https://github.com/nicoovillarr/trgtz/compare/v0.1.5-stg.2...v0.1.5-stg.3) (2024-10-31)
 
 
