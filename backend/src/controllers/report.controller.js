@@ -34,11 +34,10 @@ const createReport = async (req, res) => {
 
 const resolveReport = async (req, res) => {
   try {
-    const userId = req.user
     const { id } = req.params
     const { status, resolution } = req.body
 
-    const user = await User.findById(userId)
+    const user = await User.findById(req.user)
     if (user == null || !user.isSuperAdmin) {
       return res.status(403).json({ message: 'Unauthorized' })
     }
@@ -103,20 +102,15 @@ const getReport = async (req, res) => {
   }
 }
 
-const getUserReports = async (req, res) => {
-  try {
-    const user = req.user
-    const reports = await reportService.getUserReports(user)
-    res.status(200).json(reports)
-  } catch (error) {
-    res.status(500).json(error)
-    console.error(error)
-  }
-}
-
 const getEntityReports = async (req, res) => {
   try {
     const { entity_type, entity_id } = req.params
+
+    const user = await User.findById(req.user)
+    if (user == null || !user.isSuperAdmin) {
+      return res.status(403).json({ message: 'Unauthorized' })
+    }
+
     const reports = await reportService.getEntityReports(entity_type, entity_id)
     res.status(200).json(reports)
   } catch (error) {
@@ -130,6 +124,5 @@ module.exports = {
   resolveReport,
   getAllReports,
   getReport,
-  getUserReports,
   getEntityReports
 }
