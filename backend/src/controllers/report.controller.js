@@ -44,7 +44,6 @@ const resolveReport = async (req, res) => {
     }
 
     const report = await reportService.resolveReport(
-      user,
       id,
       status,
       resolution

@@ -26,8 +26,6 @@ const createReport = async (user, entity_type, entity_id, category, reason) => {
 
   await alertService.addAlert(user, user, 'report_created')
 
-  // TODO: Send email to user and admins with report details
-
   return report
 }
 
@@ -49,7 +47,7 @@ const getEntity = async (entity_type, entity_id) => {
   }
 }
 
-const resolveReport = async (user, id, status, resolution) => {
+const resolveReport = async (id, status, resolution) => {
   const report = await Report.findById(id)
   if (report == null) return null
 
@@ -58,15 +56,15 @@ const resolveReport = async (user, id, status, resolution) => {
   report.resolvedOn = new Date()
   await report.save()
 
+  const userCreator = await User.findById(report.user)
+
   await pushNotificationService.sendNotificationToUser(
-    user._id,
+    userCreator._id,
     `Report ${status}`,
     `Your report has been ${status}!`
   )
 
-  await alertService.addAlert(user._id, user._id, 'report_' + status, true)
-
-  const userCreator = await User.findById(report.user)
+  await alertService.addAlert(userCreator._id, userCreator._id, 'report_' + status, true)
 
   const subject = `Report ${status}!`
   const text = `Your report has been ${status}!`
