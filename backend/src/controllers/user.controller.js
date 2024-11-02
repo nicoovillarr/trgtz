@@ -14,7 +14,7 @@ const getUserProfile = async (req, res) => {
 
     const userInfo = await userService.getUserInfo(user)
     if (userInfo == null) {
-      res.status(404).end()
+      res.status(400).json({ message: `User with id ${user} not found.` })
       return
     }
 
@@ -51,7 +51,9 @@ const patchUser = async (req, res) => {
   try {
     const id = req.user
     const updates = req.body
+
     await userService.patchUser(id, updates)
+
     res.status(204).end()
   } catch (error) {
     res.status(500).json(error)
@@ -63,7 +65,7 @@ const updatePassword = async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body
 
-    const user = await User.findOne({ _id: req.user })
+    const user = await User.findById(req.user)
     if (user.providers.includes('email')) {
       const validPassword = await authService.validatePassword(
         user,
@@ -95,19 +97,23 @@ const sendFriendRequest = async (req, res) => {
       return
     }
 
-    if (!(await userService.canSendFriendRequest(_id, recipientId))) {
+    const me = await User.findById(_id)
+    const other = await User.findById(recipientId)
+
+    if (!(await userService.canSendFriendRequest(me, other))) {
       res
         .status(405)
         .json({ message: 'You are not allowed to send a friend request now.' })
       return
     }
 
-    await userService.sendFriendRequest(_id, recipientId)
+    await userService.sendFriendRequest(me, other)
     await alertService.addAlert(_id, recipientId, 'friend_requested')
 
     const recipientToken = await userService.getUserFirebaseTokens([
       recipientId
     ])
+
     await pushNotificationService.sendNotification(
       _id,
       recipientToken,
@@ -125,32 +131,41 @@ const sendFriendRequest = async (req, res) => {
 const answerFriendRequest = async (req, res) => {
   try {
     const _id = req.user
-    const { requesterId, answer } = req.body
-    if (!(await userService.userExist(requesterId))) {
+    const { requesterId, answer: isAccepted } = req.body
+
+    const user = await User.findById(_id)
+    const requester = await User.findById(requesterId)
+
+    if (requester == null) {
       res.status(400).json({ message: 'Requester not found.' })
       return
     }
 
     const answered = await userService.answerFriendRequest(
-      _id,
-      requesterId,
-      answer
+      user,
+      requester,
+      isAccepted
     )
+
     if (!answered) {
       res.status(400).json({ message: 'Friend request not found.' })
       return
     }
 
-    if (answer) {
-      await alertService.deleteAlert(requesterId, _id, 'friend_requested')
-      await alertService.addAlert(_id, requesterId, 'friend_accepted')
-      await alertService.addAlert(requesterId, _id, 'friend_accepted')
+    if (isAccepted) {
+      await alertService.deleteAlert(
+        requester._id,
+        user._id,
+        'friend_requested'
+      )
+      await alertService.addAlert(user._id, requester._id, 'friend_accepted')
+      await alertService.addAlert(requester._id, user._id, 'friend_accepted')
 
       const recipientToken = await userService.getUserFirebaseTokens([
-        requesterId
+        requester._id
       ])
       await pushNotificationService.sendNotification(
-        _id,
+        user._id,
         recipientToken,
         'Friend request accepted',
         '$name and you are now friends!'
@@ -166,15 +181,20 @@ const answerFriendRequest = async (req, res) => {
 
 const deleteFriend = async (req, res) => {
   try {
-    const _id = req.user
-    const { otherUser } = req.params
-    if (!(await userService.userExist(otherUser))) {
+    const { otherUser: otherUserId } = req.params
+
+    const user = await User.findById(req.user)
+    const otherUser = await User.findById(otherUserId)
+
+    if (otherUser == null) {
       res.status(400).json({ message: 'Friend not found.' })
       return
     }
 
-    await userService.deleteFriend(_id, otherUser)
-    await alertService.deleteAlerts(_id, otherUser)
+    await userService.deleteFriend(user, otherUser)
+
+    await alertService.deleteAlerts(user._id, otherUser._id)
+
     res.status(204).end()
   } catch (error) {
     res.status(500).json(error)
@@ -184,8 +204,7 @@ const deleteFriend = async (req, res) => {
 
 const getFriends = async (req, res) => {
   try {
-    const _id = req.user
-    const friends = await userService.getFriends(_id, {
+    const friends = await userService.getFriends(req.user, {
       status: 'accepted',
       deletedOn: { $eq: null }
     })
@@ -198,8 +217,7 @@ const getFriends = async (req, res) => {
 
 const getPendingFriends = async (req, res) => {
   try {
-    const _id = req.user
-    const pendingFriends = await userService.getPendingFriends(_id)
+    const pendingFriends = await userService.getPendingFriends(req.user)
     res.status(200).json(pendingFriends)
   } catch (error) {
     res.status(500).json(error)
@@ -210,8 +228,10 @@ const getPendingFriends = async (req, res) => {
 const setProfileImage = async (req, res) => {
   try {
     const _id = req.user
+
     const image = await imageService.uploadImage(req, res, _id)
     await userService.setAvatarImage(_id, image)
+    
     res.status(204).json(image)
   } catch (error) {
     res.status(500).json(error)
@@ -223,13 +243,13 @@ const getUserGoals = async (req, res) => {
   try {
     const me = req.user
     const { user } = req.params
+    const { year } = req.query
 
     if (me != user && !(await userService.hasAccess(me, user))) {
       res.status(403).end()
       return
     }
 
-    const { year } = req.query
     const goals = await goalService.getGoals(user, year)
     res.status(200).json(goals)
   } catch (error) {
@@ -257,6 +277,7 @@ const getUserFriends = async (req, res) => {
       status: status ?? 'accepted',
       deletedOn: { $eq: null }
     })
+
     res.status(200).json(friends)
   } catch (error) {
     res.status(500).json(error)
@@ -266,8 +287,7 @@ const getUserFriends = async (req, res) => {
 
 const sendValidationEmail = async (req, res) => {
   try {
-    const _id = req.user
-    const user = await User.findById(_id)
+    const user = await User.findById(req.user)
     if (user.emailValidated) {
       res.status(400).json({ message: 'Email already validated.' })
       return
@@ -289,7 +309,9 @@ const validateEmail = async (req, res) => {
       const user = await User.findById(userId)
 
       await userService.sendUserEmailVerified(user._id, user.email)
+
       sendUserChannelMessage(userId, 'USER_EMAIL_VERIFIED', true)
+      
       res.status(204).end()
     } else throw new Error('Error validating email.')
   } catch (error) {
