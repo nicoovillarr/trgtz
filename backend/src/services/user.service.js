@@ -16,19 +16,21 @@ const getUserInfo = async (id) => {
 
 const patchUser = async (id, updates) => {
   const user = await User.findOne({ _id: id })
-  const editableFields = ['firstName', 'email']
-  for (const key of Object.keys(updates).filter((t) =>
-    editableFields.includes(t)
-  )) {
+
+  const fields = Object.keys(updates).filter((t) =>
+    ['firstName', 'email'].includes(t)
+  )
+
+  for (const key of fields) {
     user[key] = updates[key]
   }
+
   await user.save()
+
   sendUserChannelMessage(
     id,
     'USER_UPDATED',
-    Object.keys(updates)
-      .filter((t) => editableFields.includes(t))
-      .reduce((acc, curr) => ({ ...acc, [curr]: updates[curr] }), {})
+    fields.reduce((acc, curr) => ({ ...acc, [curr]: updates[curr] }), {})
   )
 }
 
@@ -42,35 +44,30 @@ const updatePassword = async (user, newHash) => {
   await user.save()
 }
 
-const sendFriendRequest = async (requesterId, recipientId) => {
-  const requester = await User.findById(requesterId)
-  const recipient = await User.findById(recipientId)
+const sendFriendRequest = async (requester, recipient) => {
   requester.friends.push({
-    requester: requesterId,
-    recipient: recipientId
+    requester: requester._id,
+    recipient: recipient._id
   })
   recipient.friends.push({
-    requester: requesterId,
-    recipient: recipientId
+    requester: requester._id,
+    recipient: recipient._id
   })
   await requester.save()
   await recipient.save()
 
-  sendFriendsChannelMessage(recipientId, 'FRIEND_REQUEST', requesterId)
+  sendFriendsChannelMessage(recipient._id, 'FRIEND_REQUEST', requester._id)
 }
 
 const userExist = async (id) => (await User.countDocuments({ _id: id })) > 0
 
 const canSendFriendRequest = async (me, other) => {
-  if (me === other) return false
+  if (me._id === other._id) return false
 
-  const user = await User.findById(me)
-  if (!user) return false
-
-  const existingFriendship = user.friends.find(
+  const existingFriendship = me.friends.find(
     (friend) =>
-      ((friend.requester === me && friend.recipient == other) ||
-        (friend.requester == other && friend.recipient == me)) &&
+      ((friend.requester === me._id && friend.recipient == other._id) ||
+        (friend.requester == other._id && friend.recipient == me._id)) &&
       friend.status !== 'accepted' &&
       (friend.status === 'rejected' ? friend.deletedOn === null : true)
   )
@@ -78,18 +75,21 @@ const canSendFriendRequest = async (me, other) => {
   return !existingFriendship
 }
 
-const answerFriendRequest = async (recipientId, requesterId, answer) => {
-  const requester = await User.findById(requesterId)
-  const recipient = await User.findById(recipientId)
+const answerFriendRequest = async (recipient, requester, answer) => {
   const requesterFriend = requester.friends.find(
     (friend) =>
-      friend.recipient.toString() === recipientId && friend.status === 'pending'
+      friend.recipient.toString() === recipient._id &&
+      friend.status === 'pending'
   )
+
   const recipientFriend = recipient.friends.find(
     (friend) =>
-      friend.requester.toString() === requesterId && friend.status === 'pending'
+      friend.requester.toString() === requester._id &&
+      friend.status === 'pending'
   )
+
   if (requesterFriend == null || recipientFriend == null) return false
+
   if (answer === true) {
     requesterFriend.status = 'accepted'
     recipientFriend.status = 'accepted'
@@ -106,14 +106,14 @@ const answerFriendRequest = async (recipientId, requesterId, answer) => {
 
   if (answer) {
     sendFriendsChannelMessage(
-      recipientId,
+      recipient._id,
       'FRIEND_REQUEST_ACCEPTED',
-      requesterId
+      requester._id
     )
     sendFriendsChannelMessage(
-      requesterId,
+      requester._id,
       'FRIEND_REQUEST_ACCEPTED',
-      recipientId
+      recipient._id
     )
   }
 
@@ -137,30 +137,28 @@ const getMinUserInfo = async (ids) => {
 }
 
 const deleteFriend = async (me, friend) => {
-  const meUser = await User.findById(me)
-  const friendUser = await User.findById(friend)
-  meUser.friends = meUser.friends.map((f) => {
-    if (
-      (f.requester == friend && f.recipient == me) ||
-      (f.requester == me && f.recipient == friend)
-    ) {
-      f.deletedOn = new Date()
-    }
-    return f
-  })
-  friendUser.friends = friendUser.friends.map((f) => {
-    if (
-      (f.requester == friend && f.recipient == me) ||
-      (f.requester == me && f.recipient == friend)
-    ) {
-      f.deletedOn = new Date()
-    }
-    return f
-  })
-  await meUser.save()
-  await friendUser.save()
+  me.friends = me.friends.map((f) => ({
+    ...f,
+    deletedOn:
+      (f.requester == friend._id && f.recipient == me._id) ||
+      (f.requester == me._id && f.recipient == friend._id)
+        ? new Date()
+        : f.deletedOn
+  }))
 
-  sendFriendsChannelMessage(me, 'FRIEND_DELETED', friend)
+  friend.friends = me.friends.map((f) => ({
+    ...f,
+    deletedOn:
+      (f.requester == friend._id && f.recipient == me._id) ||
+      (f.requester == me._id && f.recipient == friend._id)
+        ? new Date()
+        : f.deletedOn
+  }))
+
+  await me.save()
+  await friend.save()
+
+  sendFriendsChannelMessage(me._id, 'FRIEND_DELETED', friend._id)
 }
 
 const getUserFirebaseTokens = async (ids) => {
@@ -191,13 +189,15 @@ const setAvatarImage = async (id, image) => {
 
 const hasAccess = async (me, other) => {
   const user = await User.findById(me)
-  return user.friends.find(
-    (friend) =>
-      ((friend.requester == me && friend.recipient == other) ||
-        (friend.requester == other && friend.recipient == me)) &&
-      friend.status == 'accepted' &&
-      friend.deletedOn == null
-  ) || user.isSuperAdmin
+  return (
+    user.friends.find(
+      (friend) =>
+        ((friend.requester == me && friend.recipient == other) ||
+          (friend.requester == other && friend.recipient == me)) &&
+        friend.status == 'accepted' &&
+        friend.deletedOn == null
+    ) || user.isSuperAdmin
+  )
 }
 
 const sendValidationEmail = async (user) => {
@@ -228,12 +228,7 @@ const sendUserEmailVerified = async (userId, email) => {
   const subject = 'Email validated'
   const text = 'Your email has been successfully validated'
   const html = '<p>Your email has been successfully validated</p>'
-  return await mailService.sendNoReplyEmail(
-    email,
-    subject,
-    text,
-    html
-  )
+  return await mailService.sendNoReplyEmail(email, subject, text, html)
 }
 
 module.exports = {

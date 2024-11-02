@@ -47,10 +47,7 @@ const getEntity = async (entity_type, entity_id) => {
   }
 }
 
-const resolveReport = async (id, status, resolution) => {
-  const report = await Report.findById(id)
-  if (report == null) return null
-
+const resolveReport = async (report, status, resolution) => {
   report.status = status
   report.resolution = resolution
   report.resolvedOn = new Date()
