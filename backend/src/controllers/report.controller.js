@@ -39,14 +39,17 @@ const resolveReport = async (req, res) => {
 
     const user = await User.findById(req.user)
     if (user == null || !user.isSuperAdmin) {
-      return res.status(403).json({ message: 'Unauthorized' })
+      res.status(403).json({ message: 'Unauthorized' })
+      return
     }
 
-    const report = await reportService.resolveReport(
-      id,
-      status,
-      resolution
-    )
+    const report = await Report.findById(id)
+    if (report == null) {
+      res.status(400).json({ message: `Report with id ${id} not found.` })
+      return
+    }
+
+    await reportService.resolveReport(report, status, resolution)
 
     if (report == null)
       return res
@@ -87,13 +90,12 @@ const getReport = async (req, res) => {
     const { id } = req.params
 
     const user = await User.findById(userId)
-    if (user == null) {
-      return res.status(403).json({ message: 'Unauthorized' })
-    }
-
     const report = (await reportService.getReport(id)).toJSON()
-    if (report == null || (report.user._id != userId && !user.isSuperAdmin))
+
+    if (report == null || (report.user._id != userId && !user.isSuperAdmin)) {
       res.status(400).json({ message: `Report with id ${id} not found.` })
+      return
+    }
 
     res.status(200).json(report)
   } catch (error) {
@@ -107,8 +109,9 @@ const getEntityReports = async (req, res) => {
     const { entity_type, entity_id } = req.params
 
     const user = await User.findById(req.user)
-    if (user == null || !user.isSuperAdmin) {
-      return res.status(403).json({ message: 'Unauthorized' })
+    if (!user.isSuperAdmin) {
+      res.status(403).json({ message: 'Unauthorized' })
+      return
     }
 
     const reports = await reportService.getEntityReports(entity_type, entity_id)
