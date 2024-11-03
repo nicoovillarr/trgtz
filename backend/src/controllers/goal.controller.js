@@ -2,6 +2,7 @@ const goalService = require('../services/goal.service')
 const alertService = require('../services/alert.service')
 const pushNotificationService = require('../services/push-notification.service')
 
+const { alertTypes } = require('../config/constants')
 const Goal = require('../models/goal.model')
 const User = require('../models/user.model')
 
@@ -15,7 +16,7 @@ const createMultipleGoals = async (req, res) => {
 
     await pushNotificationService.sendNotificationToFriends(
       user,
-      'Goals created',
+      'goal_created',
       `\$name created ${
         createdGoals.length > 1 ? 'some new goals' : 'a new goal'
       }!`
@@ -118,7 +119,7 @@ const updateMilestone = async (req, res) => {
       await alertService.sendAlertToFriends(user, 'milestone_completed')
       await pushNotificationService.sendNotificationToFriends(
         user,
-        'Milestone completed',
+        'milestone_completed',
         '$name completed a milestone!'
       )
     }
@@ -203,7 +204,7 @@ const updateGoal = async (req, res) => {
       await alertService.sendAlertToFriends(userId, 'goal_completed')
       await pushNotificationService.sendNotificationToFriends(
         userId,
-        'Goal completed',
+        'goal_completed',
         `\$name completed ${goal.title}!`
       )
     }
@@ -253,11 +254,13 @@ const reactToGoal = async (req, res) => {
 
     await alertService.addAlert(userId, goal.user, 'goal_reaction')
 
-    await pushNotificationService.sendNotificationToUser(
-      goal.user,
-      'Goal reaction',
-      `\$name reacted to your goal!`
-    )
+    if (goal.user != userId) {
+      await pushNotificationService.sendNotificationToUser(
+        goal.user,
+        'goal_reaction',
+        `\$name reacted to your goal!`
+      )
+    }
 
     res.status(201).end()
   } catch (error) {
@@ -310,11 +313,13 @@ const createComment = async (req, res) => {
 
     await alertService.addAlert(user._id, goal.user, 'goal_comment')
 
-    await pushNotificationService.sendNotificationToUser(
-      goal.user,
-      'Goal comment',
-      `\$name commented on your goal!`
-    )
+    if (goal.user != user._id) {
+      await pushNotificationService.sendNotificationToUser(
+        goal.user,
+        'goal_comment',
+        `\$name commented on your goal!`
+      )
+    }
 
     res.status(200).json(comment)
   } catch (error) {

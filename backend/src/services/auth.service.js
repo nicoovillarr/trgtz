@@ -4,6 +4,7 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 const User = require('../models/user.model')
 const Image = require('../models/image.model')
 const bcrypt = require('bcryptjs')
+const { alertTypes } = require('../config/constants')
 
 const signup = async (
   firstName,
@@ -32,6 +33,8 @@ const signup = async (
   if (provider === 'google') {
     user.emailVerified = true
   }
+
+  user.subscribedAlerts = Object.keys(alertTypes)
 
   await user.save()
   const json = user.toJSON()

@@ -19,6 +19,8 @@ const String broadcastTypeAuthSuccess = 'AUTH_SUCCESS';
 const String broadcastChannelTypeUser = 'USER';
 const String broadcastTypeUserUpdate = 'USER_UPDATED';
 const String broadcastTypeUserEmailVerified = 'USER_EMAIL_VERIFIED';
+const String broadcastTypeUserAlertTypeSubscribed = 'USER_ALERT_TYPE_SUBSCRIBED';
+const String broadcastTypeUserAlertTypeUnsubscribed = 'USER_ALERT_TYPE_UNSUBSCRIBED';
 
 const String broadcastChannelTypeFriends = 'FRIENDS';
 const String broadcastTypeFriendRequest = 'FRIEND_REQUEST';

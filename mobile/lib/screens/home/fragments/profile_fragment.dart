@@ -14,6 +14,7 @@ const String editUserPassword = 'EDIT_USER_PASSWORD';
 const String logout = 'LOGOUT';
 const String validateEmail = 'VALIDATE_EMAIL';
 const String adminReports = 'OPEN_ADMIN_REPORTS';
+const String goNotifications = 'GO_NOTIFICATIONS';
 
 class ProfileFragment extends BaseFragment {
   const ProfileFragment({super.key, required super.enimtAction});
@@ -29,6 +30,7 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
   Widget build(BuildContext context) {
     return StoreConnector<ApplicationState, Map<String, dynamic>>(
       converter: (store) => {
+        "isProduction": store.state.isProduction,
         "user": store.state.user,
         "friendsCount": store.state.friends
                 ?.where((element) =>
@@ -44,13 +46,13 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
       },
       builder: (context, state) => state["user"] != null
           ? _buildBody(context, state["user"]!, state["friendsCount"],
-              state["goalsCount"])
+              state["goalsCount"], state["isProduction"])
           : _buildNoUserMsg(),
     );
   }
 
-  SingleChildScrollView _buildBody(
-          BuildContext context, User user, int friendsCount, int goalsCount) =>
+  SingleChildScrollView _buildBody(BuildContext context, User user,
+          int friendsCount, int goalsCount, bool isProduction) =>
       SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -71,7 +73,7 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
                     field: 'Email',
                   ),
                   _buildListItem(
-                    onTap: () {},
+                    onTap: () => widget.enimtAction(goNotifications),
                     field: 'Notifications',
                     icon: Icons.keyboard_arrow_right,
                   ),
@@ -95,17 +97,18 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
                         onTap: () => widget.enimtAction(validateEmail)),
                 ],
               ),
-              _buildOptionsList(
-                title: 'About',
-                children: [
-                  _buildListItem(
-                    onTap: () =>
-                        Navigator.of(context).pushNamed('/profile/app-info'),
-                    field: 'Application',
-                    icon: Icons.keyboard_arrow_right,
-                  ),
-                ],
-              ),
+              if (!isProduction)
+                _buildOptionsList(
+                  title: 'About',
+                  children: [
+                    _buildListItem(
+                      onTap: () =>
+                          Navigator.of(context).pushNamed('/profile/app-info'),
+                      field: 'Application',
+                      icon: Icons.keyboard_arrow_right,
+                    ),
+                  ],
+                ),
               if (user.isSuperAdmin) _buildAdminOptionsList(),
               _buildOptionsList(
                 children: [
