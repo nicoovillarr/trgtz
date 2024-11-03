@@ -109,9 +109,9 @@ const sendFriendRequest = async (req, res) => {
     }
 
     await userService.sendFriendRequest(me, other)
-    await alertService.addAlert(_id, recipientId, alertTypes.friend_requested)
+    await alertService.addAlert(_id, recipientId, 'friend_requested')
 
-    if (other.subscribedAlerts.includes(alertTypes.friend_requested)) {
+    if (other.subscribedAlerts.includes('friend_requested')) {
       const recipientTokens = await userService.getUserFirebaseTokens([
         other._id
       ])
@@ -119,7 +119,7 @@ const sendFriendRequest = async (req, res) => {
       await pushNotificationService.sendNotification(
         _id,
         recipientTokens,
-        alertTypes.friend_requested,
+        'friend_requested',
         '$name wants to be your friend!'
       )
     }
@@ -164,15 +164,15 @@ const answerFriendRequest = async (req, res) => {
       await alertService.addAlert(
         user._id,
         requester._id,
-        alertTypes.friend_accepted
+        'friend_accepted'
       )
       await alertService.addAlert(
         requester._id,
         user._id,
-        alertTypes.friend_accepted
+        'friend_accepted'
       )
 
-      if (requester.subscribedAlerts.includes(alertTypes.friend_accepted)) {
+      if (requester.subscribedAlerts.includes('friend_accepted')) {
         const recipientTokens = await userService.getUserFirebaseTokens([
           requester._id
         ])
@@ -180,7 +180,7 @@ const answerFriendRequest = async (req, res) => {
         await pushNotificationService.sendNotification(
           user._id,
           recipientTokens,
-          alertTypes.friend_accepted,
+          'friend_accepted',
           '$name and you are now friends!'
         )
       }

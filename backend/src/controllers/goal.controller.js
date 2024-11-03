@@ -12,11 +12,11 @@ const createMultipleGoals = async (req, res) => {
 
     const createdGoals = await goalService.createMultipleGoals(user, req.body)
 
-    await alertService.sendAlertToFriends(user, alertTypes.goal_created)
+    await alertService.sendAlertToFriends(user, 'goal_created')
 
     await pushNotificationService.sendNotificationToFriends(
       user,
-      alertTypes.goal_created,
+      'goal_created',
       `\$name created ${
         createdGoals.length > 1 ? 'some new goals' : 'a new goal'
       }!`
@@ -118,11 +118,11 @@ const updateMilestone = async (req, res) => {
     if (isMilstoneCompleted) {
       await alertService.sendAlertToFriends(
         user,
-        alertTypes.milestone_completed
+        'milestone_completed'
       )
       await pushNotificationService.sendNotificationToFriends(
         user,
-        alertTypes.milestone_completed,
+        'milestone_completed',
         '$name completed a milestone!'
       )
     }
@@ -204,10 +204,10 @@ const updateGoal = async (req, res) => {
     await goalService.updateGoal(goal, req.body)
 
     if (wasCompleted == false && goal.completedOn != null) {
-      await alertService.sendAlertToFriends(userId, alertTypes.goal_completed)
+      await alertService.sendAlertToFriends(userId, 'goal_completed')
       await pushNotificationService.sendNotificationToFriends(
         userId,
-        alertTypes.goal_completed,
+        'goal_completed',
         `\$name completed ${goal.title}!`
       )
     }
@@ -255,11 +255,11 @@ const reactToGoal = async (req, res) => {
 
     await goalService.reactToGoal(goal, userId, reaction)
 
-    await alertService.addAlert(userId, goal.user, alertTypes.goal_reaction)
+    await alertService.addAlert(userId, goal.user, 'goal_reaction')
 
     await pushNotificationService.sendNotificationToUser(
       goal.user,
-      alertTypes.goal_reaction,
+      'goal_reaction',
       `\$name reacted to your goal!`
     )
 
@@ -312,11 +312,11 @@ const createComment = async (req, res) => {
 
     const comment = await goalService.createComment(goal, user, text)
 
-    await alertService.addAlert(user._id, goal.user, alertTypes.goal_comment)
+    await alertService.addAlert(user._id, goal.user, 'goal_comment')
 
     await pushNotificationService.sendNotificationToUser(
       goal.user,
-      alertTypes.goal_comment,
+      'goal_comment',
       `\$name commented on your goal!`
     )
 
