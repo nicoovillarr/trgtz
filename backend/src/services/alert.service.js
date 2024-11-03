@@ -2,6 +2,7 @@ const User = require('../models/user.model')
 const Alert = require('../models/alert.model')
 const userService = require('./user.service')
 const { sendAlertsChannelMessage } = require('../config/websocket')
+const { alertTypes } = require('../config/constants')
 
 const sendAlertToFriends = async (userId, type) => {
   const friends = await userService.getFriends(userId, {
@@ -66,10 +67,13 @@ const deleteAlerts = async (sent_by, sent_to) => {
 const deleteAlert = async (sent_by, sent_to, type) =>
   await Alert.deleteOne({ sent_by, sent_to, type: type })
 
+const isValidAlertType = (type) => Object.keys(alertTypes).includes(type)
+
 module.exports = {
   sendAlertToFriends,
   addAlert,
   markAlertsAsSeen,
   deleteAlerts,
-  deleteAlert
+  deleteAlert,
+  isValidAlertType
 }

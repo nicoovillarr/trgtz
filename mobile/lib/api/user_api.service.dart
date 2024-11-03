@@ -57,4 +57,12 @@ class UserApiService extends ApiBaseService {
   Future<ApiResponse> sendFriendRequest(String userId) => post('/friend', {
         'recipientId': userId,
       });
+
+  Future<ApiResponse> getUserSubscribedTypes() => get('/alerts/types');
+
+  Future<ApiResponse> subscribeToAlertType(String type) =>
+      put('/alerts/subscribe', {'type': type});
+
+  Future<ApiResponse> unsubscribeToAlert(String type) =>
+      put('/alerts/unsubscribe', {'type': type});
 }

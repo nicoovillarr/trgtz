@@ -10,6 +10,7 @@ import 'package:trgtz/screens/admin/index.dart';
 import 'package:trgtz/screens/admin/providers/index.dart';
 import 'package:trgtz/screens/goal/providers/index.dart';
 import 'package:trgtz/screens/profile/index.dart';
+import 'package:trgtz/screens/profile/providers/index.dart';
 import 'package:trgtz/screens/report/index.dart';
 import 'package:trgtz/screens/report/providers/index.dart';
 import 'package:trgtz/services/index.dart';
@@ -91,6 +92,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   child: const FriendsListScreen(),
                 ),
             '/profile/app-info': (context) => const ProfileAppInfoScreen(),
+            '/profile/notifications': (context) => ChangeNotifierProvider(
+                create: (_) => ProfileNotificationsProvider(),
+                child: const ProfileNotificationsScreen()),
             '/reports': (context) => ChangeNotifierProvider(
                   create: (context) => ReportsListProvider(),
                   child: const ReportsListView(),

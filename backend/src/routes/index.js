@@ -6,6 +6,7 @@ app.get('/', (req, res) => {
     message: 'Welcome to Trgtz!'
   })
 })
+app.use('/alerts', require('./alert.route'))
 app.use('/goals', require('./goal.route'))
 app.use('/auth', require('./auth.route'))
 app.use('/users', require('./user.route'))
