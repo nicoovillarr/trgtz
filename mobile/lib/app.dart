@@ -91,7 +91,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   create: (context) => FriendsListScreenProvider(),
                   child: const FriendsListScreen(),
                 ),
-            '/profile/app-info': (context) => const ProfileAppInfoScreen(),
+            '/profile/app-info': (context) => ChangeNotifierProvider(
+                  // create: (_) => ProfileAppInfoProvider()
+                  create: (context) => ProfileAppInfoProvider(context: context),
+                  child: const ProfileAppInfoScreen(),
+                ),
             '/profile/notifications': (context) => ChangeNotifierProvider(
                 create: (_) => ProfileNotificationsProvider(),
                 child: const ProfileNotificationsScreen()),

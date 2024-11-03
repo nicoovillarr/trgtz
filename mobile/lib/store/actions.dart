@@ -297,3 +297,14 @@ class SetUserProvider implements ReducerActionBase {
     return currentState.copyWith(user: updatedUser);
   }
 }
+
+class SetFirebaseTokenAction implements ReducerActionBase {
+  final String token;
+
+  const SetFirebaseTokenAction({required this.token});
+
+  @override
+  execute(ApplicationState currentState) {
+    return currentState.copyWith(firebaseToken: token);
+  }
+}
