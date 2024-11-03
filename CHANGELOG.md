@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.5-stg.5](https://github.com/nicoovillarr/trgtz/compare/v0.1.5-stg.4...v0.1.5-stg.5) (2024-11-03)
+
+
+### Features
+
+* allow users manage notifications ([4bbf427](https://github.com/nicoovillarr/trgtz/commit/4bbf42795a500652bc71227461b28384dd0902e5))
+* don't send notification to current user ([5067b84](https://github.com/nicoovillarr/trgtz/commit/5067b84c11d22c4fd8b8215d0d24bbfe89f7bd72))
+* fix alert types usage ([fa1e687](https://github.com/nicoovillarr/trgtz/commit/fa1e687673d1da358baa96bd3f35429caa18ff02))
+* show app info only for debugging ([7256c1c](https://github.com/nicoovillarr/trgtz/commit/7256c1cbd84a7524c6a6e4ca793801a819fec7e3))
+* use Provider in profile app info and show firebase token ([05110c2](https://github.com/nicoovillarr/trgtz/commit/05110c203af521f9bf0dcdef639d1dbc9539d071))
+
+
+### Bug Fixes
+
+* check user is superadmin to get entityReports ([0e071f9](https://github.com/nicoovillarr/trgtz/commit/0e071f9065f48614e9e0760537b2b06633e859f7))
+* improve and refactor security in goal api ([2f39484](https://github.com/nicoovillarr/trgtz/commit/2f39484c0bb9e587c6337c20db3ff11b97763f60))
+* improve and refactor security in report api ([e54bfb0](https://github.com/nicoovillarr/trgtz/commit/e54bfb09ab6c9265e9a429a6601d11879e899d60))
+* improve and refactor security in user api ([68959b4](https://github.com/nicoovillarr/trgtz/commit/68959b45d98bef43d99dcf5e7adf3e5d57381fc2))
+* use the correct id to send report notification ([50457ca](https://github.com/nicoovillarr/trgtz/commit/50457ca28ab23e5bbfbc1da945dac3a57500270d))
+
 ### [0.1.5-stg.4](https://github.com/nicoovillarr/trgtz/compare/v0.1.5-stg.3...v0.1.5-stg.4) (2024-10-31)
 
 
