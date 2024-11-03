@@ -2,16 +2,21 @@ const admin = require('firebase-admin')
 const userService = require('./user.service')
 
 const Session = require('../models/session.model')
+const User = require('../models/user.model')
+const { alertTypes } = require('../config/constants')
 
-const sendNotification = async (userId, tokens, title, body) => {
+const sendNotification = async (userId, tokens, type, body) => {
   try {
     if (tokens == null || tokens.length === 0) return
+
+    const title = alertTypes[type]
 
     tokens = tokens.reduce((acc, val) => {
       if (acc.includes(val)) return acc
       else acc.push(val)
       return acc
     }, [])
+
     console.log(
       `Sending notification to: ${tokens
         .map((t) => t.substring(0, 8) + '...')
@@ -19,9 +24,6 @@ const sendNotification = async (userId, tokens, title, body) => {
     )
 
     const { firstName } = (await userService.getUserInfo(userId)).toJSON()
-    if (title.includes('$name')) {
-      title = title.replace('$name', firstName)
-    }
 
     if (body.includes('$name')) {
       body = body.replace('$name', firstName)
@@ -30,8 +32,8 @@ const sendNotification = async (userId, tokens, title, body) => {
     const response = await admin.messaging().sendEachForMulticast({
       tokens,
       notification: {
-        title: title,
-        body: body
+        title,
+        body
       }
     })
 
@@ -61,20 +63,28 @@ const sendNotification = async (userId, tokens, title, body) => {
   }
 }
 
-const sendNotificationToFriends = async (userId, title, body) => {
+const sendNotificationToFriends = async (userId, type, body) => {
+  const user = await User.findById(userId)
+  if (user == null || !user.subscribedAlerts.includes(type)) return
+
   const friends = await userService.getFriends(userId, {
     status: 'accepted',
     deletedOn: { $eq: null }
   })
+
   const tokens = await userService.getUserFirebaseTokens(
     friends.map((f) => f.otherUserID)
   )
-  await sendNotification(userId, tokens, title, body)
+  
+  await sendNotification(userId, tokens, type, body)
 }
 
-const sendNotificationToUser = async (userId, title, body) => {
+const sendNotificationToUser = async (userId, type, body) => {
+  const user = await User.findById(userId)
+  if (user == null || !user.subscribedAlerts.includes(type)) return
+
   const tokens = await userService.getUserFirebaseTokens([userId])
-  await sendNotification(userId, tokens, title, body)
+  await sendNotification(userId, tokens, type, body)
 }
 
 module.exports = {

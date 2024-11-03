@@ -16,8 +16,14 @@ app.put('/friend', protect, userController.answerFriendRequest)
 app.delete('/friend/:otherUser', protect, userController.deleteFriend)
 app.get('/friend/pending', protect, userController.getPendingFriends)
 
+app.get('/alerts/types', protect, userController.getUserSubscribedTypes)
+app.put('/alerts/subscribe', protect, userController.subscribeToAlert)
+app.put('/alerts/unsubscribe', protect, userController.unsubscribeToAlert)
+
 app.get('/:user', protect, userController.getUserProfile)
+
 app.get('/:user/goals', protect, userController.getUserGoals)
+
 app.get('/:user/friends', protect, userController.getUserFriends)
 
 module.exports = app

@@ -14,6 +14,7 @@ const String editUserPassword = 'EDIT_USER_PASSWORD';
 const String logout = 'LOGOUT';
 const String validateEmail = 'VALIDATE_EMAIL';
 const String adminReports = 'OPEN_ADMIN_REPORTS';
+const String goNotifications = 'GO_NOTIFICATIONS';
 
 class ProfileFragment extends BaseFragment {
   const ProfileFragment({super.key, required super.enimtAction});
@@ -71,7 +72,7 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
                     field: 'Email',
                   ),
                   _buildListItem(
-                    onTap: () {},
+                    onTap: () => widget.enimtAction(goNotifications),
                     field: 'Notifications',
                     icon: Icons.keyboard_arrow_right,
                   ),

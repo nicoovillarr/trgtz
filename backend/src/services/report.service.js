@@ -55,13 +55,18 @@ const resolveReport = async (report, status, resolution) => {
 
   const userCreator = await User.findById(report.user)
 
-  await pushNotificationService.sendNotificationToUser(
+  await alertService.addAlert(
     userCreator._id,
-    `Report ${status}`,
-    `Your report has been ${status}!`
+    userCreator._id,
+    'report_' + status,
+    true
   )
 
-  await alertService.addAlert(userCreator._id, userCreator._id, 'report_' + status, true)
+  await pushNotificationService.sendNotificationToUser(
+    userCreator._id,
+    'report_' + status,
+    `Your report has been ${status}!`
+  )
 
   const subject = `Report ${status}!`
   const text = `Your report has been ${status}!`
