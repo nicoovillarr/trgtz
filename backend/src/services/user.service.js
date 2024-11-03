@@ -165,6 +165,7 @@ const getUserFirebaseTokens = async (ids) => {
   const users = await Session.find({
     userId: { $in: ids },
     device: { $ne: null },
+    expiredOn: { $eq: null },
     'device.firebaseToken': { $ne: null }
   })
   return users.map((user) => user.device.firebaseToken)
@@ -231,6 +232,27 @@ const sendUserEmailVerified = async (userId, email) => {
   return await mailService.sendNoReplyEmail(email, subject, text, html)
 }
 
+const getUserSubscribedTypes = async (userId) => {
+  const user = await User.findById(userId)
+  return user.toJSON().subscribedAlerts
+}
+
+const subscribeToAlert = async (user, alertType) => {
+  user.subscribedAlerts.push(alertType)
+  await user.save()
+
+  sendUserChannelMessage(user._id, 'USER_ALERT_TYPE_SUBSCRIBED', alertType)
+}
+
+const unsubscribeToAlert = async (user, alertType) => {
+  user.subscribedAlerts = user.subscribedAlerts.filter(
+    (type) => type !== alertType
+  )
+  await user.save()
+
+  sendUserChannelMessage(user._id, 'USER_ALERT_TYPE_UNSUBSCRIBED', alertType)
+}
+
 module.exports = {
   getUsers,
   getUserInfo,
@@ -249,5 +271,8 @@ module.exports = {
   hasAccess,
   sendValidationEmail,
   validateEmail,
-  sendUserEmailVerified
+  sendUserEmailVerified,
+  subscribeToAlert,
+  unsubscribeToAlert,
+  getUserSubscribedTypes
 }

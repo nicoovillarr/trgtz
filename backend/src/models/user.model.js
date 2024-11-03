@@ -1,6 +1,8 @@
 const mongoose = require('mongoose')
 const { Schema } = mongoose
 
+const { alertTypes } = require('../config/constants')
+
 const generateHexId = () =>
   Math.floor(Math.random() * 0xffffff)
     .toString(16)
@@ -53,6 +55,13 @@ const userSchema = new Schema(
       {
         type: Schema.Types.ObjectId,
         ref: 'Alert'
+      }
+    ],
+    subscribedAlerts: [
+      {
+        type: String,
+        enum: Object.keys(alertTypes),
+        required: true
       }
     ],
     friends: [

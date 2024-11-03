@@ -6,6 +6,7 @@ const imageService = require('../services/image.service')
 const goalService = require('../services/goal.service')
 const User = require('../models/user.model')
 const { sendUserChannelMessage } = require('../config/websocket')
+const { alertTypes } = require('../config/constants')
 
 const getUserProfile = async (req, res) => {
   try {
@@ -110,16 +111,18 @@ const sendFriendRequest = async (req, res) => {
     await userService.sendFriendRequest(me, other)
     await alertService.addAlert(_id, recipientId, 'friend_requested')
 
-    const recipientToken = await userService.getUserFirebaseTokens([
-      recipientId
-    ])
+    if (other.subscribedAlerts.includes('friend_requested')) {
+      const recipientTokens = await userService.getUserFirebaseTokens([
+        other._id
+      ])
 
-    await pushNotificationService.sendNotification(
-      _id,
-      recipientToken,
-      'New friend request',
-      '$name wants to be your friend!'
-    )
+      await pushNotificationService.sendNotification(
+        _id,
+        recipientTokens,
+        'friend_requested',
+        '$name wants to be your friend!'
+      )
+    }
 
     res.status(204).end()
   } catch (error) {
@@ -158,18 +161,29 @@ const answerFriendRequest = async (req, res) => {
         user._id,
         'friend_requested'
       )
-      await alertService.addAlert(user._id, requester._id, 'friend_accepted')
-      await alertService.addAlert(requester._id, user._id, 'friend_accepted')
-
-      const recipientToken = await userService.getUserFirebaseTokens([
-        requester._id
-      ])
-      await pushNotificationService.sendNotification(
+      await alertService.addAlert(
         user._id,
-        recipientToken,
-        'Friend request accepted',
-        '$name and you are now friends!'
+        requester._id,
+        'friend_accepted'
       )
+      await alertService.addAlert(
+        requester._id,
+        user._id,
+        'friend_accepted'
+      )
+
+      if (requester.subscribedAlerts.includes('friend_accepted')) {
+        const recipientTokens = await userService.getUserFirebaseTokens([
+          requester._id
+        ])
+
+        await pushNotificationService.sendNotification(
+          user._id,
+          recipientTokens,
+          'friend_accepted',
+          '$name and you are now friends!'
+        )
+      }
     }
 
     res.status(204).end()
@@ -231,7 +245,7 @@ const setProfileImage = async (req, res) => {
 
     const image = await imageService.uploadImage(req, res, _id)
     await userService.setAvatarImage(_id, image)
-    
+
     res.status(204).json(image)
   } catch (error) {
     res.status(500).json(error)
@@ -311,12 +325,62 @@ const validateEmail = async (req, res) => {
       await userService.sendUserEmailVerified(user._id, user.email)
 
       sendUserChannelMessage(userId, 'USER_EMAIL_VERIFIED', true)
-      
+
       res.status(204).end()
     } else throw new Error('Error validating email.')
   } catch (error) {
     res.status(500).json(error)
     console.error('Error validating email: ', error)
+  }
+}
+
+const getUserSubscribedTypes = async (req, res) => {
+  try {
+    const types = await userService.getUserSubscribedTypes(req.user)
+    res.status(200).json(types)
+  } catch (error) {
+    res.status(500).json(error)
+    console.error('Error getting subscribed types: ', error)
+  }
+}
+
+const subscribeToAlert = async (req, res) => {
+  try {
+    const { type } = req.body
+
+    if (!alertService.isValidAlertType(type)) {
+      res.status(400).json({ message: 'Invalid alert type.' })
+      return
+    }
+
+    const user = await User.findById(req.user)
+
+    await userService.subscribeToAlert(user, type)
+
+    res.status(204).end()
+  } catch (error) {
+    res.status(500).json(error)
+    console.error('Error subscribing to alerts: ', error)
+  }
+}
+
+const unsubscribeToAlert = async (req, res) => {
+  try {
+    const { type } = req.body
+
+    if (!alertService.isValidAlertType(type)) {
+      res.status(400).json({ message: 'Invalid alert type.' })
+      return
+    }
+
+    const user = await User.findById(req.user)
+
+    await userService.unsubscribeToAlert(user, type)
+
+    res.status(204).end()
+  } catch (error) {
+    res.status(500).json(error)
+    console.error('Error unsubscribing to alerts: ', error)
   }
 }
 
@@ -333,5 +397,8 @@ module.exports = {
   getUserGoals,
   getUserFriends,
   sendValidationEmail,
-  validateEmail
+  validateEmail,
+  getUserSubscribedTypes,
+  subscribeToAlert,
+  unsubscribeToAlert
 }

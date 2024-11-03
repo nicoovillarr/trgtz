@@ -12,6 +12,7 @@ class ApplicationState {
   final bool? isLoading;
   final List<Alert>? alerts;
   final bool isProduction;
+  final String? firebaseToken;
 
   const ApplicationState({
     required this.date,
@@ -23,6 +24,7 @@ class ApplicationState {
     this.currentEditorObject,
     this.alerts,
     this.isProduction = false,
+    this.firebaseToken,
   });
 
   ApplicationState copyWith({
@@ -35,6 +37,7 @@ class ApplicationState {
     bool? isLoading,
     List<Alert>? alerts,
     bool? isProduction,
+    String? firebaseToken,
   }) {
     ApplicationState state = ApplicationState(
       date: date ?? this.date,
@@ -48,6 +51,7 @@ class ApplicationState {
       isLoading: isLoading ?? this.isLoading,
       alerts: alerts ?? this.alerts,
       isProduction: isProduction ?? this.isProduction,
+      firebaseToken: firebaseToken ?? this.firebaseToken,
     );
 
     return state;
