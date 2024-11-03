@@ -38,16 +38,19 @@ void mainCommon({
 }) async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-
+  
   await dotenv.load(fileName: '.env.$flavor');
+
   await Firebase.initializeApp(options: _buildFirebaseOptions());
-  await FirebaseHelperService.init();
+  String? firebaseToken = await FirebaseHelperService.init();
+
   await admob.MobileAds.instance.initialize();
   DeepLinkingService.instance.init();
 
   ApplicationState initialState = ApplicationState(
     date: DateTime.now(),
     isProduction: isProduction,
+    firebaseToken: firebaseToken,
   );
 
   bool loggedIn = false;
@@ -60,6 +63,7 @@ void mainCommon({
       friends: user['friends'],
       alerts: user['alerts'],
     );
+
     loggedIn = true;
 
     await WebSocketService.getInstance().init();
