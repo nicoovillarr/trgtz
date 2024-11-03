@@ -47,7 +47,7 @@ const getEntity = async (entity_type, entity_id) => {
   }
 }
 
-const resolveReport = async (report, status, resolution) => {
+const resolveReport = async (me, report, status, resolution) => {
   report.status = status
   report.resolution = resolution
   report.resolvedOn = new Date()
@@ -62,16 +62,18 @@ const resolveReport = async (report, status, resolution) => {
     true
   )
 
-  await pushNotificationService.sendNotificationToUser(
-    userCreator._id,
-    'report_' + status,
-    `Your report has been ${status}!`
-  )
-
   const subject = `Report ${status}!`
   const text = `Your report has been ${status}!`
   const html = `<p>Your report has been ${status}!</p><ul><li>Category: ${report.category}</li><li>Reason: ${report.reason}</li><li>Resolution: ${report.resolution}</li></ul>`
   await mailService.sendNoReplyEmail(userCreator.email, subject, text, html)
+
+  if (userCreator._id == me._id) {
+    await pushNotificationService.sendNotificationToUser(
+      userCreator._id,
+      'report_' + status,
+      `Your report has been ${status}!`
+    )
+  }
 
   sendReportChannelMessage(report._id, 'REPORT_UPDATE', {
     status: report.status,

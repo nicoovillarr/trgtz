@@ -116,10 +116,7 @@ const updateMilestone = async (req, res) => {
     )
 
     if (isMilstoneCompleted) {
-      await alertService.sendAlertToFriends(
-        user,
-        'milestone_completed'
-      )
+      await alertService.sendAlertToFriends(user, 'milestone_completed')
       await pushNotificationService.sendNotificationToFriends(
         user,
         'milestone_completed',
@@ -257,11 +254,13 @@ const reactToGoal = async (req, res) => {
 
     await alertService.addAlert(userId, goal.user, 'goal_reaction')
 
-    await pushNotificationService.sendNotificationToUser(
-      goal.user,
-      'goal_reaction',
-      `\$name reacted to your goal!`
-    )
+    if (goal.user != userId) {
+      await pushNotificationService.sendNotificationToUser(
+        goal.user,
+        'goal_reaction',
+        `\$name reacted to your goal!`
+      )
+    }
 
     res.status(201).end()
   } catch (error) {
@@ -314,11 +313,13 @@ const createComment = async (req, res) => {
 
     await alertService.addAlert(user._id, goal.user, 'goal_comment')
 
-    await pushNotificationService.sendNotificationToUser(
-      goal.user,
-      'goal_comment',
-      `\$name commented on your goal!`
-    )
+    if (goal.user != user._id) {
+      await pushNotificationService.sendNotificationToUser(
+        goal.user,
+        'goal_comment',
+        `\$name commented on your goal!`
+      )
+    }
 
     res.status(200).json(comment)
   } catch (error) {
