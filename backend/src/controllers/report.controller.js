@@ -49,7 +49,7 @@ const resolveReport = async (req, res) => {
       return
     }
 
-    await reportService.resolveReport(report, status, resolution)
+    await reportService.resolveReport(user, report, status, resolution)
 
     if (report == null)
       return res

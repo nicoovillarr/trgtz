@@ -165,6 +165,7 @@ const getUserFirebaseTokens = async (ids) => {
   const users = await Session.find({
     userId: { $in: ids },
     device: { $ne: null },
+    expiredOn: { $eq: null },
     'device.firebaseToken': { $ne: null }
   })
   return users.map((user) => user.device.firebaseToken)
