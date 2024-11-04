@@ -144,7 +144,8 @@ class WebSocketService {
 
   Future init() async {
     if (_channel == null) {
-      final endpoint = Uri.parse(dotenv.env["WS_ENDPOINT"].toString());
+      try {
+        final endpoint = Uri.parse(dotenv.env["WS_ENDPOINT"].toString());
       _channel = WebSocketChannel.connect(endpoint);
 
       _controller = StreamController<dynamic>();
@@ -172,6 +173,10 @@ class WebSocketService {
       _authStream = _authController!.stream.asBroadcastStream();
 
       await ensureAuthenticated();
+      } catch (e) {
+        FirebaseCrashlytics.instance.recordError('WebSocket error: $e', StackTrace.current);
+        restart();
+      }
     } else if (kDebugMode) {
       print('WebSocketService is already initialized');
     }
