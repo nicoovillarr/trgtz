@@ -31,7 +31,7 @@ class FirebaseHelperService {
         return _firebaseMessaging.getAPNSToken();
       }
     } catch (e) {
-      FirebaseCrashlytics.instance.log('Failed to get token: $e');
+      FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
     }
 
     return null;
