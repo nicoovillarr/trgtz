@@ -1,0 +1,3 @@
+experimental:
+  flutter-deferred-components: false
+  devfs-timeout: 60 # Timeout in seconds
