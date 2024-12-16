@@ -108,7 +108,7 @@ const updateGoal = async (goal, data) => {
   }
 
   if (
-    fields.contains('completedOn') &&
+    fields.includes('completedOn') &&
     data.completedOn != null &&
     goal.completedOn == null
   ) {
