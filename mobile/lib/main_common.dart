@@ -38,10 +38,10 @@ void mainCommon({
 }) async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  
+
   await dotenv.load(fileName: '.env.$flavor');
 
-  await Firebase.initializeApp(options: _buildFirebaseOptions());
+  await Firebase.initializeApp(name: "Trgtz", options: _buildFirebaseOptions());
   String? firebaseToken = await FirebaseHelperService.init();
 
   await admob.MobileAds.instance.initialize();
