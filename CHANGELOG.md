@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.0-live.0](https://github.com/marppasas/ygoal/compare/v0.1.5-stg.5...v1.0.0-live.0) (2024-12-16)
+
+
+### Bug Fixes
+
+* record error instead of log ([c843e93](https://github.com/marppasas/ygoal/commit/c843e9380f216d550915be34a87b6957bc53bfae))
+* surround websocket init with try/catch ([#159](https://github.com/marppasas/ygoal/issues/159)) ([c6ed417](https://github.com/marppasas/ygoal/commit/c6ed4172717cd1a5a56004da2495c3b708418b91))
+
 ### [0.1.5-stg.5](https://github.com/nicoovillarr/trgtz/compare/v0.1.5-stg.4...v0.1.5-stg.5) (2024-11-03)
 
 
