@@ -50,6 +50,10 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
   @override
   Future afterFirstBuild(BuildContext context) async {
     await WebSocketService.getInstance().ensureAuthenticated();
+  }
+
+  @override
+  void initSubscriptions() {
     subscribeToChannel(broadcastChannelTypeUser, store.state.user!.id,
         (message) {
       switch (message.type) {
@@ -78,6 +82,19 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
           setState(() {});
           break;
       }
+    });
+  }
+
+  @override
+  void didPushNext() {
+    unsuscribeToChannel(broadcastChannelTypeUser, store.state.user!.id);
+    unsuscribeToChannel(broadcastChannelTypeAlerts, store.state.user!.id);
+  }
+
+  @override
+  void didPopNext() {
+    Future.delayed(const Duration(milliseconds: 500), () {
+      initSubscriptions();
     });
   }
 
@@ -196,6 +213,10 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
 
       case goReports:
         Navigator.of(context).pushNamed('/reports');
+        break;
+
+      case goNotifications:
+        Navigator.of(context).pushNamed('/profile/notifications');
         break;
 
       case editUserPassword:

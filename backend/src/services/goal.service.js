@@ -24,10 +24,7 @@ const createMultipleGoals = async (user_id, goals) => {
   return createdGoals
 }
 
-const createMilestone = async (id, user, milestone) => {
-  const goal = await Goal.findOne({ _id: id, user })
-  if (goal == null) return null
-
+const createMilestone = async (goal, milestone) => {
   goal.milestones.push({
     title: milestone.title,
     createdOn: new Date()
@@ -40,74 +37,61 @@ const createMilestone = async (id, user, milestone) => {
 
   await goal.save()
 
-  const newMilestone = goal.milestones[goal.milestones.length - 1]
-  sendGoalChannelMessage(id, 'GOAL_CREATE_MILESTONE', newMilestone)
-
-  return newMilestone
+  sendGoalChannelMessage(
+    goal._id,
+    'GOAL_CREATE_MILESTONE',
+    goal.milestones[goal.milestones.length - 1]
+  )
 }
 
-const setMilestones = async (id, user, milestones) => {
-  const goal = await Goal.findOne({ _id: id, user })
-  if (goal == null) return null
+const setMilestones = async (goal, milestones) => {
+  goal.milestones = milestones.map((milestone) => ({
+    title: milestone.title,
+    completedOn: milestone.completedOn
+  }))
 
-  goal.milestones = []
-  for (const milestone of milestones) {
-    const { title, completedOn } = milestone
-    goal.milestones.push({ title, completedOn })
-  }
-  if (
-    goal.milestones.length > 0 &&
-    goal.milestones.filter((milestone) => !milestone.completedOn).length === 0
-  ) {
-    goal.completedOn = new Date()
-  }
   await goal.save()
 
   sendGoalChannelMessage(
-    id,
+    goal._id,
     'GOAL_SET_MILESTONES',
     goal.milestones.map((milestone) => milestone.toJSON())
   )
-
-  return goal
 }
 
-const deleteMilestone = async (id, user, milestoneId) => {
-  const goal = await Goal.findOne({ _id: id, user })
-  if (goal == null) return null
-
-  const milestone = goal.milestones.id(milestoneId)
-  if (milestone == null) return null
-
+const deleteMilestone = async (goal, milestoneId) => {
   goal.milestones = goal.milestones.filter(
     (milestone) => milestone._id != milestoneId
   )
+
   await goal.save()
 
-  sendGoalChannelMessage(id, 'GOAL_DELETE_MILESTONE', milestoneId)
-
-  return goal
+  sendGoalChannelMessage(goal._id, 'GOAL_DELETE_MILESTONE', milestoneId)
 }
 
-const updateMilestone = async (id, user, milestoneId, data) => {
-  const goal = await Goal.findOne({ _id: id, user })
-  if (goal == null) return null
-
-  const milestone = goal.milestones.id(milestoneId)
-  if (milestone == null) return null
-
+const updateMilestone = async (goal, milestone, data) => {
   const { title, completedOn } = data
   milestone.title = title
   milestone.completedOn = completedOn
 
+  let isMilstoneCompleted = false
+  if (milestone.completedOn == null && completedOn != null) {
+    goal.events.push({
+      type: 'milestone_completed',
+      createdOn: new Date()
+    })
+
+    isMilstoneCompleted = true
+  }
+
   await goal.save()
 
-  sendGoalChannelMessage(id, 'GOAL_UPDATE_MILESTONE', milestone)
+  sendGoalChannelMessage(goal._id, 'GOAL_UPDATE_MILESTONE', milestone)
 
-  return goal
+  return isMilstoneCompleted
 }
 
-const getSingleGoal = async (id) => await viewGoal.findOne({ _id: id })
+const getSingleGoal = async (id) => await viewGoal.findById(id)
 
 const canCompleteGoal = (goal) =>
   goal.completedOn == null &&
@@ -115,50 +99,57 @@ const canCompleteGoal = (goal) =>
     goal.milestones.every((m) => m.completedOn != null))
 
 const updateGoal = async (goal, data) => {
-  const eventType =
-    Object.keys(data).includes('completedOn') &&
-    data.completedOn != null &&
-    goal.completedOn == null
-      ? 'goal_completed'
-      : 'goal_updated'
+  const fields = Object.keys(data).filter((t) =>
+    ['title', 'description', 'year', 'completedOn'].includes(t)
+  )
 
-  const editableFields = ['title', 'description', 'year', 'completedOn']
-  for (const key of Object.keys(data).filter((t) =>
-    editableFields.includes(t)
-  )) {
+  for (const key of fields) {
     goal[key] = data[key]
   }
 
-  goal.events.push({
-    type: eventType,
-    createdOn: new Date()
-  })
+  if (
+    fields.includes('completedOn') &&
+    data.completedOn != null &&
+    goal.completedOn == null
+  ) {
+    if (fields.length > 1) {
+      goal.events.push({
+        type: 'goal_updated',
+        createdOn: new Date()
+      })
+    }
+
+    goal.events.push({
+      type: 'goal_completed',
+      createdOn: new Date()
+    })
+  } else {
+    goal.events.push({
+      type: 'goal_updated',
+      createdOn: new Date()
+    })
+  }
 
   await goal.save()
+
   sendGoalChannelMessage(
     goal._id,
     'GOAL_UPDATED',
-    Object.keys(data)
-      .filter((t) => editableFields.includes(t))
-      .reduce((acc, curr) => ({ ...acc, [curr]: data[curr] }), {})
+    fields.reduce((acc, curr) => ({ ...acc, [curr]: data[curr] }), {})
   )
+
   sendGoalChannelMessage(
     goal._id,
     'GOAL_EVENT_ADDED',
     goal.events[goal.events.length - 1].toJSON()
   )
-  return goal
 }
 
-const deleteGoal = async (id, user) => {
-  const goal = await Goal.findOne({ _id: id, user })
-  if (goal == null) return null
+const deleteGoal = async (goal) => {
   goal.deletedOn = new Date()
   await goal.save()
 
-  sendGoalChannelMessage(id, 'GOAL_DELETED', id)
-
-  return goal
+  sendGoalChannelMessage(goal._id, 'GOAL_DELETED', goal._id)
 }
 
 const createGoal = async (user_id, title, description, year) => {
@@ -173,50 +164,41 @@ const createGoal = async (user_id, title, description, year) => {
   return goal
 }
 
-const getMilestone = async (id, milestoneId) => {
-  const goal = await Goal.findOne({ _id: id })
-  if (goal == null) return null
-  return goal.milestones.id(milestoneId)
-}
-
-const reactToGoal = async (id, user, type) => {
-  const goal = await Goal.findOne({ _id: id })
-  if (goal == null) return null
-
+const reactToGoal = async (goal, userId, type) => {
   const reactionIndex = goal.reactions.findIndex(
-    (r) => r.user.toString() == user.toString()
+    (r) => r.user.toString() == userId.toString()
   )
 
   let reactionToDelete = null
   if (reactionIndex !== -1) {
     reactionToDelete = goal.reactions[reactionIndex]
     goal.reactions = goal.reactions.filter(
-      (r) => r.user.toString() != user.toString()
+      (r) => r.user.toString() != userId.toString()
     )
   }
 
   if (reactionToDelete == null || reactionToDelete.type != type) {
-    goal.reactions.push({ user, type, createdOn: new Date() })
+    goal.reactions.push({ user: userId, type, createdOn: new Date() })
   }
 
   await goal.save()
 
   if (reactionToDelete != null) {
-    sendGoalChannelMessage(id, 'GOAL_REACT_DELETED', user)
+    sendGoalChannelMessage(goal._id, 'GOAL_REACT_DELETED', userId)
     if (reactionToDelete.type == type) {
       return goal
     }
   }
 
   const { firstName, email, createdAt, avatar } = (
-    await userService.getUserInfo(user)
+    await userService.getUserInfo(userId)
   ).toJSON()
   const reaction = Object.assign(
     {},
-    goal.reactions.find((r) => r.user.toString() == user.toString()).toJSON(),
+    goal.reactions.find((r) => r.user.toString() == userId.toString()).toJSON(),
     {
       user: {
-        _id: user,
+        _id: userId,
         firstName,
         email,
         createdAt,
@@ -224,29 +206,22 @@ const reactToGoal = async (id, user, type) => {
       }
     }
   )
-  sendGoalChannelMessage(id, 'GOAL_REACTED', reaction)
-
-  return goal
+  sendGoalChannelMessage(goal._id, 'GOAL_REACTED', reaction)
 }
 
-const deleteReaction = async (id, user) => {
-  const goal = await Goal.findOne({ _id: id })
-  if (goal == null) return null
-
+const deleteReaction = async (goal, userId) => {
   goal.reactions = goal.reactions.filter(
-    (reaction) => reaction.user.toString() != user.toString()
+    (reaction) => reaction.user.toString() != userId.toString()
   )
 
   await goal.save()
 
-  sendGoalChannelMessage(id, 'GOAL_REACT_DELETED', user)
-
-  return goal
+  sendGoalChannelMessage(goal._id, 'GOAL_REACT_DELETED', userId)
 }
 
 const createComment = async (goal, user, text) => {
   goal.comments.push({
-    user,
+    user: user._id,
     text,
     createdOn: new Date()
   })
@@ -259,7 +234,7 @@ const createComment = async (goal, user, text) => {
     {
       user: (
         await User.aggregate([
-          { $match: { _id: user } },
+          { $match: { _id: user._id } },
           {
             $lookup: {
               from: 'images',
@@ -296,12 +271,12 @@ const createComment = async (goal, user, text) => {
   return comment
 }
 
-const setGoalView = async (id, user) => {
-  const goal = await Goal.findOne({ _id: id })
+const setGoalView = async (goalId, user) => {
+  const goal = await Goal.findById(goalId)
   if (goal == null) return false
 
   const cache = require('../config/cache')
-  const key = `goal:${id}:views:${user}`
+  const key = `goal:${goal._id}:views:${user}`
 
   if (cache.get(key) != null) return false
 
@@ -312,10 +287,7 @@ const setGoalView = async (id, user) => {
   return true
 }
 
-const editComment = async (goal, commentId, text) => {
-  const comment = goal.comments.id(commentId)
-  if (comment == null) return false
-
+const editComment = async (goal, comment, text) => {
   comment.editions.push({
     oldText: comment.text,
     editedOn: new Date()
@@ -323,70 +295,59 @@ const editComment = async (goal, commentId, text) => {
   comment.text = text
   await goal.save()
 
-  sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_UPDATED', { _id: commentId, text })
-
-  return true
+  sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_UPDATED', {
+    _id: comment._id,
+    text
+  })
 }
 
-const deleteComment = async (goal, commentId) => {
-  const comment = goal.comments.id(commentId)
-  if (comment == null) return null
-
+const deleteComment = async (goal, comment) => {
   comment.deletedOn = new Date()
 
   await goal.save()
 
-  sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_DELETED', commentId)
-
-  return goal
+  sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_DELETED', comment._id)
 }
 
-const reactToComment = async (goal, commentId, user, type) => {
-  const comment = goal.comments.id(commentId)
-  if (comment == null) return null
-
-  const reactionIndex = comment.reactions.findIndex(
-    (r) => r.user.toString() == user.toString()
-  )
+const reactToComment = async (goal, comment, user, type) => {
+  const reactionIndex = comment.reactions.findIndex((r) => r.user == user._id)
 
   let reactionToDelete = null
   if (reactionIndex !== -1) {
     reactionToDelete = comment.reactions[reactionIndex]
     comment.reactions = comment.reactions.filter(
-      (r) => r.user.toString() != user.toString()
+      (r) => r.user != user._id
     )
   }
 
   if (reactionToDelete == null || reactionToDelete.type != type) {
-    comment.reactions.push({ user, type, createdOn: new Date() })
+    comment.reactions.push({ user: user._id, type, createdOn: new Date() })
   }
 
   await goal.save()
 
   if (reactionToDelete != null) {
     sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_REACT_DELETED', {
-      commentId,
-      user
+      commentId: comment._id,
+      user: user._id
     })
     if (reactionToDelete.type == type) {
-      return comment
+      return
     }
   }
 
   const { firstName, email, createdAt, avatar } = (
-    await userService.getUserInfo(user)
+    await userService.getUserInfo(user._id)
   ).toJSON()
   const reaction = Object.assign(
     {},
     {
-      commentId: comment._id.toString()
+      commentId: comment._id
     },
-    comment.reactions
-      .find((r) => r.user.toString() == user.toString())
-      .toJSON(),
+    comment.reactions.find((r) => r.user == user._id).toJSON(),
     {
       user: {
-        _id: user,
+        _id: user._id,
         firstName,
         email,
         createdAt,
@@ -396,8 +357,15 @@ const reactToComment = async (goal, commentId, user, type) => {
   )
 
   sendGoalChannelMessage(goal._id, 'GOAL_COMMENT_REACTED', reaction)
+}
 
-  return comment
+const hasAccess = async (goal, me, ownerOnly = true) => {
+  const goalCreator = typeof goal.user === 'object' ? goal.user._id : goal.user
+  return (
+    goalCreator != null &&
+    (goalCreator == me._id ||
+      (!ownerOnly && (await userService.hasAccess(me._id, goalCreator))))
+  )
 }
 
 module.exports = {
@@ -410,7 +378,6 @@ module.exports = {
   getSingleGoal,
   updateGoal,
   deleteGoal,
-  getMilestone,
   reactToGoal,
   deleteReaction,
   createComment,
@@ -418,5 +385,6 @@ module.exports = {
   canCompleteGoal,
   editComment,
   deleteComment,
-  reactToComment
+  reactToComment,
+  hasAccess
 }

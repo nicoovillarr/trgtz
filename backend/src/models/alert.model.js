@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const { alertTypes } = require('../config/constants')
 
 const alertSchema = new mongoose.Schema({
   sent_by: {
@@ -14,18 +15,7 @@ const alertSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    enum: [
-      'friend_requested',
-      'friend_accepted',
-      'goal_created',
-      'goal_completed',
-      'milestone_completed',
-      'goal_reaction',
-      'goal_comment',
-      'report_created',
-      'report_resolved',
-      'report_rejected'
-    ]
+    enum: Object.keys(alertTypes)
   },
   isSystemAlert: {
     type: Boolean,

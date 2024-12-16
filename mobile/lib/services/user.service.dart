@@ -138,4 +138,27 @@ class UserService {
       throw ApiException(response.content);
     }
   }
+
+  Future<List<String>> getUserSubscribedTypes() async {
+    ApiResponse response = await _userApiService.getUserSubscribedTypes();
+    if (response.status) {
+      return (response.content as List).map((e) => e.toString()).toList();
+    } else {
+      throw ApiException(response.content);
+    }
+  }
+
+  Future subscribeToAlertType(String type) async {
+    ApiResponse response = await _userApiService.subscribeToAlertType(type);
+    if (!response.status) {
+      throw ApiException(response.content);
+    }
+  }
+
+  Future unsubscribeToAlertType(String type) async {
+    ApiResponse response = await _userApiService.unsubscribeToAlert(type);
+    if (!response.status) {
+      throw ApiException(response.content);
+    }
+  }
 }

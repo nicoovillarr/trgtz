@@ -4,7 +4,11 @@ import 'dart:io';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
+import 'package:trgtz/app.dart';
 import 'package:trgtz/services/index.dart';
+import 'package:trgtz/store/index.dart';
 
 class FirebaseHelperService {
   static final _firebaseMessaging = FirebaseMessaging.instance;
@@ -19,7 +23,7 @@ class FirebaseHelperService {
     if (!Platform.isAndroid && !Platform.isIOS) {
       throw UnsupportedError('Unsupported platform');
     }
-    
+
     try {
       if (Platform.isAndroid) {
         return _firebaseMessaging.getToken();
@@ -27,19 +31,27 @@ class FirebaseHelperService {
         return _firebaseMessaging.getAPNSToken();
       }
     } catch (e) {
-      FirebaseCrashlytics.instance.log('Failed to get token: $e');
+      FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
     }
 
     return null;
   }
 
-  static Future<void> init() async {
+  static Future<String?> init() async {
     await _firebaseMessaging.requestPermission();
     await initPushNotifications();
     await initLocalNotifications();
+
     _firebaseMessaging.onTokenRefresh.listen((token) async {
+      if (navigatorKey.currentContext != null) {
+        Store<ApplicationState> store =
+            StoreProvider.of<ApplicationState>(navigatorKey.currentContext!);
+        store.dispatch(SetFirebaseTokenAction(token: token));
+      }
       await SessionService().updateFirebaseToken(token);
     });
+
+    return await FirebaseHelperService.token;
   }
 
   static Future initPushNotifications() async {

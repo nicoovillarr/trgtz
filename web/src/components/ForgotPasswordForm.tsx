@@ -83,7 +83,7 @@ export default function ForgotPasswordForm() {
 
       try {
         const response = await fetch(
-          "http://localhost:3000/auth/reset-password",
+          `${import.meta.env.PUBLIC_API_URL}/auth/reset-password`,
           {
             method: "POST",
             headers: {
