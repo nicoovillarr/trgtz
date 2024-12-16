@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.0-live.1](https://github.com/marppasas/ygoal/compare/v1.0.0-live.0...v1.0.0-live.1) (2024-12-16)
+
+
+### Bug Fixes
+
+* set firebase app name ([0159337](https://github.com/marppasas/ygoal/commit/015933797d933694c63d949e3795513ba2c71aaa))
+* use includes instead of contains ([c726885](https://github.com/marppasas/ygoal/commit/c72688506a80aee33cf00634a393ad1b94511c8e))
+
 ## [1.0.0-live.0](https://github.com/marppasas/ygoal/compare/v0.1.5-stg.5...v1.0.0-live.0) (2024-12-16)
 
 
