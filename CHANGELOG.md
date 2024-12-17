@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.0-stg.2](https://github.com/marppasas/ygoal/compare/v1.0.0-stg.1...v1.0.0-stg.2) (2024-12-17)
+
+
+### Bug Fixes
+
+* try to fix and debug google sign in ([707ad75](https://github.com/marppasas/ygoal/commit/707ad75565cf7edfddc3190fe8a5790b5d21e011))
+
 ## [1.0.0-stg.1](https://github.com/marppasas/ygoal/compare/v1.0.0-stg.0...v1.0.0-stg.1) (2024-12-17)
 
 
