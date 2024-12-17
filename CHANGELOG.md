@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.0-stg.0](https://github.com/marppasas/ygoal/compare/v1.0.0-live.1...v1.0.0-stg.0) (2024-12-17)
+
+
+### Bug Fixes
+
+* some more fixes before deploy ([7ea32ce](https://github.com/marppasas/ygoal/commit/7ea32ce0c6adbd88be1b4ce3d252d3e7af9edd3b))
+
 ## [1.0.0-live.1](https://github.com/marppasas/ygoal/compare/v1.0.0-live.0...v1.0.0-live.1) (2024-12-16)
 
 
