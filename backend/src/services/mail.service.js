@@ -11,8 +11,8 @@ const transporter = createTransport({
   port: 465,
   connectionTimeout: 10000,
   auth: {
-    user: process.env.PERSONAL_EMAIL_ADDRESS,
-    pass: process.env.PERSONAL_EMAIL_PASSWORD
+    user: process.env.NO_REPLY_EMAIL_ADDRESS,
+    pass: process.env.NO_REPLY_EMAIL_PASSWORD
   }
 })
 

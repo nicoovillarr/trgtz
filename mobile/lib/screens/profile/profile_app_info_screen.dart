@@ -39,7 +39,6 @@ class _ProfileAppInfoScreenState extends BaseScreen<ProfileAppInfoScreen> {
               _buildInfoItem('Package Name', appInfo.packageName),
               _buildInfoItem('Version', appInfo.version),
               _buildInfoItem('Build Number', appInfo.buildNumber),
-              _buildInfoItem('Firebase Token', appInfo.firebaseToken ?? 'N/A'),
             ],
           ),
         ),

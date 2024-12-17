@@ -82,19 +82,19 @@ android {
     productFlavors {
         live {
             dimension "default"
-            resValue "string", "app_name", "trgtz"
+            resValue "string", "app_name", "Trgtz"
             manifestPlaceholders = [adMobApplicationId: admobProperties["admob_application_id"]]
         }
 
         staging {
             dimension "default"
-            resValue "string", "app_name", "trgtz stg"
+            resValue "string", "app_name", "Trgtz stg"
             manifestPlaceholders = [adMobApplicationId: admobProperties["admob_application_id"]]
         }
 
         development {
             dimension "default"
-            resValue "string", "app_name", "trgtz dev"
+            resValue "string", "app_name", "Trgtz dev"
             applicationIdSuffix ".dev"
             manifestPlaceholders = [adMobApplicationId: admobProperties["admob_application_id"]]
         }

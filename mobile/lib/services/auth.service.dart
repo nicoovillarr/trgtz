@@ -46,7 +46,7 @@ class AuthService {
         await _authApiService.googleSignIn(idToken, email, deviceInfo);
     if (response.status) {
       return response.content;
-    } else if (response.statusCode == 401) {
+    } else if (response.statusCode == 409) {
       throw SsoLoginException();
     } else {
       throw ApiException(response.content);

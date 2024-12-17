@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.0-stg.3](https://github.com/marppasas/ygoal/compare/v1.0.0-stg.2...v1.0.0-stg.3) (2024-12-17)
+
+## [1.0.0-stg.2](https://github.com/marppasas/ygoal/compare/v1.0.0-stg.1...v1.0.0-stg.2) (2024-12-17)
+
+
+### Bug Fixes
+
+* try to fix and debug google sign in ([707ad75](https://github.com/marppasas/ygoal/commit/707ad75565cf7edfddc3190fe8a5790b5d21e011))
+
+## [1.0.0-stg.1](https://github.com/marppasas/ygoal/compare/v1.0.0-stg.0...v1.0.0-stg.1) (2024-12-17)
+
+
+### Features
+
+* change user uploads folder ([4e0a418](https://github.com/marppasas/ygoal/commit/4e0a4181d9134736377d83d2f214e18d74446055))
+
+## [1.0.0-stg.0](https://github.com/marppasas/ygoal/compare/v1.0.0-live.1...v1.0.0-stg.0) (2024-12-17)
+
+
+### Bug Fixes
+
+* some more fixes before deploy ([7ea32ce](https://github.com/marppasas/ygoal/commit/7ea32ce0c6adbd88be1b4ce3d252d3e7af9edd3b))
+
 ## [1.0.0-live.1](https://github.com/marppasas/ygoal/compare/v1.0.0-live.0...v1.0.0-live.1) (2024-12-16)
 
 
