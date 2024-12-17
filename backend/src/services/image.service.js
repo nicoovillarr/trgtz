@@ -26,9 +26,13 @@ const uploadImage = async (req, res, userId) => {
         return reject(new Error('No file uploaded'))
       }
 
+      const originalName = req.file.originalname
+      const extension = originalName.substring(originalName.lastIndexOf('.') + 1)
+      const filename = originalName.substring(0, originalName.lastIndexOf('.'))
+
       const params = {
         Bucket: process.env.AWS_BUCKET_NAME,
-        Key: Date.now().toString(),
+        Key: `${process.env.AWS_FOLDER}/uploads/${filename}-${Date.now().toString()}.${extension}`.replace(/\/\//g, '/').replace(/^\//g, ''),
         Body: req.file.buffer,
         ACL: 'public-read'
       }

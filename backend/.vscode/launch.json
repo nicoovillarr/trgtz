@@ -31,6 +31,10 @@
         {
           "label": "staging",
           "value": "staging"
+        },
+        {
+          "label": "live",
+          "value": "live"
         }
       ]
     }
