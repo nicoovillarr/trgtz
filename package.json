@@ -1,6 +1,6 @@
 {
   "name": "trgtz",
-  "version": "1.0.0-stg.3",
+  "version": "1.0.0",
   "description": "I set out to create a mobile app from scratch, and guess what... now you can set goals for yourself too! 📱🚀",
   "main": "index.js",
   "scripts": {
