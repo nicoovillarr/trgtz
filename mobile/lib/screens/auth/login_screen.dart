@@ -40,20 +40,16 @@ class _LoginScreenState extends BaseScreen<LoginScreen>
   final GlobalKey<TextEditState> _passwordKey = GlobalKey<TextEditState>();
 
   @override
-  void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await Utils.preloadFonts([
-        'Inter',
-        'Josefin Sans',
-      ]);
-      FlutterNativeSplash.remove();
+  Future loader() async {
+    await Utils.preloadFonts([
+      'Inter',
+      'Josefin Sans',
+    ]);
+    FlutterNativeSplash.remove();
 
-      setState(() {
-        ready = true;
-      });
+    setState(() {
+      ready = true;
     });
-
-    super.initState();
   }
 
   @override

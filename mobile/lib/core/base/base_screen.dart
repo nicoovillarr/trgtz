@@ -31,6 +31,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
   ScreenState _state = ScreenState.loading;
   OverlayEntry? _overlayEntry;
   User? _user;
+  late Store<ApplicationState> _store;
   final Map<String, String> channelsSubscribed = {};
 
   final Map<String, StreamSubscription> _subscriptions = {};
@@ -51,7 +52,9 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
     customInitState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _user = StoreProvider.of<ApplicationState>(context).state.user;
+      _store = StoreProvider.of<ApplicationState>(context);
+      _user = _store.state.user;
+
       setIsLoading(true);
       loader().then((_) {
         setIsLoading(false);
@@ -341,8 +344,7 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
 
   Color get backgroundColor => const Color(0xFFF5F5F5);
 
-  Store<ApplicationState> get store =>
-      StoreProvider.of<ApplicationState>(context);
+  Store<ApplicationState> get store => _store;
 
   bool get useAppBar => true;
 

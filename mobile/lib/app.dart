@@ -125,13 +125,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       final store =
           StoreProvider.of<ApplicationState>(navigatorKey.currentContext!);
       if (store.state.user != null) {
-        UserService().getProfile(store.state.user!.id).then((user) {
-          store.dispatch(SetUserAction(user: user['user']));
-          store.dispatch(SetGoalsAction(goals: user['goals']));
-          store.dispatch(SetFriendsAction(friends: user['friends']));
-          store.dispatch(SetAlertsAction(alerts: user['alerts']));
-          WebSocketService.getInstance().init();
-        }).catchError((_) {});
+        Future.delayed(const Duration(milliseconds: 500), () {
+          UserService().getProfile(store.state.user!.id).then((user) {
+            store.dispatch(SetUserAction(user: user['user']));
+            store.dispatch(SetGoalsAction(goals: user['goals']));
+            store.dispatch(SetFriendsAction(friends: user['friends']));
+            store.dispatch(SetAlertsAction(alerts: user['alerts']));
+            WebSocketService.getInstance().init();
+          }).catchError((_) {});
+        });
       }
     }
   }

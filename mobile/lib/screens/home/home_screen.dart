@@ -33,22 +33,17 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
   final picker = ImagePicker();
 
   @override
-  void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      FlutterNativeSplash.remove();
-    });
-
+  void customInitState() {
     _fragments = [
       NotificationsFragment(enimtAction: _processAlertsAction),
       DashboardFragment(enimtAction: _processProfileAction),
       ProfileFragment(enimtAction: _processProfileAction),
     ];
-
-    super.initState();
   }
 
   @override
   Future afterFirstBuild(BuildContext context) async {
+    FlutterNativeSplash.remove();
     await WebSocketService.getInstance().ensureAuthenticated();
   }
 
