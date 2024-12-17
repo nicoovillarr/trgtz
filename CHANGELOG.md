@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.0-stg.1](https://github.com/marppasas/ygoal/compare/v1.0.0-stg.0...v1.0.0-stg.1) (2024-12-17)
+
+
+### Features
+
+* change user uploads folder ([4e0a418](https://github.com/marppasas/ygoal/commit/4e0a4181d9134736377d83d2f214e18d74446055))
+
 ## [1.0.0-stg.0](https://github.com/marppasas/ygoal/compare/v1.0.0-live.1...v1.0.0-stg.0) (2024-12-17)
 
 
