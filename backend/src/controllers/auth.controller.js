@@ -180,14 +180,14 @@ const googleSignIn = async (req, res) => {
   try {
     const payload = await authService.verifyGoogleToken(idToken)
     if (payload == null) {
-      return res.status(401).json({ message: 'Invalid token' })
+      return res.status(400).json({ message: 'Invalid token' })
     }
 
     const user = await User.findOne({ email: payload.email })
     if (user != null) {
       if (user.providers.indexOf('google') === -1) {
         return res
-          .status(401)
+          .status(409)
           .json({ message: 'You must log in using your password' })
       }
 
@@ -230,7 +230,7 @@ const googleSignIn = async (req, res) => {
       return res.status(201).json({ _id: user._id, token })
     }
   } catch (error) {
-    return res.status(401).json({ message: 'Invalid token' })
+    return res.status(500).json(error)
   }
 }
 

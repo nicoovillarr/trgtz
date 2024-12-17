@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -91,6 +92,12 @@ class ApiBaseService {
     dynamic content;
     int? statusCode;
     try {
+      final Uri uri = _buildUri(action, query);
+
+      if (kDebugMode) {
+        print('[API]: $method $uri');
+      }
+
       final response = await callMethod(_buildUri(action, query), params)
           .timeout(const Duration(seconds: 50));
       statusCode = response.statusCode;
@@ -112,6 +119,14 @@ class ApiBaseService {
     } on Exception catch (ex) {
       if (kDebugMode) {
         print(ex);
+      } else {
+        FirebaseCrashlytics.instance.recordError(ex, StackTrace.current,
+            reason: 'API call failed',
+            information: [
+              'Method: $method',
+              'Action: $action',
+              'Params: $params',
+            ]);
       }
     }
 

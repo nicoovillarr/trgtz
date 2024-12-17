@@ -70,12 +70,16 @@ const validatePassword = async (user, password) =>
   await bcrypt.compare(password, user.password).then((res) => res)
 
 const verifyGoogleToken = async (idToken) => {
-  const ticket = await client.verifyIdToken({
-    idToken: idToken,
-    audience: process.env.GOOGLE_CLIENT_ID
-  })
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: idToken,
+      audience: process.env.GOOGLE_CLIENT_ID
+    })
 
-  return ticket.getPayload()
+    return ticket.getPayload()
+  } catch {
+    return null
+  }
 }
 
 const addProvider = async (user, provider) => {
