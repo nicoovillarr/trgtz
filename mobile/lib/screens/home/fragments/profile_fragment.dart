@@ -1,10 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/store/index.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 const String setProfileImage = 'SET_PROFILE_IMAGE';
 const String editUserFirstName = 'EDIT_USER_FIRST_NAME';
@@ -97,18 +100,25 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
                         onTap: () => widget.enimtAction(validateEmail)),
                 ],
               ),
-              if (!isProduction)
-                _buildOptionsList(
-                  title: 'About',
-                  children: [
+              _buildOptionsList(
+                children: [
+                  if (!isProduction)
                     _buildListItem(
                       onTap: () =>
                           Navigator.of(context).pushNamed('/profile/app-info'),
                       field: 'Application',
                       icon: Icons.keyboard_arrow_right,
                     ),
-                  ],
-                ),
+                  _buildListItem(
+                    field: 'Terms & Conditions',
+                    onTap: () => _openPage('terms'),
+                  ),
+                  _buildListItem(
+                    field: 'Privacy Policy',
+                    onTap: () => _openPage('privacy'),
+                  ),
+                ],
+              ),
               if (user.isSuperAdmin) _buildAdminOptionsList(),
               _buildOptionsList(
                 children: [
@@ -335,4 +345,14 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
           ),
         ],
       );
+
+  void _openPage(String path) async {
+    final String url = '${dotenv.env['WEB']}/$path';
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+    } else if (kDebugMode) {
+      print('Could not launch $url');
+    }
+  }
 }
