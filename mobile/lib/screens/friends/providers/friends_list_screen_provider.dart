@@ -74,7 +74,8 @@ class FriendsListScreenProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void substractPendingFriendRequest() {
+  void removePendingFriendRequest(Friendship requester) {
+    _model?.pendingFriends.remove(requester);
     _model?.pendingFriendRequestsCount--;
     notifyListeners();
   }
