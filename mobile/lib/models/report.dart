@@ -164,6 +164,15 @@ class Report extends ModelBase {
     }
   }
 
+  static List<ReportCategory> forUser() => [
+        ReportCategory.spam,
+        ReportCategory.harassment,
+        ReportCategory.hateSpeech,
+        ReportCategory.violence,
+        ReportCategory.nudity,
+        ReportCategory.other,
+      ];
+
   static List<ReportCategory> forComment() => [
         ReportCategory.spam,
         ReportCategory.harassment,
