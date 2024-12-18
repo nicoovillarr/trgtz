@@ -3,14 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:pie_chart/pie_chart.dart';
+import 'package:redux/redux.dart';
 import 'package:trgtz/constants.dart';
 import 'package:trgtz/core/base/index.dart';
 import 'package:trgtz/core/index.dart';
 import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
+import 'package:trgtz/screens/home/services/module.service.dart';
+import 'package:trgtz/screens/home/widgets/goal_templates_listview.dart';
 import 'package:trgtz/screens/home/widgets/index.dart';
 import 'package:trgtz/store/index.dart';
 import 'package:trgtz/utils.dart';
+import 'package:uuid/uuid.dart';
 
 class DashboardFragment extends BaseFragment {
   const DashboardFragment({super.key, required super.enimtAction});
@@ -236,20 +240,74 @@ class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
                 ),
               ],
             ),
-            TCard(
-              child: GoalsListView(
-                goals: Utils.sortGoals(
-                  state.goals
-                      .where((g) =>
-                          g.year == state.date.year && g.deletedOn == null)
-                      .toList(),
-                  ascending: sortAscending,
-                ),
-              ),
-            ),
+            if (state.goals
+                .any((g) => g.year == state.date.year && g.deletedOn == null))
+              _buildGoalsListCard(state)
+            else
+              _buildGoalPlaceholder(),
           ],
         ),
         converter: (store) => store.state,
+      );
+
+  Widget _buildGoalPlaceholder() => Container(
+        padding: const EdgeInsets.all(12.0),
+        decoration: BoxDecoration(
+          color: textButtonColor.withValues(alpha: 240),
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        child: SeparatedColumn(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 4.0,
+          children: [
+            Text(
+              '💡 Seems like you don\'t have any goals yet...',
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 15,
+              ),
+            ),
+            Text(
+              'Choose a template to get started!',
+              style: TextStyle(
+                fontSize: 12,
+                color: mainColor.withAlpha(200),
+              ),
+            ),
+            const SizedBox(height: 8.0),
+            GoalTemplatesListView(
+              onTemplateSelected: (template) {
+                Store<ApplicationState> store =
+                    StoreProvider.of<ApplicationState>(context);
+
+                final goal = Goal(
+                  id: const Uuid().v4(),
+                  title: template.title,
+                  description: template.description,
+                  year: store.state.date.year,
+                  createdOn: DateTime.now(),
+                );
+
+                store.dispatch(SetIsLoadingAction(isLoading: true));
+                ModuleService.createGoal(goal).then((goal) {
+                  store.dispatch(CreateGoalAction(goal: goal));
+                  Navigator.of(context).pushNamed('/goal', arguments: goal.id);
+                });
+              },
+            ),
+          ],
+        ),
+      );
+
+  Widget _buildGoalsListCard(ApplicationState state) => TCard(
+        child: GoalsListView(
+          goals: Utils.sortGoals(
+            state.goals
+                .where((g) => g.year == state.date.year && g.deletedOn == null)
+                .toList(),
+            ascending: sortAscending,
+          ),
+        ),
       );
 
   void _showStatsDialog(BuildContext context, List<Goal> goals) => showDialog(
