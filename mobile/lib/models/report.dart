@@ -114,8 +114,6 @@ class Report extends ModelBase {
         return 'Nudity';
       case ReportCategory.other:
         return 'Other';
-      default:
-        throw UnimplementedError();
     }
   }
 
@@ -133,8 +131,6 @@ class Report extends ModelBase {
         return 'Explicit or inappropriate content featuring nudity or sexual activity that violates community standards.';
       case ReportCategory.other:
         return 'Any other content that violates community guidelines or terms of service.';
-      default:
-        throw UnimplementedError();
     }
   }
 
@@ -146,8 +142,6 @@ class Report extends ModelBase {
         return 'Approved';
       case ReportStatus.rejected:
         return 'Rejected';
-      default:
-        throw UnimplementedError();
     }
   }
 
@@ -159,8 +153,6 @@ class Report extends ModelBase {
         return 'Approve this report to take action.';
       case ReportStatus.rejected:
         return 'Rejected reports will be closed.';
-      default:
-        throw UnimplementedError();
     }
   }
 
@@ -214,8 +206,6 @@ class Report extends ModelBase {
         return Icons.flag_outlined;
       case ReportEntityType.user:
         return Icons.person_outline;
-      default:
-        throw UnimplementedError();
     }
   }
 }
