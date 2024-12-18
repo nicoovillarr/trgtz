@@ -115,7 +115,7 @@ class _SingleProfileViewState extends BaseScreen<SingleProfileView> {
     simpleBottomSheet(
       height: MediaQuery.of(context).size.height * 0.95,
       builder: (context, _) => ReportDialog(
-        categoriesAvailable: Report.forGoal(),
+        categoriesAvailable: Report.forUser(),
         entityType: 'user',
         entityId: model.user.id,
         showCommunityGuidelines: _showCommunityGuidelines,
