@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.0-stg.4](https://github.com/marppasas/ygoal/compare/v1.0.0-stg.3...v1.0.0-stg.4) (2024-12-18)
+
+
+### Features
+
+* add optional actions to TextEditModal ([ad010bc](https://github.com/marppasas/ygoal/commit/ad010bc5567152c347a0d621d9926135fb3f4850))
+* move load spinner to app widget ([bfae621](https://github.com/marppasas/ygoal/commit/bfae6216776c20c5b1317f52784bce12ebd49248))
+* open terms/privacy pages ([bf5177c](https://github.com/marppasas/ygoal/commit/bf5177ca7df652f5dae3879934c45d2ac0077c68))
+* show templates ([ebe2d1a](https://github.com/marppasas/ygoal/commit/ebe2d1a2dada3d10c02e0011d3549bba9357dae8))
+
+
+### Bug Fixes
+
+* hide user goals ([164b9b1](https://github.com/marppasas/ygoal/commit/164b9b1f27702f299c45954a004dc691ae7d4847))
+* remove some IDE warnings ([d4ad0ec](https://github.com/marppasas/ygoal/commit/d4ad0ec9d5c286a9425fd5de033f3bd1f838b513))
+* some improvements in friend list ([ce5888a](https://github.com/marppasas/ygoal/commit/ce5888ac1bf0dd302b03eb0e7e4139b5f407df2e))
+* use the correct categories when reporting a user ([9b7b3a2](https://github.com/marppasas/ygoal/commit/9b7b3a2eafc382a88629e7378405dabb27c7b5c7))
+* user report ([db4bc61](https://github.com/marppasas/ygoal/commit/db4bc61484d10961c6725cf61287589a6c49d8f8))
+
 ## [1.0.0-stg.3](https://github.com/marppasas/ygoal/compare/v1.0.0-stg.2...v1.0.0-stg.3) (2024-12-17)
 
 ## [1.0.0-stg.2](https://github.com/marppasas/ygoal/compare/v1.0.0-stg.1...v1.0.0-stg.2) (2024-12-17)
