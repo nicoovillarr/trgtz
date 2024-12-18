@@ -355,14 +355,14 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
                       ),
                       IconButton(
                         onPressed: () => _answerFriendRequest(
-                          requests[i].requester,
+                          requests[i],
                           true,
                         ),
                         icon: const Icon(Icons.check),
                       ),
                       IconButton(
                         onPressed: () => _answerFriendRequest(
-                          requests[i].requester,
+                          requests[i],
                           false,
                         ),
                         icon: const Icon(Icons.close),
@@ -377,10 +377,11 @@ class _FriendsListScreenState extends BaseScreen<FriendsListScreen> {
     });
   }
 
-  void _answerFriendRequest(String requesterId, bool answer) {
+  void _answerFriendRequest(Friendship requester, bool answer) {
     setIsLoading(true);
-    ModuleService.answerFriendRequest(requesterId, answer).then((_) {
-      context.read<FriendsListScreenProvider>().substractPendingFriendRequest();
+    ModuleService.answerFriendRequest(requester.requester, answer).then((_) {
+      context.read<FriendsListScreenProvider>().removePendingFriendRequest(requester);
+      Navigator.of(context).pop();
       setIsLoading(false);
     });
   }

@@ -1,5 +1,7 @@
 // ignore_for_file: must_be_immutable
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:provider/provider.dart';
@@ -41,6 +43,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  bool _isLoading = false;
+  StreamSubscription? _subscription;
+
   late final Store<ApplicationState> _store = Store<ApplicationState>(
     reduce,
     initialState: widget.initialState,
@@ -50,11 +55,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loaderSubscribe();
+    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _loaderDispose();
     super.dispose();
   }
 
@@ -73,6 +82,20 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             floatingActionButtonTheme: FloatingActionButtonThemeData(
               backgroundColor: Colors.white,
             ),
+          ),
+          builder: (context, child) => Stack(
+            children: [
+              if (child != null) child,
+              if (_isLoading)
+                Container(
+                  color: Colors.black.withOpacity(0.6),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+            ],
           ),
           initialRoute: widget.initialRoute,
           routes: {
@@ -120,8 +143,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.paused) {
       WebSocketService.getInstance().close();
+      _loaderDispose();
     } else if (state == AppLifecycleState.resumed &&
         navigatorKey.currentContext != null) {
+      _loaderSubscribe();
       final store =
           StoreProvider.of<ApplicationState>(navigatorKey.currentContext!);
       if (store.state.user != null) {
@@ -136,5 +161,24 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         });
       }
     }
+  }
+
+  void _loaderSubscribe() {
+    if (_subscription != null) {
+      return;
+    }
+
+    _subscription = _store.onChange
+        .map((event) => event.isLoading ?? false)
+        .listen((isLoading) {
+      if (isLoading != _isLoading) {
+        setState(() => _isLoading = isLoading);
+      }
+    });
+  }
+
+  void _loaderDispose() {
+    _subscription?.cancel();
+    _subscription = null;
   }
 }

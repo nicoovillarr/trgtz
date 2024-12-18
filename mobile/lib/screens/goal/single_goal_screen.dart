@@ -572,8 +572,6 @@ class _SingleGoalScreenState extends BaseEditorScreen<SingleGoalScreen, Goal> {
             .followedBy(goal.events.map((e) => {e.createdOn: e as ModelBase}))
             .toList();
         break;
-      default:
-        aux = [];
     }
 
     aux.sort((a, b) => b.keys.first.compareTo(a.keys.first));

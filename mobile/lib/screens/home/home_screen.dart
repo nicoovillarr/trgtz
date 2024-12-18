@@ -10,6 +10,7 @@ import 'package:trgtz/core/widgets/index.dart';
 import 'package:trgtz/models/index.dart';
 import 'package:trgtz/screens/home/fragments/index.dart';
 import 'package:trgtz/screens/home/services/index.dart';
+import 'package:trgtz/screens/home/widgets/goal_templates_listview.dart';
 import 'package:trgtz/security.dart';
 import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
@@ -120,9 +121,17 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
                 placeholder: 'I wanna...',
                 maxLength: 50,
                 maxLines: 1,
+                separation: 8.0,
                 validate: (title) => title != null && title.isNotEmpty
                     ? null
                     : 'Title cannot be empty',
+                actions: [
+                  FormAction(
+                    text: 'Templates',
+                    icon: Icons.format_list_bulleted,
+                    onPressed: _showGoalTemplates,
+                  ),
+                ],
                 onSave: (s) {
                   if (s != null && s.isNotEmpty) {
                     Store<ApplicationState> store =
@@ -425,5 +434,39 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         setIsLoading(false);
       }
     }
+  }
+
+  void _showGoalTemplates() {
+    simpleBottomSheet(
+      title: 'Goal templates',
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Container(
+          decoration: BoxDecoration(
+            color: textButtonColor.withValues(alpha: 240),
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          child: GoalTemplatesListView(onTemplateSelected: (template) {
+            Store<ApplicationState> store =
+                StoreProvider.of<ApplicationState>(context);
+
+            final goal = Goal(
+              id: const Uuid().v4(),
+              title: template.title,
+              description: template.description,
+              year: store.state.date.year,
+              createdOn: DateTime.now(),
+            );
+
+            store.dispatch(SetIsLoadingAction(isLoading: true));
+            ModuleService.createGoal(goal).then((goal) {
+              store.dispatch(CreateGoalAction(goal: goal));
+              Navigator.of(context).pop();
+              Navigator.of(context).pushNamed('/goal', arguments: goal.id);
+            });
+          }),
+        ),
+      ),
+    );
   }
 }

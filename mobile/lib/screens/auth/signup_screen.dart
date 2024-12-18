@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -12,6 +14,7 @@ import 'package:trgtz/screens/auth/services/index.dart';
 import 'package:trgtz/screens/auth/widgets/index.dart';
 import 'package:trgtz/services/index.dart';
 import 'package:trgtz/store/index.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -127,7 +130,7 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
                     text: 'Already created an account? ',
                     children: [
                       TextSpan(
-                        text: 'Sign up',
+                        text: 'Sign in',
                         style: TextStyle(
                           color: mainColor,
                           fontWeight: FontWeight.w900,
@@ -139,6 +142,41 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
                   style: GoogleFonts.inter(fontSize: 12, color: Colors.black),
                 ),
               ],
+            ),
+            RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                text: 'By signing up, you agree to our ',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  color: Colors.black,
+                ),
+                children: [
+                  TextSpan(
+                    text: 'Terms of Service',
+                    style: TextStyle(
+                      color: mainColor,
+                      fontWeight: FontWeight.w900,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        _openPage('terms');
+                      },
+                  ),
+                  const TextSpan(text: ' and '),
+                  TextSpan(
+                    text: 'Privacy Policy',
+                    style: TextStyle(
+                      color: mainColor,
+                      fontWeight: FontWeight.w900,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        _openPage('privacy');
+                      },
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -265,6 +303,16 @@ class _SignupScreenState extends BaseScreen<SignupScreen> {
     Store<ApplicationState> store = StoreProvider.of<ApplicationState>(context);
     if (!store.state.isProduction) {
       showSnackBar('Endpoint: ${dotenv.env['ENDPOINT']}');
+    }
+  }
+
+  void _openPage(String path) async {
+    final String url = '${dotenv.env['WEB']}/$path';
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+    } else if (kDebugMode) {
+      print('Could not launch $url');
     }
   }
 }

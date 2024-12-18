@@ -21,7 +21,7 @@ const getUserProfile = async (req, res) => {
 
     const json = userInfo.toJSON()
 
-    if (me != user && !(await userService.hasAccess(me, user))) {
+    if (me != user) {
       json.goals = json.goals
         .filter((g) => g.deletedOn == null)
         .map((g) => ({
@@ -35,9 +35,7 @@ const getUserProfile = async (req, res) => {
       delete json.alerts
       delete json.sessions
       delete json.firebaseTokens
-    }
-
-    if (me == user) {
+    } else {
       await alertService.markAlertsAsSeen(user)
     }
 

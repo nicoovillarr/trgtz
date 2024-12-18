@@ -27,9 +27,7 @@ final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 abstract class BaseScreen<T extends StatefulWidget> extends State<T>
     with RouteAware {
-  bool _isLoading = false;
   ScreenState _state = ScreenState.loading;
-  OverlayEntry? _overlayEntry;
   User? _user;
   late Store<ApplicationState> _store;
   final Map<String, String> channelsSubscribed = {};
@@ -72,6 +70,8 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
     _disposeChannelsSubscriptions();
     super.dispose();
   }
+
+  void initSubscriptions() {}
 
   @override
   Widget build(BuildContext context) {
@@ -132,27 +132,10 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
   }
 
   void unsuscribeToChannel(String channelType, String id) {
-    WebSocketService.getInstance()
-        .unsubscribe(channelType, channelsSubscribed[channelType]!);
-  }
-
-  void initSubscriptions() {
-    addSubscription(
-      'isLoading',
-      store.onChange
-          .map((event) => event.isLoading ?? false)
-          .listen((isLoading) {
-        if (isLoading == _isLoading) return;
-        _isLoading = isLoading;
-        if (isLoading) {
-          _overlayEntry = _createOverlayEntry();
-          Overlay.of(context).insert(_overlayEntry!);
-        } else {
-          _overlayEntry?.remove();
-          _overlayEntry = null;
-        }
-      }),
-    );
+    if (channelsSubscribed.containsKey(channelType)) {
+      WebSocketService.getInstance()
+          .unsubscribe(channelType, channelsSubscribed[channelType]!);
+    }
   }
 
   Future loader() async {}
@@ -378,28 +361,5 @@ abstract class BaseScreen<T extends StatefulWidget> extends State<T>
     channelsSubscribed.forEach((key, value) {
       WebSocketService.getInstance().unsubscribe(key, value);
     });
-  }
-
-  OverlayEntry _createOverlayEntry() {
-    return OverlayEntry(
-      builder: (context) => Stack(
-        children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              color: Colors.black.withOpacity(0.6),
-              child: const Center(
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
