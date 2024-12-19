@@ -443,7 +443,7 @@ class HomeScreenState extends BaseScreen<HomeScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Container(
           decoration: BoxDecoration(
-            color: textButtonColor.withValues(alpha: 240),
+            color: textButtonColor.withAlpha(15),
             borderRadius: BorderRadius.circular(8.0),
           ),
           child: GoalTemplatesListView(onTemplateSelected: (template) {
