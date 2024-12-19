@@ -253,7 +253,7 @@ class _DashboardFragmentState extends BaseFragmentState<DashboardFragment> {
   Widget _buildGoalPlaceholder() => Container(
         padding: const EdgeInsets.all(12.0),
         decoration: BoxDecoration(
-          color: textButtonColor.withValues(alpha: 240),
+          color: textButtonColor.withAlpha(15),
           borderRadius: BorderRadius.circular(8.0),
         ),
         child: SeparatedColumn(
