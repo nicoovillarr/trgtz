@@ -1,4 +1,4 @@
-name: Deploy
+name: Build Staging
 
 on:
   push:
@@ -120,8 +120,6 @@ jobs:
 
           git add mobile/android/version.properties
           git commit --amend -m "$COMMIT_MESSAGE"
-
-          git pull --rebase origin main
           git push origin main
         shell: bash
         env:
