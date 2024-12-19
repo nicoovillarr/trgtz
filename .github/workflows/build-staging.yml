@@ -1,11 +1,7 @@
 name: Build Staging
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - 'mobile/android/version.properties'
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -116,21 +112,13 @@ jobs:
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
 
-          PIPELINE_COMMIT=$(git rev-parse HEAD)
-
-          BASE_COMMIT_MESSAGE=$(git log --pretty=format:%s -n 1)
-
           NEW_VERSION="$VERSION_NAME ($VERSION_CODE)"
-          COMMIT_MESSAGE="$NEW_VERSION: $BASE_COMMIT_MESSAGE"
-
-          git fetch origin
-
-          git reset --soft $PIPELINE_COMMIT
+          COMMIT_MESSAGE="chore(build): $NEW_VERSION"
 
           git add mobile/android/version.properties
-          git commit --amend -m "$COMMIT_MESSAGE"
+          git commit -m "$COMMIT_MESSAGE"
 
-          git push --force-with-lease origin main
+          git push origin main
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
