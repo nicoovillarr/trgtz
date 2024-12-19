@@ -107,3 +107,23 @@ jobs:
         with:
           name: trgtz-staging-${{ env.VERSION_NAME }}-${{ env.VERSION_CODE }}
           path: ${{ env.BUNDLE_PATH }}
+
+      - name: Push changes
+        description: 'Push version changes to the repository'
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/nicoovillarr/trgtz.git
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+          BASE_COMMIT_MESSAGE=$(git log --pretty=format:%s -n 1)
+          NEW_VERSION="$VERSION_NAME ($VERSION_CODE)"
+          COMMIT_MESSAGE="$NEW_VERSION: $BASE_COMMIT_MESSAGE"
+
+          git add mobile/android/version.properties
+          git commit --amend -m "$COMMIT_MESSAGE"
+
+          git pull --rebase origin main
+          git push origin main
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
