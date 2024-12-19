@@ -1,0 +1,108 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set Android version
+        run: |
+          FORMAT_REGEX='^[0-9]{8}\.[0-9]+$'
+          VERSION_FILE="./mobile/android/version.properties"
+          CURRENT_DATE=$(date +"%Y%m%d")
+
+          if [ -f "$VERSION_FILE" ]; then
+              VERSION_CODE=$(awk -F= '/VERSION_CODE/ {print $2}' "$VERSION_FILE")
+              LAST_VERSION_NAME=$(awk -F= '/VERSION_NAME/ {print $2}' "$VERSION_FILE")
+              
+              if [[ "$LAST_VERSION_NAME" =~ $FORMAT_REGEX ]]; then
+                  LAST_DATE=$(echo "$LAST_VERSION_NAME" | awk -F. '{print $1}')
+                  LAST_INCREMENT=$(echo "$LAST_VERSION_NAME" | awk -F. '{print $2}')
+              else
+                  echo "WARNING: VERSION_NAME format is invalid. Resetting version code."
+                  LAST_DATE=""
+                  LAST_INCREMENT=0
+              fi
+          else
+              VERSION_CODE=0
+              LAST_DATE=""
+              LAST_INCREMENT=0
+          fi
+
+          if [ "$CURRENT_DATE" == "$LAST_DATE" ]; then
+              INCREMENT=$((LAST_INCREMENT + 1))
+          else
+              INCREMENT=1
+          fi
+
+          VERSION_NAME="${CURRENT_DATE}.${INCREMENT}"
+          echo "VERSION_NAME=$VERSION_NAME" > "$VERSION_FILE"
+
+          VERSION_CODE=$((VERSION_CODE + 1))
+          echo "VERSION_CODE=$VERSION_CODE" >> "$VERSION_FILE"
+
+          cat "$VERSION_FILE"
+
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+        shell: bash
+
+
+      - name: Decode google-services.json
+        run: |
+          FLAVOR_PATH=mobile/android/app/src/staging
+          mkdir -p $FLAVOR_PATH
+          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 -d > $FLAVOR_PATH/google-services.json
+
+      - name: Decode admob properties
+        run: echo "${{ secrets.GOOGLE_ADMOB }}" | base64 -d > mobile/android/admob.properties
+
+      - name: Decode keystore
+        run: echo "${{ secrets.GOOGLE_PLAY_KEY_STORE }}" | base64 -d > mobile/keystore.jks
+
+      - name: Install keystore
+        run: |
+          echo "storeFile=${{ github.workspace }}/mobile/keystore.jks" > mobile/android/key.properties
+          echo "storePassword=${{ secrets.GOOGLE_PLAY_KEY_STORE_PASSWORD }}" >> mobile/android/key.properties
+          echo "keyPassword=${{ secrets.GOOGLE_PLAY_KEY_PASSWORD }}" >> mobile/android/key.properties
+          echo "keyAlias=${{ secrets.GOOGLE_PLAY_KEY_ALIAS }}" >> mobile/android/key.properties
+
+      - name: Build Android bundle
+        run: |
+          cd mobile
+
+          touch .env.development
+          touch .env.staging
+          touch .env.live
+          
+          echo "${{ secrets.ENV_CONTENT }}" | base64 -d > .env.staging
+
+          flutter pub get
+          flutter build appbundle --flavor staging -t lib/main_staging.dart
+
+          BUNDLE_FILE_NAME="trgtz-staging-${{ env.VERSION_NAME }}-${{ env.VERSION_CODE }}.aab"
+          BUNDLE_FOLDER="${{ github.workspace }}/mobile/build/app/outputs/bundle/stagingRelease"
+          
+          cd $BUNDLE_FOLDER || exit 1
+          mv app-staging-release.aab $BUNDLE_FILE_NAME
+          
+          echo "BUNDLE_PATH=$BUNDLE_FOLDER/$BUNDLE_FILE_NAME" >> $GITHUB_ENV
+          echo "Bundle saved in: $BUNDLE_PATH"
+        shell: bash
+
+      - name: Upload app bundle as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: trgtz-staging-${{ env.VERSION_NAME }}-${{ env.VERSION_CODE }}
+          path: ${{ env.BUNDLE_PATH }}
