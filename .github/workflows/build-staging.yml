@@ -88,7 +88,7 @@ jobs:
           echo "${{ secrets.ENV_CONTENT }}" | base64 -d > .env.staging
 
           flutter pub get
-          flutter build appbundle --flavor staging -t lib/main_staging.dart
+          flutter build appbundle --flavor staging -t lib/main_staging.dart --release
 
           BUNDLE_FILE_NAME="trgtz-staging-${{ env.VERSION_NAME }}-${{ env.VERSION_CODE }}.aab"
           BUNDLE_FOLDER="${{ github.workspace }}/mobile/build/app/outputs/bundle/stagingRelease"
