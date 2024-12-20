@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class BasicAdBanner extends StatefulWidget {
@@ -14,8 +15,9 @@ class _BasicAdBannerState extends State<BasicAdBanner> {
   BannerAd? _bannerAd;
   bool _isLoaded = false;
 
-  final adUnitId =
-      Platform.isAndroid ? 'ca-app-pub-8197259688703499/4542829014' : '';
+  final adUnitId = dotenv.env[
+          "${(Platform.isAndroid ? "ANDROID" : "IOS")}DASHBOARD_AD_UNIT"] ??
+      '';
 
   @override
   void initState() {
