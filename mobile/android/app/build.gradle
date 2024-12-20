@@ -15,17 +15,8 @@ if (localPropertiesFile.exists()) {
     }
 }
 
-def keystoreProperties = new Properties()
-def keystorePropertiesFile = rootProject.file('key.properties')
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-}
-
 def flutterMinSdkVersion = localProperties.getProperty('flutter.minSdkVersion', '28').toInteger()
 def flutterTargetSdkVersion = localProperties.getProperty('flutter.targetSdkVersion', '34').toInteger()
-
-def admobProperties = new Properties()
-rootProject.file("admob.properties").withInputStream { admobProperties.load(it) }
 
 android {
     namespace "com.marppa.trgtz"
@@ -50,53 +41,112 @@ android {
         
         minSdkVersion flutterMinSdkVersion
         targetSdkVersion flutterTargetSdkVersion
-        
-        def versionPropsFile = rootProject.file('version.properties')
-        def versionProps = new Properties()
-        if (versionPropsFile.exists()) {
-            versionProps.load(new FileInputStream(versionPropsFile))
-        }
-        
-        versionCode versionProps['VERSION_CODE'].toInteger()
-        versionName versionProps['VERSION_NAME']
     }
 
     signingConfigs {
-        release {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
-            storePassword keystoreProperties['storePassword']
+        live {
+            def liveJks = new Properties()
+            def liveJksFile = rootProject.file('key-live.properties')
+            if (liveJksFile.exists()) {
+                liveJks.load(new FileInputStream(liveJksFile))
+            }
+
+            keyAlias liveJks['keyAlias']
+            keyPassword liveJks['keyPassword']
+            storeFile liveJks['storeFile'] ? file(liveJks['storeFile']) : null
+            storePassword liveJks['storePassword']
+        }
+
+        staging {
+            def stagingJks = new Properties()
+            def stagingJksFile = rootProject.file('key-staging.properties')
+            if (stagingJksFile.exists()) {
+                stagingJks.load(new FileInputStream(stagingJksFile))
+            }
+
+            keyAlias stagingJks['keyAlias']
+            keyPassword stagingJks['keyPassword']
+            storeFile stagingJks['storeFile'] ? file(stagingJks['storeFile']) : null
+            storePassword stagingJks['storePassword']
+        }
+        
+        development {
+            def devJks = new Properties()
+            def devJksFile = rootProject.file('key-development.properties')
+            if (devJksFile.exists()) {
+                devJks.load(new FileInputStream(devJksFile))
+            }
+
+            keyAlias devJks['keyAlias']
+            keyPassword devJks['keyPassword']
+            storeFile devJks['storeFile'] ? file(devJks['storeFile']) : null
+            storePassword devJks['storePassword']
         }
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig signingConfigs.release
+            minifyEnabled false
+            shrinkResources false
         }
     }
 
     flavorDimensions "default"
+
     productFlavors {
         live {
+            def admobProperties = new Properties()
+            rootProject.file("admob-live.properties").withInputStream { admobProperties.load(it) }
+            manifestPlaceholders = [adMobApplicationId: admobProperties["admob_application_id"]]
+
             dimension "default"
             resValue "string", "app_name", "Trgtz"
-            manifestPlaceholders = [adMobApplicationId: admobProperties["admob_application_id"]]
+            signingConfig signingConfigs.live
+        
+            def versionPropsFile = rootProject.file('version-live.properties')
+            def versionProps = new Properties()
+            if (versionPropsFile.exists()) {
+                versionProps.load(new FileInputStream(versionPropsFile))
+            }
+            
+            versionCode versionProps['VERSION_CODE'].toInteger()
+            versionName versionProps['VERSION_NAME']
         }
 
         staging {
-            dimension "default"
-            resValue "string", "app_name", "Trgtz stg"
+            def admobProperties = new Properties()
+            rootProject.file("admob-staging.properties").withInputStream { admobProperties.load(it) }
             manifestPlaceholders = [adMobApplicationId: admobProperties["admob_application_id"]]
+
+            dimension "default"
+            resValue "string", "app_name", "Trgtz UAT"
+            applicationIdSuffix ".stg"
+            manifestPlaceholders = [adMobApplicationId: admobProperties["admob_application_id"]]
+            signingConfig signingConfigs.staging
+        
+            def versionPropsFile = rootProject.file('version-staging.properties')
+            def versionProps = new Properties()
+            if (versionPropsFile.exists()) {
+                versionProps.load(new FileInputStream(versionPropsFile))
+            }
+            
+            versionCode versionProps['VERSION_CODE'].toInteger()
+            versionName versionProps['VERSION_NAME']
         }
 
         development {
+            def admobProperties = new Properties()
+            rootProject.file("admob-development.properties").withInputStream { admobProperties.load(it) }
+            manifestPlaceholders = [adMobApplicationId: admobProperties["admob_application_id"]]
+        
+            versionCode 1
+            versionName "dev"
+
             dimension "default"
             resValue "string", "app_name", "Trgtz dev"
             applicationIdSuffix ".dev"
             manifestPlaceholders = [adMobApplicationId: admobProperties["admob_application_id"]]
+            signingConfig signingConfigs.development
         }
     }
 }
