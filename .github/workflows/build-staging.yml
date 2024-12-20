@@ -15,10 +15,10 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Set Android version
+      - name: Set staging Android version
         run: |
           FORMAT_REGEX='^[0-9]{8}\.[0-9]+$'
-          VERSION_FILE="./mobile/android/version.properties"
+          VERSION_FILE="./mobile/android/version-staging.properties"
           CURRENT_DATE=$(date +"%Y%m%d")
 
           if [ -f "$VERSION_FILE" ]; then
@@ -57,6 +57,16 @@ jobs:
           echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
         shell: bash
 
+      - name: Create dummy files
+        run: |
+          touch mobile/android/admob-live.properties
+          touch mobile/android/admob-development.properties
+          
+          touch mobile/android/key-live.properties
+          touch mobile/android/key-staging.properties
+          touch mobile/android/key-development.properties
+          
+          touch mobile/android/version-live.properties
 
       - name: Decode google-services.json
         run: |
@@ -65,7 +75,7 @@ jobs:
           echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 -d > $FLAVOR_PATH/google-services.json
 
       - name: Decode admob properties
-        run: echo "${{ secrets.GOOGLE_ADMOB }}" | base64 -d > mobile/android/admob.properties
+        run: echo "${{ secrets.GOOGLE_ADMOB }}" | base64 -d > mobile/android/admob-staging.properties
 
       - name: Decode keystore
         run: echo "${{ secrets.GOOGLE_PLAY_KEY_STORE }}" | base64 -d > mobile/keystore.jks
@@ -73,9 +83,9 @@ jobs:
       - name: Install keystore
         run: |
           echo "storeFile=${{ github.workspace }}/mobile/keystore.jks" > mobile/android/key.properties
-          echo "storePassword=${{ secrets.GOOGLE_PLAY_KEY_STORE_PASSWORD }}" >> mobile/android/key.properties
-          echo "keyPassword=${{ secrets.GOOGLE_PLAY_KEY_PASSWORD }}" >> mobile/android/key.properties
-          echo "keyAlias=${{ secrets.GOOGLE_PLAY_KEY_ALIAS }}" >> mobile/android/key.properties
+          echo "storePassword=${{ secrets.GOOGLE_PLAY_KEY_STORE_PASSWORD }}" >> mobile/android/key-staging.properties
+          echo "keyPassword=${{ secrets.GOOGLE_PLAY_KEY_PASSWORD }}" >> mobile/android/key-staging.properties
+          echo "keyAlias=${{ secrets.GOOGLE_PLAY_KEY_ALIAS }}" >> mobile/android/key-staging.properties
 
       - name: Build Android bundle
         run: |
