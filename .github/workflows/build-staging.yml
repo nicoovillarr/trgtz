@@ -138,7 +138,7 @@ jobs:
           NEW_VERSION="$VERSION_NAME ($VERSION_CODE)"
           COMMIT_MESSAGE="chore(build): $NEW_VERSION"
 
-          git add mobile/android/version.properties
+          git add mobile/android/version-staging.properties
           git commit -m "$COMMIT_MESSAGE"
 
           git push origin main
