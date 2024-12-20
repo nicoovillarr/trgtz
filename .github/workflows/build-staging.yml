@@ -15,6 +15,30 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Create dummy files
+        run: |
+          touch mobile/android/admob-live.properties
+          echo "admob_application_id=" > mobile/android/admob-live.properties
+
+          touch mobile/android/admob-development.properties
+          echo "admob_application_id=" > mobile/android/admob-development.properties
+          
+          touch mobile/android/key-live.properties
+          echo "storeFile=" > mobile/android/key-live.properties
+          echo "storePassword=" >> mobile/android/key-live.properties
+          echo "keyPassword=" >> mobile/android/key-live.properties
+          echo "keyAlias=" >> mobile/android/key-live.properties
+
+          touch mobile/android/key-development.properties
+          echo "storeFile=" > mobile/android/key-development.properties
+          echo "storePassword=" >> mobile/android/key-development.properties
+          echo "keyPassword=" >> mobile/android/key-development.properties
+          echo "keyAlias=" >> mobile/android/key-development.properties
+          
+          touch mobile/android/version-live.properties
+          echo "VERSION_NAME=" > mobile/android/version-live.properties
+          echo "VERSION_CODE=1" >> mobile/android/version-live.properties
+
       - name: Set staging Android version
         run: |
           FORMAT_REGEX='^[0-9]{8}\.[0-9]+$'
@@ -57,17 +81,6 @@ jobs:
           echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
         shell: bash
 
-      - name: Create dummy files
-        run: |
-          touch mobile/android/admob-live.properties
-          touch mobile/android/admob-development.properties
-          
-          touch mobile/android/key-live.properties
-          touch mobile/android/key-staging.properties
-          touch mobile/android/key-development.properties
-          
-          touch mobile/android/version-live.properties
-
       - name: Decode google-services.json
         run: |
           FLAVOR_PATH=mobile/android/app/src/staging
@@ -82,7 +95,7 @@ jobs:
 
       - name: Install keystore
         run: |
-          echo "storeFile=${{ github.workspace }}/mobile/keystore.jks" > mobile/android/key.properties
+          echo "storeFile=${{ github.workspace }}/mobile/keystore.jks" > mobile/android/key-staging.properties
           echo "storePassword=${{ secrets.GOOGLE_PLAY_KEY_STORE_PASSWORD }}" >> mobile/android/key-staging.properties
           echo "keyPassword=${{ secrets.GOOGLE_PLAY_KEY_PASSWORD }}" >> mobile/android/key-staging.properties
           echo "keyAlias=${{ secrets.GOOGLE_PLAY_KEY_ALIAS }}" >> mobile/android/key-staging.properties
