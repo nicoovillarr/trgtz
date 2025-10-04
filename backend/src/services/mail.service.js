@@ -1,32 +1,16 @@
-const { createTransport } = require('nodemailer')
+const { Resend } = require('resend')
 
-const transporter = createTransport({
-  host: 'smtp.hostinger.com',
-  secure: true,
-  secureConnection: false,
-  tls: {
-    ciphers: 'SSLv3'
-  },
-  requireTLS: true,
-  port: 465,
-  connectionTimeout: 10000,
-  auth: {
-    user: process.env.NO_REPLY_EMAIL_ADDRESS,
-    pass: process.env.NO_REPLY_EMAIL_PASSWORD
-  }
-})
+const resend = new Resend(process.env.NO_REPLY_RESEND_API_KEY)
 
 const sendNoReplyEmail = async (to, subject, text, html) => {
-  const mailOptions = {
-    from: `"No Reply" <${process.env.NO_REPLY_EMAIL_ADDRESS}>`,
-    to,
-    subject,
-    text,
-    html
-  }
-
   try {
-    await transporter.sendMail(mailOptions)
+    await resend.emails.send({
+      from: `"No Reply" <${process.env.NO_REPLY_EMAIL_ADDRESS}>`,
+      to,
+      subject,
+      text,
+      html
+    })
     return true
   } catch (e) {
     console.error(`There was an error sending the email: ${e}`)
