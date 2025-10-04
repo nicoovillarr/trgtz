@@ -80,11 +80,12 @@ class _ProfileFragmentState extends BaseFragmentState<ProfileFragment> {
                     field: 'Notifications',
                     icon: Icons.keyboard_arrow_right,
                   ),
-                  _buildListItem(
-                    onTap: () => widget.enimtAction(goReports),
-                    field: 'Reports',
-                    icon: Icons.keyboard_arrow_right,
-                  ),
+                  if (user.isSuperAdmin)
+                    _buildListItem(
+                      onTap: () => widget.enimtAction(goReports),
+                      field: 'Reports',
+                      icon: Icons.keyboard_arrow_right,
+                    ),
                 ],
               ),
               _buildOptionsList(
